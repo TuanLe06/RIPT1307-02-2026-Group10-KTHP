@@ -7,8 +7,6 @@ erDiagram
         VARCHAR_255 email UK
         VARCHAR_255 password_hash
         VARCHAR_255 full_name
-        VARCHAR_20 phone
-        VARCHAR_20 gender
         VARCHAR_20 role
         VARCHAR_20 status
         DATETIME last_login_at
@@ -71,6 +69,7 @@ erDiagram
         BIGINT citizen_id PK
         BIGINT user_id FK
         VARCHAR_255 full_name
+        VARCHAR_20 phone
         DATE date_of_birth
         VARCHAR_20 gender
         DATE citizen_issue_date

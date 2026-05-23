@@ -5,7 +5,7 @@ import { CandidateProfile, User } from '../types';
 type UserPublic = Omit<User, 'password_hash'>;
 
 const USER_PUBLIC_FIELDS = `
-  id, email, full_name, phone, gender, role, status, last_login_at, created_at, updated_at
+  id, email, full_name, role, status, last_login_at, created_at, updated_at
 `;
 
 export class UserModel {
