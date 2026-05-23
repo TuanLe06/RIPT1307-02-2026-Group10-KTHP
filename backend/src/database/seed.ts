@@ -5,18 +5,18 @@ const seed = async (): Promise<void> => {
   await testConnection();
 
   const adminPassword = await bcrypt.hash('admin123', 12);
-  const userPassword = await bcrypt.hash('user123', 12);
+  const candidatePassword = await bcrypt.hash('candidate123', 12);
 
   await pool.execute(
-    `INSERT IGNORE INTO users (name, email, password, role) VALUES
-     ('Admin User', 'admin@example.com', ?, 'admin'),
-     ('Regular User', 'user@example.com', ?, 'user')`,
-    [adminPassword, userPassword]
+    `INSERT IGNORE INTO users (email, password_hash, full_name, role, status) VALUES
+     ('admin@example.com', ?, 'Admin User', 'ADMIN', 'ACTIVE'),
+     ('candidate@example.com', ?, 'Candidate User', 'CANDIDATE', 'ACTIVE')`,
+    [adminPassword, candidatePassword]
   );
 
   console.log('🌱 Seed data inserted');
   console.log('   Admin: admin@example.com / admin123');
-  console.log('   User:  user@example.com / user123');
+  console.log('   Candidate: candidate@example.com / candidate123');
   process.exit(0);
 };
 

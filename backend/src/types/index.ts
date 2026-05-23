@@ -1,10 +1,21 @@
 export interface User {
   id: number;
-  name: string;
   email: string;
-  password: string;
-  role: 'admin' | 'user';
-  is_active: boolean;
+  password_hash: string;
+  full_name: string | null;
+  phone: string | null;
+  gender: string | null;
+  role: 'CANDIDATE' | 'ADMIN';
+  status: 'ACTIVE' | 'LOCKED' | 'PENDING';
+  last_login_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface CandidateProfile {
+  citizen_id: number;
+  user_id: number;
+  full_name: string;
   created_at: Date;
   updated_at: Date;
 }

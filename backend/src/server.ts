@@ -3,8 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
 
 import { testConnection } from './config/database';
+import swaggerSpec from './config/swagger';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -27,6 +29,7 @@ app.get('/health', (_req, res) => {
 });
 
 // Routes
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
