@@ -9,6 +9,7 @@ const migrate = async (): Promise<void> => {
     `DROP TABLE IF EXISTS email_notifications`,
     `DROP TABLE IF EXISTS application_status_logs`,
     `DROP TABLE IF EXISTS candidate_documents`,
+    `DROP TABLE IF EXISTS exam_scores`,
     `DROP TABLE IF EXISTS academic_progress`,
     `DROP TABLE IF EXISTS academic_records`,
     `DROP TABLE IF EXISTS applications`,
@@ -25,7 +26,6 @@ const migrate = async (): Promise<void> => {
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       email VARCHAR(255) NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
-      full_name VARCHAR(255) NULL,
       role ENUM('CANDIDATE','ADMIN') NOT NULL,
       status ENUM('ACTIVE','LOCKED','PENDING') NOT NULL DEFAULT 'ACTIVE',
       last_login_at DATETIME NULL,
@@ -112,7 +112,7 @@ const migrate = async (): Promise<void> => {
       citizen_issue_date DATE NULL,
       citizen_issue_place VARCHAR(255) NULL,
       religion VARCHAR(20) NULL,
-      dob DATE NULL,
+      ethnic VARCHAR(20) NULL,
       nation VARCHAR(20) NULL,
       province VARCHAR(255) NULL,
       ward VARCHAR(255) NULL,
@@ -161,6 +161,7 @@ const migrate = async (): Promise<void> => {
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       candidate_id BIGINT UNSIGNED NOT NULL,
       graduation_year INT NULL,
+      science_group ENUM('NATURAL','SOCIAL') NULL,
       subject_1_score DECIMAL(4,2) NULL,
       subject_2_score DECIMAL(4,2) NULL,
       subject_3_score DECIMAL(4,2) NULL,
@@ -182,6 +183,19 @@ const migrate = async (): Promise<void> => {
       avg_score DECIMAL(4,2) NULL,
       KEY idx_academic_progress_record_id (record_id),
       CONSTRAINT fk_academic_progress_record
+        FOREIGN KEY (record_id) REFERENCES academic_records(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+    `CREATE TABLE IF NOT EXISTS exam_scores (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      record_id BIGINT UNSIGNED NOT NULL,
+      subject_code VARCHAR(20) NOT NULL,
+      subject_name VARCHAR(100) NOT NULL,
+      score DECIMAL(4,2) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_exam_scores_record_subject (record_id, subject_code),
+      KEY idx_exam_scores_record_id (record_id),
+      CONSTRAINT fk_exam_scores_record
         FOREIGN KEY (record_id) REFERENCES academic_records(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
