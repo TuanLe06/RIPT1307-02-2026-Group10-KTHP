@@ -6,9 +6,9 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/', authorize('admin'), getUsers);
+router.get('/', authorize('ADMIN'), getUsers);
 router.get('/:id', getUserById);
-router.put('/:id', authorize('admin'), updateUser);
-router.delete('/:id', authorize('admin'), deleteUser);
+router.put('/:id', authorize('ADMIN'), updateUser);
+router.delete('/:id', authorize('ADMIN'), deleteUser);
 
 export default router;
