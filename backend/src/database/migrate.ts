@@ -48,7 +48,7 @@ const migrate = async (): Promise<void> => {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
     `CREATE TABLE IF NOT EXISTS universities (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      id VARCHAR(20) PRIMARY KEY,
       code VARCHAR(50) NOT NULL,
       name VARCHAR(255) NOT NULL,
       address TEXT NULL,
@@ -59,22 +59,7 @@ const migrate = async (): Promise<void> => {
       status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      UNIQUE KEY uq_universities_code (code)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-
-    `CREATE TABLE IF NOT EXISTS majors (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      university_id BIGINT UNSIGNED NOT NULL,
-      code VARCHAR(50) NOT NULL,
-      name VARCHAR(255) NOT NULL,
-      description TEXT NULL,
-      status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      UNIQUE KEY uq_majors_university_code (university_id, code),
-      KEY idx_majors_university_id (university_id),
-      CONSTRAINT fk_majors_university
-        FOREIGN KEY (university_id) REFERENCES universities(id)
+      KEY idx_universities_code (code)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
     `CREATE TABLE IF NOT EXISTS admission_combinations (
@@ -87,9 +72,28 @@ const migrate = async (): Promise<void> => {
       UNIQUE KEY uq_admission_combinations_code (code)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
+    `CREATE TABLE IF NOT EXISTS majors (
+      id VARCHAR(20) PRIMARY KEY,
+      university_id VARCHAR(20) NOT NULL,
+      admission_combinations_id BIGINT UNSIGNED NOT NULL,
+      code VARCHAR(50) NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      description TEXT NULL,
+      min_score DECIMAL(4,2) NULL,
+      status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      KEY idx_majors_university_code (university_id, code),
+      KEY idx_majors_university_id (university_id),
+      CONSTRAINT fk_majors_university
+        FOREIGN KEY (university_id) REFERENCES universities(id),
+      CONSTRAINT fk_majors_admission_combination
+        FOREIGN KEY (admission_combinations_id) REFERENCES admission_combinations(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
     `CREATE TABLE IF NOT EXISTS major_combinations (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      major_id BIGINT UNSIGNED NOT NULL,
+      major_id VARCHAR(20) NOT NULL,
       combination_id BIGINT UNSIGNED NOT NULL,
       min_score DECIMAL(4,2) NULL,
       status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
@@ -128,8 +132,8 @@ const migrate = async (): Promise<void> => {
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       candidate_id BIGINT UNSIGNED NOT NULL,
       application_code VARCHAR(50) NOT NULL,
-      university_id BIGINT UNSIGNED NOT NULL,
-      major_id BIGINT UNSIGNED NOT NULL,
+      university_id VARCHAR(20) NOT NULL,
+      major_id VARCHAR(20) NOT NULL,
       combination_id BIGINT UNSIGNED NOT NULL,
       status ENUM('DRAFT','SUBMITTED','PENDING_REVIEW','APPROVED','REJECTED','PASSED','FAILED') NOT NULL DEFAULT 'DRAFT',
       submitted_at DATETIME NULL,
