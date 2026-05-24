@@ -11,6 +11,8 @@ import { errorHandler, notFound } from './middleware/error.middleware';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import universityRoutes from './routes/university.routes';
+import candidateProfileRoutes from './routes/candidate-profile.routes';
+import adminRoutes from './routes/admin.routes';
 
 dotenv.config();
 
@@ -34,6 +36,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/universities', universityRoutes);
+app.use('/api/candidate', candidateProfileRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handling
 app.use(notFound);

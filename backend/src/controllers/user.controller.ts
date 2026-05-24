@@ -24,8 +24,8 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 };
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
-  const { full_name, role, status } = req.body;
-  const user = await UserModel.update(Number(req.params.id), { full_name, role, status });
+  const { role, status } = req.body;
+  const user = await UserModel.update(Number(req.params.id), { role, status });
   if (!user) {
     res.status(404).json({ success: false, message: 'User not found' });
     return;
