@@ -5,7 +5,7 @@ import { CandidateProfile, User } from '../types';
 type UserPublic = Omit<User, 'password_hash'>;
 
 const USER_PUBLIC_FIELDS = `
-  id, email, full_name, role, status, last_login_at, created_at, updated_at
+  id, email, role, status, last_login_at, created_at, updated_at
 `;
 
 export class UserModel {
@@ -81,7 +81,7 @@ export class UserModel {
 
   static async update(
     id: number,
-    data: Partial<Pick<User, 'full_name' | 'role' | 'status'>>
+    data: Partial<Pick<User, 'role' | 'status'>>
   ): Promise<UserPublic | null> {
     const entries = Object.entries(data).filter(([, value]) => value !== undefined);
     if (entries.length === 0) return this.findById(id);
@@ -99,12 +99,12 @@ export class UserModel {
 
   private static async insertCandidateUser(
     connection: PoolConnection,
-    data: { fullName: string; email: string; passwordHash: string }
+    data: { email: string; passwordHash: string }
   ): Promise<number> {
     const [result] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO users (email, password_hash, full_name, role, status)
-       VALUES (?, ?, ?, 'CANDIDATE', 'ACTIVE')`,
-      [data.email, data.passwordHash, data.fullName]
+      `INSERT INTO users (email, password_hash, role, status)
+       VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
+      [data.email, data.passwordHash]
     );
     return result.insertId;
   }

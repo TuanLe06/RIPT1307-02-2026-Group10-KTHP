@@ -6,7 +6,6 @@ erDiagram
         BIGINT id PK
         VARCHAR_255 email UK
         VARCHAR_255 password_hash
-        VARCHAR_255 full_name
         VARCHAR_20 role
         VARCHAR_20 status
         DATETIME last_login_at
@@ -75,7 +74,7 @@ erDiagram
         DATE citizen_issue_date
         VARCHAR_255 citizen_issue_place
         VARCHAR_20 religion
-        DATE dob
+        VARCHAR_20 ethnic
         VARCHAR_20 nation
         VARCHAR_255 province
         VARCHAR_255 ward
@@ -206,4 +205,4 @@ erDiagram
 - Khóa unique của `majors`: (`university_id`, `code`)
 - Khóa unique của `major_combinations`: (`major_id`, `combination_id`)
 - `academic_records.candidate_id` là unique
-- `candidate_profiles` đang có cả `date_of_birth` và `dob` theo schema hiện tại
+- Trường ngày sinh chuẩn của `candidate_profiles` là `date_of_birth`

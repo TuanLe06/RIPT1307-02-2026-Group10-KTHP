@@ -12,7 +12,6 @@ CREATE TABLE users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
-  full_name VARCHAR(255) NULL,
   role ENUM('CANDIDATE','ADMIN') NOT NULL,
   status ENUM('ACTIVE','LOCKED','PENDING') NOT NULL DEFAULT 'ACTIVE',
   last_login_at DATETIME NULL,
@@ -117,7 +116,7 @@ CREATE TABLE candidate_profiles (
   citizen_issue_date DATE NULL,
   citizen_issue_place VARCHAR(255) NULL,
   religion VARCHAR(20) NULL,
-  dob DATE NULL,
+  ethnic VARCHAR(20) NULL,
   nation VARCHAR(20) NULL,
   province VARCHAR(255) NULL,
   ward VARCHAR(255) NULL,
@@ -282,5 +281,5 @@ CREATE TABLE audit_logs (
 
 ## Lưu ý triển khai
 - Thiết kế trên bám sát schema bạn đã chốt.
-- Cột `candidate_profiles` vẫn giữ đồng thời `date_of_birth` và `dob`.
+- Trường ngày sinh chuẩn của `candidate_profiles` là `date_of_birth` (đã bỏ `dob`).
 - `applications.candidate_id` đang tham chiếu `users(id)` theo đúng mô hình hiện tại.

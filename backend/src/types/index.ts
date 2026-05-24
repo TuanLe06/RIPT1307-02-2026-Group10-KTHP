@@ -2,7 +2,6 @@ export interface User {
   id: number;
   email: string;
   password_hash: string;
-  full_name: string | null;
   role: 'CANDIDATE' | 'ADMIN';
   status: 'ACTIVE' | 'LOCKED' | 'PENDING';
   last_login_at: Date | null;
@@ -14,8 +13,17 @@ export interface CandidateProfile {
   citizen_id: number;
   user_id: number;
   full_name: string;
-  phone?: string | null;
-  gender?: 'MALE' | 'FEMALE' | 'OTHER' | null;
+  phone: string | null;
+  date_of_birth: Date | null;
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | null;
+  citizen_issue_date: Date | null;
+  citizen_issue_place: string | null;
+  religion: string | null;
+  ethnic: string | null;
+  nation: string | null;
+  province: string | null;
+  ward: string | null;
+  address: string | null;
   created_at: Date;
   updated_at: Date;
 }
