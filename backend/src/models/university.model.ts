@@ -9,7 +9,7 @@ const UNIVERSITY_FIELDS = `
 `;
 
 const MAJOR_FIELDS = `
-  id, university_id, admission_combinations_id, code, name,
+  id, university_id, code, name,
   description, min_score, status, created_at, updated_at
 `;
 
@@ -158,7 +158,6 @@ export class UniversityModel {
 export class MajorModel {
   static async create(data: {
     university_id: string;
-    admission_combinations_id: number;
     code: string;
     name: string;
     description?: string | null;
@@ -169,12 +168,11 @@ export class MajorModel {
       id = generateMajorCode();
     }
     const [result] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO majors (id, university_id, admission_combinations_id, code, name, description, min_score)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO majors (id, university_id, code, name, description, min_score)
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
         id,
         data.university_id,
-        data.admission_combinations_id,
         data.code,
         data.name,
         data.description ?? null,
@@ -252,7 +250,6 @@ export class MajorModel {
         | "code"
         | "name"
         | "description"
-        | "admission_combinations_id"
         | "min_score"
         | "status"
       >
@@ -296,13 +293,4 @@ export class MajorModel {
     return rows.length > 0;
   }
 
-  static async admissionCombinationExists(
-    admissionId: number,
-  ): Promise<boolean> {
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT 1 FROM admission_combinations WHERE id = ? LIMIT 1`,
-      [admissionId],
-    );
-    return rows.length > 0;
-  }
 }
