@@ -1,21 +1,24 @@
 const swaggerSpec = {
   openapi: "3.0.3",
   info: {
-    title: 'API Hệ thống Tuyển sinh',
-    version: '1.0.0',
-    description: 'Tài liệu API cho hệ thống tuyển sinh',
+    title: "API Hệ thống Tuyển sinh",
+    version: "1.0.0",
+    description: "Tài liệu API cho hệ thống tuyển sinh",
   },
   servers: [
     {
-      url: 'http://localhost:5000',
-      description: 'Máy chủ địa phương',
+      url: "http://localhost:5000",
+      description: "Máy chủ địa phương",
     },
   ],
   tags: [
-    { name: 'Health', description: 'Kiểm tra trạng thái hệ thống' },
-    { name: 'Auth', description: 'Đăng ký, đăng nhập, đăng xuất, hồ sơ' },
-    { name: 'Candidate Profile', description: 'Thông tin hồ sơ cá nhân thí sinh' },
-    { name: 'Admin', description: 'Các API quản trị hệ thống' },
+    { name: "Health", description: "Kiểm tra trạng thái hệ thống" },
+    { name: "Auth", description: "Đăng ký, đăng nhập, đăng xuất, hồ sơ" },
+    {
+      name: "Candidate Profile",
+      description: "Thông tin hồ sơ cá nhân thí sinh",
+    },
+    { name: "Admin", description: "Các API quản trị hệ thống" },
     { name: "Majors", description: "Quản lý thông tin ngành học theo trường" },
   ],
   components: {
@@ -30,19 +33,19 @@ const swaggerSpec = {
   paths: {
     "/health": {
       get: {
-        tags: ['Health'],
-        summary: 'Kiểm tra sức khỏe hệ thống',
+        tags: ["Health"],
+        summary: "Kiểm tra sức khỏe hệ thống",
         responses: {
           200: {
-            description: 'Máy chủ hoạt động bình thường',
+            description: "Máy chủ hoạt động bình thường",
           },
         },
       },
     },
     "/api/auth/register": {
       post: {
-        tags: ['Auth'],
-        summary: 'Đăng ký tài khoản thí sinh',
+        tags: ["Auth"],
+        summary: "Đăng ký tài khoản thí sinh",
         requestBody: {
           required: true,
           content: {
@@ -51,26 +54,38 @@ const swaggerSpec = {
                 type: "object",
                 required: ["citizen_id", "full_name", "email", "password"],
                 properties: {
-                  citizen_id: { type: 'string', pattern: '^[0-9]{12}$', example: '001306651354' },
-                  full_name: { type: 'string', example: 'Tống Quang Việt' },
-                  email: { type: 'string', format: 'email', example: 'a@example.com' },
-                  password: { type: 'string', minLength: 6, example: 'secret123' },
+                  citizen_id: {
+                    type: "string",
+                    pattern: "^[0-9]{12}$",
+                    example: "001306651354",
+                  },
+                  full_name: { type: "string", example: "Tống Quang Việt" },
+                  email: {
+                    type: "string",
+                    format: "email",
+                    example: "a@example.com",
+                  },
+                  password: {
+                    type: "string",
+                    minLength: 6,
+                    example: "secret123",
+                  },
                 },
               },
             },
           },
         },
         responses: {
-          201: { description: 'Đăng ký thành công' },
-          400: { description: 'Dữ liệu không hợp lệ' },
-          409: { description: 'Trùng email hoặc CCCD' },
+          201: { description: "Đăng ký thành công" },
+          400: { description: "Dữ liệu không hợp lệ" },
+          409: { description: "Trùng email hoặc CCCD" },
         },
       },
     },
     "/api/auth/login": {
       post: {
-        tags: ['Auth'],
-        summary: 'Đăng nhập bằng email và mật khẩu',
+        tags: ["Auth"],
+        summary: "Đăng nhập bằng email và mật khẩu",
         requestBody: {
           required: true,
           content: {
@@ -91,32 +106,32 @@ const swaggerSpec = {
           },
         },
         responses: {
-          200: { description: 'Đăng nhập thành công' },
-          401: { description: 'Sai thông tin đăng nhập' },
-          403: { description: 'Tài khoản bị khóa' },
+          200: { description: "Đăng nhập thành công" },
+          401: { description: "Sai thông tin đăng nhập" },
+          403: { description: "Tài khoản bị khóa" },
         },
       },
     },
     "/api/auth/logout": {
       post: {
-        tags: ['Auth'],
-        summary: 'Đăng xuất (không lưu trạng thái)',
+        tags: ["Auth"],
+        summary: "Đăng xuất (không lưu trạng thái)",
         security: [{ bearerAuth: [] }],
         responses: {
-          200: { description: 'Đăng xuất thành công' },
-          401: { description: 'Không có token hoặc token không hợp lệ' },
+          200: { description: "Đăng xuất thành công" },
+          401: { description: "Không có token hoặc token không hợp lệ" },
         },
       },
     },
     "/api/auth/profile": {
       get: {
-        tags: ['Auth'],
-        summary: 'Lấy thông tin hồ sơ người đăng nhập',
+        tags: ["Auth"],
+        summary: "Lấy thông tin hồ sơ người đăng nhập",
         security: [{ bearerAuth: [] }],
         responses: {
-          200: { description: 'Lấy hồ sơ thành công' },
-          401: { description: 'Không có token hoặc token không hợp lệ' },
-          404: { description: 'Không tìm thấy người dùng' },
+          200: { description: "Lấy hồ sơ thành công" },
+          401: { description: "Không có token hoặc token không hợp lệ" },
+          404: { description: "Không tìm thấy người dùng" },
         },
       },
     },
@@ -134,7 +149,11 @@ const swaggerSpec = {
                 type: "object",
                 required: ["code", "name"],
                 properties: {
-                  code: { type: "string", example: "HUST", description: "Mã viết tắt của trường" },
+                  code: {
+                    type: "string",
+                    example: "PTIT",
+                    description: "Mã viết tắt của trường",
+                  },
                   name: {
                     type: "string",
                     example: "Học viện Công nghệ bưu chính viễn thông",
@@ -193,7 +212,11 @@ const swaggerSpec = {
             name: "code",
             in: "path",
             required: true,
-            schema: { type: "string", example: "HUST", description: "Mã viết tắt của trường" },
+            schema: {
+              type: "string",
+              example: "UEH",
+              description: "Mã viết tắt của trường",
+            },
           },
         ],
         responses: {
@@ -212,7 +235,12 @@ const swaggerSpec = {
             name: "id",
             in: "path",
             required: true,
-            schema: { type: "string", pattern: "^DH\\d{6}$", example: "DH000001", description: "Mã tự động (DH + 6 số)" },
+            schema: {
+              type: "string",
+              pattern: "^DH\\d{6}$",
+              example: "DH000001",
+              description: "Mã tự động (DH + 6 số)",
+            },
           },
         ],
         requestBody: {
@@ -222,7 +250,11 @@ const swaggerSpec = {
               schema: {
                 type: "object",
                 properties: {
-                  code: { type: "string", example: "HUST", description: "Mã viết tắt của trường" },
+                  code: {
+                    type: "string",
+                    example: "HUST",
+                    description: "Mã viết tắt của trường",
+                  },
                   name: {
                     type: "string",
                     example: "Trường Đại học Công nghệ Thông tin",
@@ -254,7 +286,12 @@ const swaggerSpec = {
             name: "id",
             in: "path",
             required: true,
-            schema: { type: "string", pattern: "^DH\\d{6}$", example: "DH000001", description: "Mã tự động (DH + 6 số)" },
+            schema: {
+              type: "string",
+              pattern: "^DH\\d{6}$",
+              example: "DH000001",
+              description: "Mã tự động (DH + 6 số)",
+            },
           },
         ],
         responses: {
@@ -275,7 +312,11 @@ const swaggerSpec = {
             name: "universityCode",
             in: "path",
             required: true,
-            schema: { type: "string", example: "HUST", description: "Mã viết tắt của trường" },
+            schema: {
+              type: "string",
+              example: "UEH",
+              description: "Mã viết tắt của trường",
+            },
           },
           {
             name: "page",
@@ -305,7 +346,12 @@ const swaggerSpec = {
             name: "universityId",
             in: "path",
             required: true,
-            schema: { type: "string", pattern: "^DH\\d{6}$", example: "DH000001", description: "Mã tự động (DH + 6 số)" },
+            schema: {
+              type: "string",
+              pattern: "^DH\\d{6}$",
+              example: "DH000001",
+              description: "Mã tự động (DH + 6 số)",
+            },
           },
         ],
         requestBody: {
@@ -314,12 +360,15 @@ const swaggerSpec = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["code", "name", "admission_combinations_id"],
+                required: ["code", "name"],
                 properties: {
-                  code: { type: "string", example: "CNTT", description: "Mã viết tắt của ngành" },
+                  code: {
+                    type: "string",
+                    example: "CNTT",
+                    description: "Mã viết tắt của ngành",
+                  },
                   name: { type: "string", example: "Công nghệ thông tin" },
                   description: { type: "string" },
-                  admission_combinations_id: { type: "integer", example: 1 },
                   min_score: { type: "number", format: "float", example: 22.5 },
                   status: {
                     type: "string",
@@ -334,7 +383,7 @@ const swaggerSpec = {
         responses: {
           201: { description: "Thêm ngành thành công" },
           400: { description: "Dữ liệu không hợp lệ" },
-          404: { description: "Không tìm thấy trường hoặc tổ hợp xét tuyển" },
+          404: { description: "Không tìm thấy trường" },
           409: { description: "Mã ngành đã tồn tại trong trường này" },
         },
       },
@@ -349,13 +398,21 @@ const swaggerSpec = {
             name: "universityCode",
             in: "path",
             required: true,
-            schema: { type: "string", example: "HUST", description: "Mã viết tắt của trường" },
+            schema: {
+              type: "string",
+              example: "UEH",
+              description: "Mã viết tắt của trường",
+            },
           },
           {
             name: "code",
             in: "path",
             required: true,
-            schema: { type: "string", example: "CNTT", description: "Mã viết tắt của ngành" },
+            schema: {
+              type: "string",
+              example: "CNTT",
+              description: "Mã viết tắt của ngành",
+            },
           },
         ],
         responses: {
@@ -374,13 +431,21 @@ const swaggerSpec = {
             name: "universityId",
             in: "path",
             required: true,
-            schema: { type: "integer", minimum: 1 },
+            schema: {
+              type: "string",
+              pattern: "^DH\\d{6}$",
+              example: "DH000001",
+            },
           },
           {
             name: "majorId",
             in: "path",
             required: true,
-            schema: { type: "integer", minimum: 1 },
+            schema: {
+              type: "string",
+              pattern: "^NH\\d{6}$",
+              example: "NH000001",
+            },
           },
         ],
         requestBody: {
@@ -393,7 +458,6 @@ const swaggerSpec = {
                   code: { type: "string", example: "CNTT" },
                   name: { type: "string", example: "Công nghệ thông tin" },
                   description: { type: "string" },
-                  admission_combinations_id: { type: "integer", example: 1 },
                   min_score: { type: "number", format: "float" },
                   status: { type: "string", enum: ["ACTIVE", "INACTIVE"] },
                 },
@@ -417,13 +481,21 @@ const swaggerSpec = {
             name: "universityId",
             in: "path",
             required: true,
-            schema: { type: "integer", minimum: 1 },
+            schema: {
+              type: "string",
+              pattern: "^DH\\d{6}$",
+              example: "DH000001",
+            },
           },
           {
             name: "majorId",
             in: "path",
             required: true,
-            schema: { type: "integer", minimum: 1 },
+            schema: {
+              type: "string",
+              pattern: "^NH\\d{6}$",
+              example: "NH000001",
+            },
           },
         ],
         responses: {
@@ -433,126 +505,156 @@ const swaggerSpec = {
         },
       },
     },
-    '/api/candidate/profile': {
+    "/api/candidate/profile": {
       get: {
-        tags: ['Candidate Profile'],
-        summary: 'Lấy hồ sơ thí sinh (gồm user + candidate_profile)',
+        tags: ["Candidate Profile"],
+        summary: "Lấy hồ sơ thí sinh (gồm user + candidate_profile)",
         security: [{ bearerAuth: [] }],
         responses: {
-          200: { description: 'Lấy hồ sơ thành công' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy hồ sơ thí sinh' },
+          200: { description: "Lấy hồ sơ thành công" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
       put: {
-        tags: ['Candidate Profile'],
-        summary: 'Cập nhật hồ sơ cá nhân thí sinh',
+        tags: ["Candidate Profile"],
+        summary: "Cập nhật hồ sơ cá nhân thí sinh",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                type: 'object',
+                type: "object",
                 properties: {
-                  full_name: { type: 'string', example: 'Tống Quang Việt' },
-                  phone: { type: 'string', example: '0901234567' },
-                  date_of_birth: { type: 'string', format: 'date', example: '2006-08-15' },
-                  gender: { type: 'string', enum: ['MALE', 'FEMALE', 'OTHER'] },
-                  citizen_issue_date: { type: 'string', format: 'date', example: '2022-01-01' },
-                  citizen_issue_place: { type: 'string', example: 'Công an TP.HCM' },
-                  religion: { type: 'string', example: 'Không' },
-                  ethnic: { type: 'string', example: 'Kinh' },
-                  nation: { type: 'string', example: 'Vietnam' },
-                  province: { type: 'string', example: 'TP.HCM' },
-                  ward: { type: 'string', example: 'Phường 1' },
-                  address: { type: 'string', example: '123 Đường A' },
+                  full_name: { type: "string", example: "Tống Quang Việt" },
+                  phone: { type: "string", example: "0901234567" },
+                  date_of_birth: {
+                    type: "string",
+                    format: "date",
+                    example: "2006-08-15",
+                  },
+                  gender: { type: "string", enum: ["MALE", "FEMALE", "OTHER"] },
+                  citizen_issue_date: {
+                    type: "string",
+                    format: "date",
+                    example: "2022-01-01",
+                  },
+                  citizen_issue_place: {
+                    type: "string",
+                    example: "Công an TP.HCM",
+                  },
+                  religion: { type: "string", example: "Không" },
+                  ethnic: { type: "string", example: "Kinh" },
+                  nation: { type: "string", example: "Vietnam" },
+                  province: { type: "string", example: "TP.HCM" },
+                  ward: { type: "string", example: "Phường 1" },
+                  address: { type: "string", example: "123 Đường A" },
                 },
               },
             },
           },
         },
         responses: {
-          200: { description: 'Cập nhật hồ sơ thành công' },
-          400: { description: 'Dữ liệu gửi lên không hợp lệ' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy hồ sơ thí sinh' },
+          200: { description: "Cập nhật hồ sơ thành công" },
+          400: { description: "Dữ liệu gửi lên không hợp lệ" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
     },
-    '/api/candidate/profile/academic-record': {
+    "/api/candidate/profile/academic-record": {
       get: {
-        tags: ['Candidate Profile'],
-        summary: 'Lấy thông tin học tập hiện tại của thí sinh',
+        tags: ["Candidate Profile"],
+        summary: "Lấy thông tin học tập hiện tại của thí sinh",
         security: [{ bearerAuth: [] }],
         responses: {
-          200: { description: 'Lấy thông tin học tập thành công' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy hồ sơ thí sinh' },
+          200: { description: "Lấy thông tin học tập thành công" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
       put: {
-        tags: ['Candidate Profile'],
-        summary: 'Nhập/chỉnh sửa điểm học tập tổng quan',
+        tags: ["Candidate Profile"],
+        summary: "Nhập/chỉnh sửa điểm học tập tổng quan",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                type: 'object',
+                type: "object",
                 properties: {
-                  graduation_year: { type: 'integer', example: 2024 },
-                  science_group: { type: 'string', enum: ['NATURAL', 'SOCIAL'] },
-                  priority_score: { type: 'number', format: 'float', example: 1.5 },
+                  graduation_year: { type: "integer", example: 2024 },
+                  science_group: {
+                    type: "string",
+                    enum: ["NATURAL", "SOCIAL"],
+                  },
+                  priority_score: {
+                    type: "number",
+                    format: "float",
+                    example: 1.5,
+                  },
                 },
               },
             },
           },
         },
         responses: {
-          200: { description: 'Cập nhật thông tin học tập thành công' },
-          400: { description: 'Dữ liệu gửi lên không hợp lệ' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy hồ sơ thí sinh' },
+          200: { description: "Cập nhật thông tin học tập thành công" },
+          400: { description: "Dữ liệu gửi lên không hợp lệ" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
     },
-    '/api/candidate/profile/academic-progress': {
+    "/api/candidate/profile/academic-progress": {
       put: {
-        tags: ['Candidate Profile'],
-        summary: 'Nhập/chỉnh sửa tiến trình học theo lớp 10/11/12',
+        tags: ["Candidate Profile"],
+        summary: "Nhập/chỉnh sửa tiến trình học theo lớp 10/11/12",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                type: 'object',
+                type: "object",
                 properties: {
                   grade_10: {
-                    type: 'object',
+                    type: "object",
                     properties: {
-                      school_name: { type: 'string', example: 'THPT A' },
-                      avg_score: { type: 'number', format: 'float', example: 8.1 },
+                      school_name: { type: "string", example: "THPT A" },
+                      avg_score: {
+                        type: "number",
+                        format: "float",
+                        example: 8.1,
+                      },
                     },
                   },
                   grade_11: {
-                    type: 'object',
+                    type: "object",
                     properties: {
-                      school_name: { type: 'string', example: 'THPT A' },
-                      avg_score: { type: 'number', format: 'float', example: 8.3 },
+                      school_name: { type: "string", example: "THPT A" },
+                      avg_score: {
+                        type: "number",
+                        format: "float",
+                        example: 8.3,
+                      },
                     },
                   },
                   grade_12: {
-                    type: 'object',
+                    type: "object",
                     properties: {
-                      school_name: { type: 'string', example: 'THPT A' },
-                      avg_score: { type: 'number', format: 'float', example: 8.6 },
+                      school_name: { type: "string", example: "THPT A" },
+                      avg_score: {
+                        type: "number",
+                        format: "float",
+                        example: 8.6,
+                      },
                     },
                   },
                 },
@@ -561,45 +663,51 @@ const swaggerSpec = {
           },
         },
         responses: {
-          200: { description: 'Cập nhật tiến trình học thành công' },
-          400: { description: 'Dữ liệu gửi lên không hợp lệ' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy hồ sơ thí sinh' },
+          200: { description: "Cập nhật tiến trình học thành công" },
+          400: { description: "Dữ liệu gửi lên không hợp lệ" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
     },
-    '/api/candidate/profile/documents': {
+    "/api/candidate/profile/documents": {
       get: {
-        tags: ['Candidate Profile'],
-        summary: 'Lấy danh sách minh chứng đã upload',
+        tags: ["Candidate Profile"],
+        summary: "Lấy danh sách minh chứng đã upload",
         security: [{ bearerAuth: [] }],
         responses: {
-          200: { description: 'Lấy danh sách minh chứng thành công' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy hồ sơ thí sinh' },
+          200: { description: "Lấy danh sách minh chứng thành công" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
       post: {
-        tags: ['Candidate Profile'],
-        summary: 'Upload minh chứng (PDF/JPEG/PNG)',
+        tags: ["Candidate Profile"],
+        summary: "Upload minh chứng (PDF/JPEG/PNG)",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            'multipart/form-data': {
+            "multipart/form-data": {
               schema: {
-                type: 'object',
-                required: ['document_type', 'file'],
+                type: "object",
+                required: ["document_type", "file"],
                 properties: {
                   document_type: {
-                    type: 'string',
-                    enum: ['TRANSCRIPT', 'CITIZEN_ID', 'PORTRAIT', 'CERTIFICATE', 'OTHER'],
+                    type: "string",
+                    enum: [
+                      "TRANSCRIPT",
+                      "CITIZEN_ID",
+                      "PORTRAIT",
+                      "CERTIFICATE",
+                      "OTHER",
+                    ],
                   },
                   file: {
-                    type: 'string',
-                    format: 'binary',
+                    type: "string",
+                    format: "binary",
                   },
                 },
               },
@@ -607,63 +715,78 @@ const swaggerSpec = {
           },
         },
         responses: {
-          201: { description: 'Upload minh chứng thành công' },
-          400: { description: 'Dữ liệu gửi lên không hợp lệ' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy hồ sơ thí sinh' },
+          201: { description: "Upload minh chứng thành công" },
+          400: { description: "Dữ liệu gửi lên không hợp lệ" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
     },
-    '/api/candidate/profile/documents/{documentId}': {
+    "/api/candidate/profile/documents/{documentId}": {
       delete: {
-        tags: ['Candidate Profile'],
-        summary: 'Xóa minh chứng (soft delete và xóa file trên Cloudinary)',
+        tags: ["Candidate Profile"],
+        summary: "Xóa minh chứng (soft delete và xóa file trên Cloudinary)",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
-            name: 'documentId',
-            in: 'path',
+            name: "documentId",
+            in: "path",
             required: true,
-            schema: { type: 'integer', minimum: 1 },
+            schema: { type: "integer", minimum: 1 },
           },
         ],
         responses: {
-          200: { description: 'Xóa minh chứng thành công' },
-          400: { description: 'documentId không hợp lệ' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đúng vai trò THÍ SINH' },
-          404: { description: 'Không tìm thấy minh chứng' },
-          500: { description: 'Xóa Cloudinary hoặc soft delete thất bại' },
+          200: { description: "Xóa minh chứng thành công" },
+          400: { description: "documentId không hợp lệ" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy minh chứng" },
+          500: { description: "Xóa Cloudinary hoặc soft delete thất bại" },
         },
       },
     },
-    '/api/admin/candidates/{citizenId}/exam-scores-by-group': {
+    "/api/admin/candidates/{citizenId}/exam-scores-by-group": {
       put: {
-        tags: ['Admin'],
-        summary: 'Admin cập nhật điểm thi theo khối KHTN/KHXH cho thí sinh',
+        tags: ["Admin"],
+        summary: "Admin cập nhật điểm thi theo khối KHTN/KHXH cho thí sinh",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
-            name: 'citizenId',
-            in: 'path',
+            name: "citizenId",
+            in: "path",
             required: true,
-            schema: { type: 'integer', minimum: 1 },
+            schema: { type: "integer", minimum: 1 },
           },
         ],
         requestBody: {
           required: true,
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                type: 'object',
-                required: ['science_group', 'scores'],
+                type: "object",
+                required: ["science_group", "scores"],
                 properties: {
-                  science_group: { type: 'string', enum: ['NATURAL', 'SOCIAL'] },
+                  science_group: {
+                    type: "string",
+                    enum: ["NATURAL", "SOCIAL"],
+                  },
                   scores: {
-                    type: 'object',
-                    additionalProperties: { type: 'number', format: 'float', minimum: 0, maximum: 10 },
-                    example: { TOAN: 8.5, VAN: 8.25, ANH: 8.0, LY: 8.0, HOA: 7.75, SINH: 8.5 },
+                    type: "object",
+                    additionalProperties: {
+                      type: "number",
+                      format: "float",
+                      minimum: 0,
+                      maximum: 10,
+                    },
+                    example: {
+                      TOAN: 8.5,
+                      VAN: 8.25,
+                      ANH: 8.0,
+                      LY: 8.0,
+                      HOA: 7.75,
+                      SINH: 8.5,
+                    },
                   },
                 },
               },
@@ -671,14 +794,259 @@ const swaggerSpec = {
           },
         },
         responses: {
-          200: { description: 'Cập nhật điểm theo khối thành công' },
-          400: { description: 'Payload không hợp lệ hoặc sai tổ hợp môn theo khối' },
-          401: { description: 'Chưa xác thực' },
-          403: { description: 'Không đủ quyền ADMIN' },
-          404: { description: 'Không tìm thấy thí sinh theo citizenId' },
+          200: { description: "Cập nhật điểm theo khối thành công" },
+          400: {
+            description: "Payload không hợp lệ hoặc sai tổ hợp môn theo khối",
+          },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đủ quyền ADMIN" },
+          404: { description: "Không tìm thấy thí sinh theo citizenId" },
         },
       },
     },
+    // ─── Admission Combinations (per Major) ──────────────────────
+    "/api/universities/{universityCode}/majors/{majorCode}/combinations": {
+      get: {
+        tags: ["AdmissionCombinations"],
+        summary: "Danh sach to hop xet tuyen cua mot nganh (co phan trang)",
+        parameters: [
+          {
+            name: "universityCode",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              example: "HUST",
+              description: "Mã viết tắt của trường",
+            },
+          },
+          {
+            name: "majorCode",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              example: "CNTT",
+              description: "Mã viết tắt của ngành",
+            },
+          },
+          {
+            name: "page",
+            in: "query",
+            schema: { type: "integer", minimum: 1, default: 1 },
+          },
+          {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer", minimum: 1, default: 10 },
+          },
+        ],
+        responses: {
+          200: { description: "Lay danh sach to hop thanh cong" },
+          404: { description: "Khong tim thay truong hoac nganh" },
+        },
+      },
+      post: {
+        tags: ["AdmissionCombinations"],
+        summary: "Them to hop xet tuyen cho mot nganh",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "universityCode",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              example: "HUST",
+              description: "Mã viết tắt của trường",
+            },
+          },
+          {
+            name: "majorCode",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              example: "CNTT",
+              description: "Mã viết tắt của ngành",
+            },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["code", "subject_1", "subject_2", "subject_3"],
+                properties: {
+                  code: {
+                    type: "string",
+                    example: "A00",
+                    description: "Mã tổ hợp",
+                  },
+                  subject_1: { type: "string", example: "Toan" },
+                  subject_2: { type: "string", example: "Ly" },
+                  subject_3: { type: "string", example: "Hoa" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: { description: "Them to hop thanh cong" },
+          400: { description: "Du lieu khong hop le" },
+          404: { description: "Khong tim thay truong hoac nganh" },
+          409: { description: "Ma to hop da ton tai trong nganh nay" },
+        },
+      },
+    },
+    "/api/universities/{universityCode}/majors/{majorCode}/combinations/{combinationId}":
+      {
+        get: {
+          tags: ["AdmissionCombinations"],
+          summary: "Chi tiet to hop xet tuyen (tim bang id TH+6)",
+          parameters: [
+            {
+              name: "universityCode",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                example: "HUST",
+                description: "Mã viết tắt của trường",
+              },
+            },
+            {
+              name: "majorCode",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                example: "CNTT",
+                description: "Mã viết tắt của ngành",
+              },
+            },
+            {
+              name: "combinationId",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                pattern: "^TH\\d{6}$",
+                example: "TH000001",
+                description: "Mã tự động (TH + 6 số)",
+              },
+            },
+          ],
+          responses: {
+            200: { description: "Lay thong tin to hop thanh cong" },
+            404: { description: "Khong tim thay to hop" },
+          },
+        },
+        put: {
+          tags: ["AdmissionCombinations"],
+          summary: "Sua to hop xet tuyen cua mot nganh",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: "universityCode",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                example: "HUST",
+                description: "Mã viết tắt của trường",
+              },
+            },
+            {
+              name: "majorCode",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                example: "CNTT",
+                description: "Mã viết tắt của ngành",
+              },
+            },
+            {
+              name: "combinationId",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                pattern: "^TH\\d{6}$",
+                example: "TH000001",
+                description: "Mã tự động (TH + 6 số)",
+              },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    code: { type: "string", example: "A00" },
+                    subject_1: { type: "string", example: "Toan" },
+                    subject_2: { type: "string", example: "Ly" },
+                    subject_3: { type: "string", example: "Hoa" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: { description: "Cap nhat to hop thanh cong" },
+            400: { description: "Du lieu khong hop le" },
+            404: { description: "Khong tim thay to hop" },
+            409: { description: "Ma to hop da ton tai trong nganh nay" },
+          },
+        },
+        delete: {
+          tags: ["AdmissionCombinations"],
+          summary: "Xoa to hop xet tuyen cua mot nganh",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: "universityCode",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                example: "HUST",
+                description: "Mã viết tắt của trường",
+              },
+            },
+            {
+              name: "majorCode",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                example: "CNTT",
+                description: "Mã viết tắt của ngành",
+              },
+            },
+            {
+              name: "combinationId",
+              in: "path",
+              required: true,
+              schema: {
+                type: "string",
+                pattern: "^TH\\d{6}$",
+                example: "TH000001",
+                description: "Mã tự động (TH + 6 số)",
+              },
+            },
+          ],
+          responses: {
+            200: { description: "Xoa to hop thanh cong" },
+            404: { description: "Khong tim thay truong, nganh, hoac to hop" },
+          },
+        },
+      },
   },
 } as const;
 
