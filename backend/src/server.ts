@@ -14,6 +14,8 @@ import universityRoutes from './routes/university.routes';
 import candidateProfileRoutes from './routes/candidate-profile.routes';
 import adminRoutes from './routes/admin.routes';
 import admissionCombinationRoutes from './routes/admissionCombination.routes';
+import combinationRoutes from './routes/combination.routes';
+import combinationAssignmentRoutes from './routes/combinationAssignment.routes';
 
 dotenv.config();
 
@@ -38,6 +40,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/universities', universityRoutes);
 app.use('/api/universities/:universityCode/majors/:majorCode/combinations', admissionCombinationRoutes);
+app.use('/api/universities/:universityCode/majors/:majorCode/assigned-combinations', combinationAssignmentRoutes);
+app.use('/api/combinations', combinationRoutes);
 app.use('/api/candidate', candidateProfileRoutes);
 app.use('/api/admin', adminRoutes);
 
