@@ -1,42 +1,32 @@
 export interface LoginRequest {
-  citizenId: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  fullName: string;
-  citizenId: string;
   email: string;
   password: string;
 }
-
-export interface RegisterPayload {
-  ho_ten: string;
-  email: string;
-  mat_khau: string;
-  xac_nhan_mat_khau: string;
-  so_cccd: string;
-}
-
-export type RegisterFormData = RegisterPayload;
 
 export interface User {
-  ma_nguoi_dung: number;
+  id: number;
   email: string;
-  ho_ten: string;
-  vai_tro: 'THI_SINH' | 'QUAN_TRI_VIEN';
+  role: 'CANDIDATE' | 'ADMIN';
+  status: 'ACTIVE' | 'LOCKED' | 'PENDING';
+  last_login_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthResponseData {
-  ma_nguoi_dung: number;
-  email: string;
-  ho_ten: string;
-  vai_tro: 'THI_SINH' | 'QUAN_TRI_VIEN';
   token: string;
+  user: User;
 }
 
 export interface AuthResponse {
   success: boolean;
   message: string;
   data: AuthResponseData;
+}
+
+export interface RegisterPayload {
+  citizen_id: number;
+  full_name: string;
+  email: string;
+  password: string;
 }

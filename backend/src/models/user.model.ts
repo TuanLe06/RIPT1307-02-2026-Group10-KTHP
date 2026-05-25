@@ -32,6 +32,16 @@ export class UserModel {
     return rows.length ? (rows[0] as User) : null;
   }
 
+  static async findAuthByCitizenId(citizenId: number): Promise<User | null> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT u.* FROM users u
+       JOIN candidate_profiles cp ON u.id = cp.user_id
+       WHERE cp.citizen_id = ?`,
+      [citizenId]
+    );
+    return rows.length ? (rows[0] as User) : null;
+  }
+
   static async existsByEmail(email: string): Promise<boolean> {
     const [rows] = await pool.execute<RowDataPacket[]>(
       'SELECT 1 FROM users WHERE email = ? LIMIT 1',
