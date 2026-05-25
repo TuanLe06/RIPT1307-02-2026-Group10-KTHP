@@ -1,122 +1,283 @@
-import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import pool from '../config/database';
-import { CandidateProfile, User } from '../types';
-
-type UserPublic = Omit<User, 'password_hash'>;
-
-const USER_PUBLIC_FIELDS = `
-  id, email, role, status, last_login_at, created_at, updated_at
-`;
+import { query, queryOne } from '../config/database';
+import { User } from '../types';
 
 export class UserModel {
-  static async findAll(page = 1, limit = 10): Promise<{ users: UserPublic[]; total: number }> {
+  static async findAll(page = 1, limit = 10, search = '') {
     const offset = (page - 1) * limit;
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT ${USER_PUBLIC_FIELDS} FROM users LIMIT ? OFFSET ?`,
-      [limit, offset]
+    const like = `%${search}%`;
+
+    const rows = await query<User>(
+      `SELECT 
+        id,
+        email,
+        full_name,
+        role,
+        status,
+        last_login_at,
+        created_at,
+        updated_at
+       FROM users
+       WHERE full_name LIKE ? OR email LIKE ?
+       ORDER BY created_at DESC
+       LIMIT ?
+       OFFSET ?`,
+      [like, like, limit, offset]
     );
-    const [countRows] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as total FROM users');
-    return { users: rows as UserPublic[], total: Number(countRows[0].total) };
+
+    const cnt = await queryOne<{ total: number }>(
+      `SELECT COUNT(*) as total
+       FROM users
+       WHERE full_name LIKE ? OR email LIKE ?`,
+      [like, like]
+    );
+
+    return {
+      users: rows,
+      total: Number(cnt?.total ?? 0),
+    };
   }
 
-  static async findById(id: number): Promise<UserPublic | null> {
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT ${USER_PUBLIC_FIELDS} FROM users WHERE id = ?`,
+  static async findById(id: number): Promise<User | null> {
+    return queryOne<User>(
+      `SELECT
+        id,
+        email,
+        full_name,
+        role,
+        status,
+        last_login_at,
+        created_at,
+        updated_at
+       FROM users
+       WHERE id = ?`,
       [id]
     );
-    return rows.length ? (rows[0] as UserPublic) : null;
+  }
+
+  static async findByEmail(email: string): Promise<User | null> {
+    return queryOne<User>(
+      `SELECT * FROM users WHERE email = ?`,
+      [email]
+    );
   }
 
   static async findAuthByEmail(email: string): Promise<User | null> {
-    const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM users WHERE email = ?', [email]);
-    return rows.length ? (rows[0] as User) : null;
+    return queryOne<User>(
+      `SELECT * FROM users WHERE email = ?`,
+      [email]
+    );
   }
 
   static async existsByEmail(email: string): Promise<boolean> {
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      'SELECT 1 FROM users WHERE email = ? LIMIT 1',
+    const user = await queryOne(
+      `SELECT id FROM users WHERE email = ?`,
       [email]
     );
-    return rows.length > 0;
+
+    return !!user;
   }
 
-  static async existsCandidateByCitizenId(citizenId: number): Promise<boolean> {
-    const [rows] = await pool.execute<RowDataPacket[]>(
-      'SELECT 1 FROM candidate_profiles WHERE citizen_id = ? LIMIT 1',
+  static async existsCandidateByCitizenId(
+    citizenId: number
+  ): Promise<boolean> {
+    const row = await queryOne(
+      `SELECT citizen_id
+       FROM candidate_profiles
+       WHERE citizen_id = ?`,
       [citizenId]
     );
-    return rows.length > 0;
+
+    return !!row;
   }
 
-  static async createCandidateWithProfile(data: {
-    citizenId: number;
-    fullName: string;
+  static async findByResetToken(token: string): Promise<User | null> {
+    return queryOne<User>(
+      `SELECT u.*
+       FROM users u
+       JOIN password_reset_tokens t
+         ON t.user_id = u.id
+       WHERE t.token = ?
+         AND t.expires_at > NOW()
+         AND t.used_at IS NULL`,
+      [token]
+    );
+  }
+
+  static async create(data: {
     email: string;
-    passwordHash: string;
-  }): Promise<UserPublic> {
-    const connection = await pool.getConnection();
-    try {
-      await connection.beginTransaction();
-      const userId = await this.insertCandidateUser(connection, data);
-      await this.insertCandidateProfile(connection, {
-        citizen_id: data.citizenId,
-        user_id: userId,
-        full_name: data.fullName,
-      });
-      await connection.commit();
-      const user = await this.findById(userId);
-      if (!user) throw new Error('Unable to fetch created user');
-      return user;
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
+    password_hash: string;
+    full_name?: string;
+    role: string;
+  }): Promise<User> {
+    await query(
+      `INSERT INTO users (
+        email,
+        password_hash,
+        full_name,
+        role
+      )
+      VALUES (?, ?, ?, ?)`,
+      [
+        data.email,
+        data.password_hash,
+        data.full_name ?? null,
+        data.role,
+      ]
+    );
+
+    const user = await queryOne<User>(
+      `SELECT
+        id,
+        email,
+        full_name,
+        role,
+        status,
+        created_at,
+        updated_at
+       FROM users
+       WHERE email = ?`,
+      [data.email]
+    );
+
+    if (!user) {
+      throw new Error('Failed to create user');
     }
+
+    return user;
   }
 
-  static async touchLastLoginAt(userId: number): Promise<void> {
-    await pool.execute('UPDATE users SET last_login_at = NOW() WHERE id = ?', [userId]);
+  static async createCandidateWithProfile(data: any): Promise<User> {
+    await query(
+      `INSERT INTO users (
+        email,
+        password_hash,
+        role
+      )
+      VALUES (?, ?, ?)`,
+      [
+        data.email,
+        data.password_hash,
+        'CANDIDATE',
+      ]
+    );
+
+    const user = await queryOne<User>(
+      `SELECT * FROM users WHERE email = ?`,
+      [data.email]
+    );
+
+    if (!user) {
+      throw new Error('Cannot create user');
+    }
+
+    await query(
+      `INSERT INTO candidate_profiles (
+        user_id,
+        citizen_id,
+        full_name,
+        phone,
+        address
+      )
+      VALUES (?, ?, ?, ?, ?)`,
+      [
+        user.id,
+        data.citizen_id,
+        data.full_name,
+        data.phone ?? null,
+        data.address ?? null,
+      ]
+    );
+
+    return user;
   }
 
   static async update(
     id: number,
-    data: Partial<Pick<User, 'role' | 'status'>>
-  ): Promise<UserPublic | null> {
-    const entries = Object.entries(data).filter(([, value]) => value !== undefined);
-    if (entries.length === 0) return this.findById(id);
+    data: Record<string, any>
+  ): Promise<User | null> {
+    const allowed = [
+      'full_name',
+      'status',
+      'password_hash',
+      'last_login_at',
+    ];
 
-    const fields = entries.map(([key]) => `${key} = ?`).join(', ');
-    const values = entries.map(([, value]) => value);
-    await pool.execute(`UPDATE users SET ${fields}, updated_at = NOW() WHERE id = ?`, [...values, id]);
+    const fields = Object.keys(data).filter((k) =>
+      allowed.includes(k)
+    );
+
+    if (!fields.length) {
+      return this.findById(id);
+    }
+
+    const sets = fields.map((f) => `${f} = ?`).join(', ');
+    const vals = fields.map((f) => data[f]);
+
+    await query(
+      `UPDATE users
+       SET ${sets},
+           updated_at = NOW()
+       WHERE id = ?`,
+      [...vals, id]
+    );
+
     return this.findById(id);
   }
 
   static async delete(id: number): Promise<boolean> {
-    const [result] = await pool.execute<ResultSetHeader>('DELETE FROM users WHERE id = ?', [id]);
-    return result.affectedRows > 0;
-  }
+    const user = await this.findById(id);
 
-  private static async insertCandidateUser(
-    connection: PoolConnection,
-    data: { email: string; passwordHash: string }
-  ): Promise<number> {
-    const [result] = await connection.execute<ResultSetHeader>(
-      `INSERT INTO users (email, password_hash, role, status)
-       VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
-      [data.email, data.passwordHash]
+    if (!user) {
+      return false;
+    }
+
+    await query(
+      `DELETE FROM users WHERE id = ?`,
+      [id]
     );
-    return result.insertId;
+
+    return true;
   }
 
-  private static async insertCandidateProfile(
-    connection: PoolConnection,
-    profile: Pick<CandidateProfile, 'citizen_id' | 'user_id' | 'full_name'>
+  static async touchLastLoginAt(userId: number): Promise<void> {
+    await query(
+      `UPDATE users
+       SET last_login_at = NOW()
+       WHERE id = ?`,
+      [userId]
+    );
+  }
+
+  static async saveResetToken(
+    userId: number,
+    token: string,
+    expiresAt: Date
   ): Promise<void> {
-    await connection.execute(
-      `INSERT INTO candidate_profiles (citizen_id, user_id, full_name)
-       VALUES (?, ?, ?)`,
-      [profile.citizen_id, profile.user_id, profile.full_name]
+    await query(
+      `UPDATE password_reset_tokens
+       SET used_at = NOW()
+       WHERE user_id = ?
+         AND used_at IS NULL`,
+      [userId]
+    );
+
+    await query(
+      `INSERT INTO password_reset_tokens (
+        user_id,
+        token,
+        expires_at
+      )
+      VALUES (?, ?, ?)`,
+      [userId, token, expiresAt]
+    );
+  }
+
+  static async markResetTokenUsed(token: string): Promise<void> {
+    await query(
+      `UPDATE password_reset_tokens
+       SET used_at = NOW()
+       WHERE token = ?`,
+      [token]
     );
   }
 }

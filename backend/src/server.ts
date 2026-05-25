@@ -13,6 +13,8 @@ import userRoutes from './routes/user.routes';
 import universityRoutes from './routes/university.routes';
 import candidateProfileRoutes from './routes/candidate-profile.routes';
 import adminRoutes from './routes/admin.routes';
+import adminFullRoutes from './routes/admin-full.routes';
+import candidateRoutes from './routes/candidate.routes';
 
 dotenv.config();
 
@@ -37,7 +39,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/universities', universityRoutes);
 app.use('/api/candidate', candidateProfileRoutes);
+app.use('/api/candidate-applications', candidateRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminFullRoutes);
 
 // Error handling
 app.use(notFound);
