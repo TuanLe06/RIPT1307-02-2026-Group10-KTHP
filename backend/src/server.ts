@@ -13,6 +13,7 @@ import userRoutes from './routes/user.routes';
 import universityRoutes from './routes/university.routes';
 import candidateProfileRoutes from './routes/candidate-profile.routes';
 import adminRoutes from './routes/admin.routes';
+import admissionCombinationRoutes from './routes/admissionCombination.routes';
 
 dotenv.config();
 
@@ -36,8 +37,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/universities', universityRoutes);
+app.use('/api/universities/:universityCode/majors/:majorCode/combinations', admissionCombinationRoutes);
 app.use('/api/candidate', candidateProfileRoutes);
 app.use('/api/admin', adminRoutes);
+
 
 // Error handling
 app.use(notFound);

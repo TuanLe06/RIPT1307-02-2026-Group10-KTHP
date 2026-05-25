@@ -15,7 +15,6 @@ export interface University {
 export interface Major {
   id: string;
   university_id: string;
-  admission_combinations_id: number;
   code: string;
   name: string;
   description: string | null;
