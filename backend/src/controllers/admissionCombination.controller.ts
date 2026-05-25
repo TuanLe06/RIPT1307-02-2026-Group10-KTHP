@@ -227,6 +227,161 @@ export const getCombinations = async (
   }
 };
 
+export const getAllCombinationsGlobal = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  try {
+    const result = await AdmissionCombinationModel.findAll(page, limit);
+    res.json({
+      success: true,
+      message: "Lấy danh sách tổ hợp xét tuyển thành công",
+      data: result.combinations,
+      pagination: {
+        page,
+        limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / limit),
+      },
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getAllCombinationsList = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const combinations = await AdmissionCombinationModel.findAllWithoutPagination();
+    res.json({
+      success: true,
+      message: "Lấy danh sách tổ hợp xét tuyển thành công",
+      data: combinations,
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createCombinationGlobal = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      success: false,
+      message: "Dữ liệu không hợp lệ",
+      errors: errors.array(),
+    });
+    return;
+  }
+
+  const { code, subject_1, subject_2, subject_3 } = req.body;
+
+  if (await AdmissionCombinationModel.existsByCodeGlobal(code.trim())) {
+    res.status(409).json({ success: false, message: "Mã tổ hợp đã tồn tại" });
+    return;
+  }
+
+  try {
+    const combination = await AdmissionCombinationModel.createGlobal({
+      code: code.trim(),
+      subject_1: subject_1.trim(),
+      subject_2: subject_2.trim(),
+      subject_3: subject_3.trim(),
+    });
+    res.status(201).json({
+      success: true,
+      message: "Thêm tổ hợp xét tuyển thành công",
+      data: combination,
+    });
+  } catch (error) {
+    if ((error as { code?: string }).code === "ER_DUP_ENTRY") {
+      res.status(409).json({ success: false, message: "Mã tổ hợp đã tồn tại" });
+      return;
+    }
+    throw error;
+  }
+};
+
+export const updateCombinationGlobal = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      success: false,
+      message: "Dữ liệu không hợp lệ",
+      errors: errors.array(),
+    });
+    return;
+  }
+
+  const combinationId = req.params.combinationId as string;
+  const { code, subject_1, subject_2, subject_3 } = req.body;
+
+  const existing = await AdmissionCombinationModel.findById(combinationId);
+  if (!existing) {
+    res.status(404).json({ success: false, message: "Không tìm thấy tổ hợp xét tuyển" });
+    return;
+  }
+
+  if (code && code !== existing.code && await AdmissionCombinationModel.existsByCodeGlobal(code.trim(), combinationId)) {
+    res.status(409).json({ success: false, message: "Mã tổ hợp đã tồn tại" });
+    return;
+  }
+
+  try {
+    const combination = await AdmissionCombinationModel.update(combinationId, {
+      code: code?.trim(),
+      subject_1: subject_1?.trim(),
+      subject_2: subject_2?.trim(),
+      subject_3: subject_3?.trim(),
+    });
+    res.json({
+      success: true,
+      message: "Cập nhật tổ hợp xét tuyển thành công",
+      data: combination,
+    });
+  } catch (error) {
+    if ((error as { code?: string }).code === "ER_DUP_ENTRY") {
+      res.status(409).json({ success: false, message: "Mã tổ hợp đã tồn tại" });
+      return;
+    }
+    throw error;
+  }
+};
+
+export const deleteCombinationGlobal = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const combinationId = req.params.combinationId as string;
+
+  const existing = await AdmissionCombinationModel.findById(combinationId);
+  if (!existing) {
+    res.status(404).json({ success: false, message: "Không tìm thấy tổ hợp xét tuyển" });
+    return;
+  }
+
+  try {
+    await AdmissionCombinationModel.delete(combinationId);
+    res.json({
+      success: true,
+      message: "Xóa tổ hợp xét tuyển thành công",
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getCombinationDetail = async (
   req: Request,
   res: Response,

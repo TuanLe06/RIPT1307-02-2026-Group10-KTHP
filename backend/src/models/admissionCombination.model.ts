@@ -162,4 +162,92 @@ export class AdmissionCombinationModel {
       [majorId, combinationId],
     );
   }
+
+  static async findAll(
+    page = 1,
+    limit = 10,
+  ): Promise<{ combinations: AdmissionCombination[]; total: number }> {
+    const pageNum = Math.trunc(page) || 1;
+    const limitNum = Math.trunc(limit) || 10;
+    const offset = (pageNum - 1) * limitNum;
+
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT ${COMBINATION_FIELDS} FROM admission_combinations ac
+       ORDER BY ac.created_at DESC
+       LIMIT ${limitNum} OFFSET ${offset}`,
+    );
+    const [countRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) as total FROM admission_combinations`,
+    );
+    return {
+      combinations: rows as AdmissionCombination[],
+      total: Number(countRows[0].total),
+    };
+  }
+
+  static async findIdsByMajor(majorId: string): Promise<string[]> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT combination_id FROM major_combinations WHERE major_id = ?`,
+      [majorId],
+    );
+    return rows.map((r) => r.combination_id as string);
+  }
+
+  static async createGlobal(data: {
+    code: string;
+    subject_1: string;
+    subject_2: string;
+    subject_3: string;
+  }): Promise<AdmissionCombination> {
+    let id = generateAdmissionCombinationCode();
+    while (await AdmissionCombinationModel.findById(id)) {
+      id = generateAdmissionCombinationCode();
+    }
+    await pool.execute<ResultSetHeader>(
+      `INSERT IGNORE INTO admission_combinations (id, code, subject_1, subject_2, subject_3)
+       VALUES (?, ?, ?, ?, ?)`,
+      [id, data.code, data.subject_1, data.subject_2, data.subject_3],
+    );
+    const existing = await AdmissionCombinationModel.findByCode(data.code);
+    if (!existing) throw new Error("Failed to fetch created combination");
+    return existing;
+  }
+
+  static async existsByCodeGlobal(code: string, excludeId?: string): Promise<boolean> {
+    if (excludeId) {
+      const [rows] = await pool.execute<RowDataPacket[]>(
+        `SELECT 1 FROM admission_combinations WHERE code = ? AND id != ? LIMIT 1`,
+        [code, excludeId],
+      );
+      return rows.length > 0;
+    }
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT 1 FROM admission_combinations WHERE code = ? LIMIT 1`,
+      [code],
+    );
+    return rows.length > 0;
+  }
+
+  static async findAllWithoutPagination(): Promise<AdmissionCombination[]> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT ${COMBINATION_FIELDS} FROM admission_combinations ac ORDER BY ac.code ASC`,
+    );
+    return rows as AdmissionCombination[];
+  }
+
+  static async assignToMajor(majorId: string, combinationIds: string[]): Promise<void> {
+    await pool.execute(
+      `DELETE FROM major_combinations WHERE major_id = ?`,
+      [majorId],
+    );
+    if (combinationIds.length > 0) {
+      const placeholders = combinationIds.map(() => '(?, ?, NULL)').join(', ');
+      const values: string[] = [];
+      combinationIds.forEach((id) => { values.push(majorId, id); });
+      await pool.execute(
+        `INSERT INTO major_combinations (major_id, combination_id, min_score) VALUES ${placeholders}`,
+        values,
+      );
+    }
+  }
 }
