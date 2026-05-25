@@ -1,0 +1,240 @@
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+import { ApplicationModel } from '../models/application.model';
+import { CandidateProfileModel } from '../models/candidate-profile.model';
+import { MajorModel, UniversityModel } from '../models/university.model';
+import { MajorCombinationModel } from '../models/combination.model';
+import { EmailNotificationModel, ApplicationStatusLogModel } from '../models/notification.model';
+
+// ===================== CANDIDATE APPLICATION TRACKING =====================
+
+export const createApplication = async (req: Request, res: Response): Promise<void> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    return;
+  }
+
+  try {
+    const { university_id, major_id, combination_id } = req.body;
+
+    const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
+    if (!candidateProfile) {
+      res.status(404).json({ success: false, message: 'Candidate profile not found' });
+      return;
+    }
+
+    const university = await UniversityModel.findById(university_id.toString());
+    if (!university) {
+      res.status(404).json({ success: false, message: 'University not found' });
+      return;
+    }
+
+    const major = await MajorModel.findById(major_id.toString());
+    if (!major) {
+      res.status(404).json({ success: false, message: 'Major not found' });
+      return;
+    }
+
+    const application = await ApplicationModel.create({
+      candidate_id: candidateProfile.citizen_id,
+      university_id,
+      major_id,
+      combination_id,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Application created successfully',
+      data: application,
+    });
+  } catch (error) {
+    console.error('Error creating application:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const submitApplication = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { application_id } = req.params;
+
+    const application = await ApplicationModel.findById(parseInt(application_id as string));
+    if (!application) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
+    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+      res.status(403).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const submitted = await ApplicationModel.submit(parseInt(application_id as string));
+
+    // Log status change
+    await ApplicationStatusLogModel.create({
+      application_id: parseInt(application_id as string),
+      old_status: 'DRAFT',
+      new_status: 'SUBMITTED',
+      changed_by: req.user!.id,
+      note: 'Application submitted by candidate',
+    });
+
+    // Create notification
+    const user = req.user!;
+    await EmailNotificationModel.create({
+      receiver_id: req.user!.id,
+      receiver_email: user.email,
+      subject: 'Hồ sơ nộp thành công',
+      content: `Hồ sơ với mã ${application.application_code} đã được nộp thành công. Chúng tôi sẽ xem xét hồ sơ của bạn sớm nhất.`,
+      type: 'APPLICATION_SUBMITTED',
+    });
+
+    res.json({
+      success: true,
+      message: 'Application submitted successfully',
+      data: submitted,
+    });
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const getApplications = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
+    if (!candidateProfile) {
+      res.status(404).json({ success: false, message: 'Candidate profile not found' });
+      return;
+    }
+
+    const result = await ApplicationModel.findByCandidateId(candidateProfile.citizen_id, page, limit);
+
+    res.json({
+      success: true,
+      data: result.applications,
+      pagination: {
+        page,
+        limit,
+        total: result.total,
+        pages: Math.ceil(result.total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Error getting applications:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const getApplicationDetails = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { application_id } = req.params;
+
+    const application = await ApplicationModel.findById(parseInt(application_id as string));
+    if (!application) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
+    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+      res.status(403).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const statusLogs = await ApplicationStatusLogModel.findByApplicationId(parseInt(application_id as string));
+
+    res.json({
+      success: true,
+      data: {
+        ...application,
+        status_logs: statusLogs,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting application details:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const getApplicationStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { application_id } = req.params;
+
+    const application = await ApplicationModel.findById(parseInt(application_id as string));
+    if (!application) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
+    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+      res.status(403).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    const statusMap = {
+      DRAFT: { display: 'Nháp', color: 'gray' },
+      SUBMITTED: { display: 'Đã nộp', color: 'blue' },
+      PENDING_REVIEW: { display: 'Chờ duyệt', color: 'orange' },
+      APPROVED: { display: 'Đã duyệt', color: 'green' },
+      REJECTED: { display: 'Từ chối', color: 'red' },
+      PASSED: { display: 'Đã đỗ', color: 'green' },
+      FAILED: { display: 'Không đỗ', color: 'red' },
+    };
+
+    res.json({
+      success: true,
+      data: {
+        application_code: application.application_code,
+        status: application.status,
+        status_display: statusMap[application.status as keyof typeof statusMap],
+        submitted_at: application.submitted_at,
+        reviewed_at: application.reviewed_at,
+        reject_reason: application.reject_reason,
+      },
+    });
+  } catch (error) {
+    console.error('Error getting application status:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const deleteApplication = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { application_id } = req.params;
+
+    const application = await ApplicationModel.findById(parseInt(application_id as string));
+    if (!application) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
+    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+      res.status(403).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    if (application.status !== 'DRAFT') {
+      res.status(400).json({ success: false, message: 'Only draft applications can be deleted' });
+      return;
+    }
+
+    const deleted = await ApplicationModel.delete(parseInt(application_id as string));
+    if (!deleted) {
+      res.status(404).json({ success: false, message: 'Application not found' });
+      return;
+    }
+
+    res.json({ success: true, message: 'Application deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting application:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
