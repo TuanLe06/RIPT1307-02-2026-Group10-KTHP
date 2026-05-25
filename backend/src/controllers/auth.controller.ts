@@ -88,7 +88,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   const { email, password } = req.body as { email: string; password: string };
-  const user = await UserModel.findAuthByEmail(email.toLowerCase().trim());
+  const identifier = email.trim();
+
+  let user = await UserModel.findAuthByEmail(identifier.toLowerCase());
+  if (!user && /^\d+$/.test(identifier)) {
+    user = await UserModel.findAuthByCitizenId(Number(identifier));
+  }
   if (!user) {
     res.status(401).json({
       success: false,

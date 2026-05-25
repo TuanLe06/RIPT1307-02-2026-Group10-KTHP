@@ -1,42 +1,34 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Form, Input, Button, App } from 'antd';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PasswordInput from '../components/common/PasswordInput';
-import { registerSchema } from '../validations/auth';
 import { authApi } from '../api/auth';
-import { useAuthStore } from '../store/auth';
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const { message } = App.useApp();
-  const setAuth = useAuthStore((s) => s.setAuth);
 
   const onFinish = async (values: Record<string, string>) => {
-    const result = registerSchema.safeParse(values);
-    if (!result.success) {
-      message.error(result.error.issues[0].message);
-      return;
-    }
-
     setLoading(true);
     try {
-      const res = await authApi.register(result.data);
-      if (res.success && res.data) {
-        setAuth(
-          {
-            ma_nguoi_dung: res.data.ma_nguoi_dung,
-            email: res.data.email,
-            ho_ten: res.data.ho_ten,
-            vai_tro: res.data.vai_tro,
-          },
-          res.data.token,
-        );
+      const res = await authApi.register({
+        citizen_id: Number(values.so_cccd),
+        full_name: values.ho_ten,
+        email: values.email,
+        password: values.mat_khau,
+      });
+      if (res.success) {
         message.success('Đăng ký tài khoản thành công');
+        navigate('/login', { replace: true });
       }
-    } catch {
-      message.error('Đăng ký thất bại, vui lòng thử lại');
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Đăng ký thất bại, vui lòng thử lại';
+      message.error(msg);
     } finally {
       setLoading(false);
     }
