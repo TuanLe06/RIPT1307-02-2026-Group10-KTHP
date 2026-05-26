@@ -21,7 +21,7 @@ router.post(
 router.post(
   '/login',
   [
-    body('email').isEmail().withMessage('Valid email is required'),
+    body('email').notEmpty().withMessage('Email or citizen ID is required'),
     body('password').notEmpty().withMessage('Password is required'),
   ],
   login
