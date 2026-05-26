@@ -158,7 +158,10 @@ const swaggerSpec = {
                     type: "string",
                     example: "Đại học Bách khoa Hà Nội",
                   },
-                  address: { type: "string", example: "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội" },
+                  address: {
+                    type: "string",
+                    example: "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
+                  },
                   phone: { type: "string", example: "02438695172" },
                   email: {
                     type: "string",
@@ -400,28 +403,28 @@ const swaggerSpec = {
             required: true,
             schema: {
               type: "string",
-             example: "HUST",
-               description: "Mã viết tắt của trường",
-             },
-           },
-           {
-             name: "code",
-             in: "path",
-             required: true,
-             schema: {
-               type: "string",
-               example: "CNTT",
-               description: "Mã viết tắt của ngành",
-             },
-           },
-         ],
-         responses: {
-           200: { description: "Lấy thông tin ngành thành công" },
-           404: { description: "Không tìm thấy ngành" },
-         },
-       },
-     },
-     "/api/universities/{universityId}/majors/{majorId}": {
+              example: "HUST",
+              description: "Mã viết tắt của trường",
+            },
+          },
+          {
+            name: "code",
+            in: "path",
+            required: true,
+            schema: {
+              type: "string",
+              example: "CNTT",
+              description: "Mã viết tắt của ngành",
+            },
+          },
+        ],
+        responses: {
+          200: { description: "Lấy thông tin ngành thành công" },
+          404: { description: "Không tìm thấy ngành" },
+        },
+      },
+    },
+    "/api/universities/{universityId}/majors/{majorId}": {
       put: {
         tags: ["Majors"],
         summary: "Sửa thông tin ngành học",
@@ -885,20 +888,20 @@ const swaggerSpec = {
                     example: "A00",
                     description: "Mã tổ hợp",
                   },
-                   subject_1: { type: "string", example: "Toán" },
-                   subject_2: { type: "string", example: "Lý" },
-                   subject_3: { type: "string", example: "Hóa" },
-                 },
-               },
-             },
-           },
-         },
-         responses: {
-           201: { description: "Thêm tổ hợp thành công" },
-           400: { description: "Dữ liệu không hợp lệ" },
-           404: { description: "Không tìm thấy trường hoặc ngành" },
-           409: { description: "Mã tổ hợp đã tồn tại trong ngành này" },
-         },
+                  subject_1: { type: "string", example: "Toán" },
+                  subject_2: { type: "string", example: "Lý" },
+                  subject_3: { type: "string", example: "Hóa" },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          201: { description: "Thêm tổ hợp thành công" },
+          400: { description: "Dữ liệu không hợp lệ" },
+          404: { description: "Không tìm thấy trường hoặc ngành" },
+          409: { description: "Mã tổ hợp đã tồn tại trong ngành này" },
+        },
       },
     },
     "/api/universities/{universityCode}/majors/{majorCode}/combinations/{combinationId}":
@@ -940,8 +943,8 @@ const swaggerSpec = {
             },
           ],
           responses: {
-             200: { description: "Lấy thông tin tổ hợp thành công" },
-             404: { description: "Không tìm thấy tổ hợp" },
+            200: { description: "Lấy thông tin tổ hợp thành công" },
+            404: { description: "Không tìm thấy tổ hợp" },
           },
         },
         put: {
@@ -997,16 +1000,16 @@ const swaggerSpec = {
               },
             },
           },
-           responses: {
-             200: { description: "Cập nhật tổ hợp thành công" },
-             400: { description: "Dữ liệu không hợp lệ" },
-             404: { description: "Không tìm thấy tổ hợp" },
-             409: { description: "Mã tổ hợp đã tồn tại trong ngành này" },
-           },
-         },
-         delete: {
-           tags: ["AdmissionCombinations"],
-           summary: "Xóa tổ hợp xét tuyển của một ngành",
+          responses: {
+            200: { description: "Cập nhật tổ hợp thành công" },
+            400: { description: "Dữ liệu không hợp lệ" },
+            404: { description: "Không tìm thấy tổ hợp" },
+            409: { description: "Mã tổ hợp đã tồn tại trong ngành này" },
+          },
+        },
+        delete: {
+          tags: ["AdmissionCombinations"],
+          summary: "Xóa tổ hợp xét tuyển của một ngành",
           security: [{ bearerAuth: [] }],
           parameters: [
             {
@@ -1041,9 +1044,9 @@ const swaggerSpec = {
               },
             },
           ],
-           responses: {
-             200: { description: "Xóa tổ hợp thành công" },
-             404: { description: "Không tìm thấy trường, ngành, hoặc tổ hợp" },
+          responses: {
+            200: { description: "Xóa tổ hợp thành công" },
+            404: { description: "Không tìm thấy trường, ngành, hoặc tổ hợp" },
           },
         },
       },
