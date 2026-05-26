@@ -33,7 +33,9 @@ export const createUniversity = async (
   }
 
   if (await UniversityModel.existsByCode(code.trim())) {
-    res.status(409).json({ success: false, message: UNIVERSITY_ERRORS.CODE_EXISTS });
+    res
+      .status(409)
+      .json({ success: false, message: UNIVERSITY_ERRORS.CODE_EXISTS });
     return;
   }
 
@@ -177,7 +179,9 @@ export const getUniversityDetail = async (
     return;
   }
 
-  const university = await UniversityModel.findByCode(req.params.code as string);
+  const university = await UniversityModel.findByCode(
+    req.params.code as string,
+  );
   if (!university) {
     res
       .status(404)
@@ -206,7 +210,7 @@ export const createMajor = async (
     return;
   }
 
-  const { code, name, description, admission_combinations_id, min_score } =
+  const { code, name, description, min_score } =
     req.body;
   const universityId = req.params.universityId as string;
 
@@ -230,22 +234,12 @@ export const createMajor = async (
     return;
   }
 
-  if (
-    !(await MajorModel.admissionCombinationExists(admission_combinations_id))
-  ) {
-    res
-      .status(404)
-      .json({ success: false, message: MAJOR_ERRORS.ADMISSION_NOT_FOUND });
-    return;
-  }
-
   try {
     const major = await MajorModel.create({
       university_id: universityId,
       code: code.trim(),
       name,
       description,
-      admission_combinations_id,
       min_score,
     });
     res
@@ -280,7 +274,6 @@ export const updateMajor = async (
     code,
     name,
     description,
-    admission_combinations_id,
     min_score,
     status,
   } = req.body;
@@ -305,7 +298,6 @@ export const updateMajor = async (
     code,
     name,
     description,
-    admission_combinations_id,
     min_score,
     status,
   });

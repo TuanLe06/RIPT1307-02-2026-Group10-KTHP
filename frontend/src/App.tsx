@@ -1,55 +1,48 @@
-import { ConfigProvider, App as AntApp } from 'antd';
-import viVN from 'antd/locale/vi_VN';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import DashboardPage from './pages/dashboard/DashboardPage';
-import UsersPage from './pages/users/UsersPage';
-import AppLayout from './components/layout/AppLayout';
-import ProtectedRoute from './components/common/ProtectedRoute';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Register from './pages/auth/Register';
+import Login from './pages/auth/Login';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLayout from './components/layout/AdminLayout';
+import DashboardOverview from './pages/admin/Dashboard';
+import Universities from './pages/admin/Universities';
+import Majors from './pages/admin/Majors';
+import Combinations from './pages/admin/Combinations';
+import Applications from './pages/admin/Applications';
+import Profile from './pages/admin/Profile';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
-function App() {
+const App = () => {
   return (
-    <ConfigProvider
-      locale={viVN}
-      theme={{
-        token: {
-          colorPrimary: '#1677ff',
-          borderRadius: 8,
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-        },
-      }}
-    >
-      <AntApp>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route
-                path="users"
-                element={
-                  <ProtectedRoute roles={['admin']}>
-                    <UsersPage />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AntApp>
-    </ConfigProvider>
+    <Routes>
+      <Route path="/" element={<Navigate to="/register" replace />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardOverview />} />
+        <Route path="universities" element={<Universities />} />
+        <Route path="majors" element={<Majors />} />
+        <Route path="combinations" element={<Combinations />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="profile" element={<Profile />} />
+      </Route>
+      {/* Keep old route for backward compatibility */}
+      <Route
+        path="/admin/old"
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
-}
+};
 
 export default App;

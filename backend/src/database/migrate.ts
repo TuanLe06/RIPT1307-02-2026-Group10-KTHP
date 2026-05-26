@@ -62,20 +62,9 @@ const migrate = async (): Promise<void> => {
       KEY idx_universities_code (code)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    `CREATE TABLE IF NOT EXISTS admission_combinations (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      code VARCHAR(20) NOT NULL,
-      subject_1 VARCHAR(100) NOT NULL,
-      subject_2 VARCHAR(100) NOT NULL,
-      subject_3 VARCHAR(100) NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE KEY uq_admission_combinations_code (code)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
-
     `CREATE TABLE IF NOT EXISTS majors (
       id VARCHAR(20) PRIMARY KEY,
       university_id VARCHAR(20) NOT NULL,
-      admission_combinations_id BIGINT UNSIGNED NOT NULL,
       code VARCHAR(50) NOT NULL,
       name VARCHAR(255) NOT NULL,
       description TEXT NULL,
@@ -86,15 +75,23 @@ const migrate = async (): Promise<void> => {
       KEY idx_majors_university_code (university_id, code),
       KEY idx_majors_university_id (university_id),
       CONSTRAINT fk_majors_university
-        FOREIGN KEY (university_id) REFERENCES universities(id),
-      CONSTRAINT fk_majors_admission_combination
-        FOREIGN KEY (admission_combinations_id) REFERENCES admission_combinations(id)
+        FOREIGN KEY (university_id) REFERENCES universities(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+    `CREATE TABLE IF NOT EXISTS admission_combinations (
+      id VARCHAR(20) PRIMARY KEY,
+      code VARCHAR(20) NOT NULL,
+      subject_1 VARCHAR(100) NOT NULL,
+      subject_2 VARCHAR(100) NOT NULL,
+      subject_3 VARCHAR(100) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_admission_combination_code (code)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
     `CREATE TABLE IF NOT EXISTS major_combinations (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       major_id VARCHAR(20) NOT NULL,
-      combination_id BIGINT UNSIGNED NOT NULL,
+      combination_id VARCHAR(20) NOT NULL,
       min_score DECIMAL(4,2) NULL,
       status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
       UNIQUE KEY uq_major_combination (major_id, combination_id),
@@ -134,7 +131,7 @@ const migrate = async (): Promise<void> => {
       application_code VARCHAR(50) NOT NULL,
       university_id VARCHAR(20) NOT NULL,
       major_id VARCHAR(20) NOT NULL,
-      combination_id BIGINT UNSIGNED NOT NULL,
+      combination_id VARCHAR(20) NOT NULL,
       status ENUM('DRAFT','SUBMITTED','PENDING_REVIEW','APPROVED','REJECTED','PASSED','FAILED') NOT NULL DEFAULT 'DRAFT',
       submitted_at DATETIME NULL,
       reviewed_by BIGINT UNSIGNED NULL,

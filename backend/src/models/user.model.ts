@@ -1,34 +1,36 @@
-import { query, queryOne } from '../config/database';
-import { User } from '../types';
+import { query, queryOne } from "../config/database";
+import { User } from "../types";
 
 export class UserModel {
-  static async findAll(page = 1, limit = 10, search = '') {
+  static async findAll(page = 1, limit = 10, search = "") {
     const offset = (page - 1) * limit;
     const like = `%${search}%`;
 
     const rows = await query<User>(
-      `SELECT 
-        id,
-        email,
-        full_name,
-        role,
-        status,
-        last_login_at,
-        created_at,
-        updated_at
-       FROM users
-       WHERE full_name LIKE ? OR email LIKE ?
-       ORDER BY created_at DESC
+      `SELECT
+        u.id,
+        u.email,
+        cp.full_name,
+        u.role,
+        u.status,
+        u.last_login_at,
+        u.created_at,
+        u.updated_at
+       FROM users u
+       LEFT JOIN candidate_profiles cp ON cp.user_id = u.id
+       WHERE cp.full_name LIKE ? OR u.email LIKE ?
+       ORDER BY u.created_at DESC
        LIMIT ?
        OFFSET ?`,
-      [like, like, limit, offset]
+      [like, like, limit, offset],
     );
 
     const cnt = await queryOne<{ total: number }>(
       `SELECT COUNT(*) as total
-       FROM users
-       WHERE full_name LIKE ? OR email LIKE ?`,
-      [like, like]
+       FROM users u
+       LEFT JOIN candidate_profiles cp ON cp.user_id = u.id
+       WHERE cp.full_name LIKE ? OR u.email LIKE ?`,
+      [like, like],
     );
 
     return {
@@ -40,51 +42,52 @@ export class UserModel {
   static async findById(id: number): Promise<User | null> {
     return queryOne<User>(
       `SELECT
-        id,
-        email,
-        full_name,
-        role,
-        status,
-        last_login_at,
-        created_at,
-        updated_at
-       FROM users
-       WHERE id = ?`,
-      [id]
+        u.id,
+        u.email,
+        cp.full_name,
+        u.role,
+        u.status,
+        u.last_login_at,
+        u.created_at,
+        u.updated_at
+       FROM users u
+       LEFT JOIN candidate_profiles cp ON cp.user_id = u.id
+       WHERE u.id = ?`,
+      [id],
     );
   }
 
   static async findByEmail(email: string): Promise<User | null> {
-    return queryOne<User>(
-      `SELECT * FROM users WHERE email = ?`,
-      [email]
-    );
+    return queryOne<User>(`SELECT * FROM users WHERE email = ?`, [email]);
   }
 
   static async findAuthByEmail(email: string): Promise<User | null> {
+    return queryOne<User>(`SELECT * FROM users WHERE email = ?`, [email]);
+  }
+
+  static async findAuthByCitizenId(citizenId: number): Promise<User | null> {
     return queryOne<User>(
-      `SELECT * FROM users WHERE email = ?`,
-      [email]
+      `SELECT u.* FROM users u
+       JOIN candidate_profiles cp ON u.id = cp.user_id
+       WHERE cp.citizen_id = ?`,
+      [citizenId],
     );
   }
 
   static async existsByEmail(email: string): Promise<boolean> {
-    const user = await queryOne(
-      `SELECT id FROM users WHERE email = ?`,
-      [email]
-    );
+    const user = await queryOne(`SELECT id FROM users WHERE email = ?`, [
+      email,
+    ]);
 
     return !!user;
   }
 
-  static async existsCandidateByCitizenId(
-    citizenId: number
-  ): Promise<boolean> {
+  static async existsCandidateByCitizenId(citizenId: number): Promise<boolean> {
     const row = await queryOne(
       `SELECT citizen_id
        FROM candidate_profiles
        WHERE citizen_id = ?`,
-      [citizenId]
+      [citizenId],
     );
 
     return !!row;
@@ -99,7 +102,7 @@ export class UserModel {
        WHERE t.token = ?
          AND t.expires_at > NOW()
          AND t.used_at IS NULL`,
-      [token]
+      [token],
     );
   }
 
@@ -117,30 +120,26 @@ export class UserModel {
         role
       )
       VALUES (?, ?, ?, ?)`,
-      [
-        data.email,
-        data.password_hash,
-        data.full_name ?? null,
-        data.role,
-      ]
+      [data.email, data.password_hash, data.full_name ?? null, data.role],
     );
 
     const user = await queryOne<User>(
       `SELECT
-        id,
-        email,
-        full_name,
-        role,
-        status,
-        created_at,
-        updated_at
-       FROM users
-       WHERE email = ?`,
-      [data.email]
+        u.id,
+        u.email,
+        cp.full_name,
+        u.role,
+        u.status,
+        u.created_at,
+        u.updated_at
+       FROM users u
+       LEFT JOIN candidate_profiles cp ON cp.user_id = u.id
+       WHERE u.email = ?`,
+      [data.email],
     );
 
     if (!user) {
-      throw new Error('Failed to create user');
+      throw new Error("Failed to create user");
     }
 
     return user;
@@ -154,20 +153,15 @@ export class UserModel {
         role
       )
       VALUES (?, ?, ?)`,
-      [
-        data.email,
-        data.password_hash,
-        'CANDIDATE',
-      ]
+      [data.email, data.password_hash, "CANDIDATE"],
     );
 
-    const user = await queryOne<User>(
-      `SELECT * FROM users WHERE email = ?`,
-      [data.email]
-    );
+    const user = await queryOne<User>(`SELECT * FROM users WHERE email = ?`, [
+      data.email,
+    ]);
 
     if (!user) {
-      throw new Error('Cannot create user');
+      throw new Error("Cannot create user");
     }
 
     await query(
@@ -185,7 +179,7 @@ export class UserModel {
         data.full_name,
         data.phone ?? null,
         data.address ?? null,
-      ]
+      ],
     );
 
     return user;
@@ -193,24 +187,17 @@ export class UserModel {
 
   static async update(
     id: number,
-    data: Record<string, any>
+    data: Record<string, any>,
   ): Promise<User | null> {
-    const allowed = [
-      'full_name',
-      'status',
-      'password_hash',
-      'last_login_at',
-    ];
+    const allowed = ["full_name", "status", "password_hash", "last_login_at"];
 
-    const fields = Object.keys(data).filter((k) =>
-      allowed.includes(k)
-    );
+    const fields = Object.keys(data).filter((k) => allowed.includes(k));
 
     if (!fields.length) {
       return this.findById(id);
     }
 
-    const sets = fields.map((f) => `${f} = ?`).join(', ');
+    const sets = fields.map((f) => `${f} = ?`).join(", ");
     const vals = fields.map((f) => data[f]);
 
     await query(
@@ -218,7 +205,7 @@ export class UserModel {
        SET ${sets},
            updated_at = NOW()
        WHERE id = ?`,
-      [...vals, id]
+      [...vals, id],
     );
 
     return this.findById(id);
@@ -231,10 +218,7 @@ export class UserModel {
       return false;
     }
 
-    await query(
-      `DELETE FROM users WHERE id = ?`,
-      [id]
-    );
+    await query(`DELETE FROM users WHERE id = ?`, [id]);
 
     return true;
   }
@@ -244,21 +228,21 @@ export class UserModel {
       `UPDATE users
        SET last_login_at = NOW()
        WHERE id = ?`,
-      [userId]
+      [userId],
     );
   }
 
   static async saveResetToken(
     userId: number,
     token: string,
-    expiresAt: Date
+    expiresAt: Date,
   ): Promise<void> {
     await query(
       `UPDATE password_reset_tokens
        SET used_at = NOW()
        WHERE user_id = ?
          AND used_at IS NULL`,
-      [userId]
+      [userId],
     );
 
     await query(
@@ -268,7 +252,7 @@ export class UserModel {
         expires_at
       )
       VALUES (?, ?, ?)`,
-      [userId, token, expiresAt]
+      [userId, token, expiresAt],
     );
   }
 
@@ -277,7 +261,7 @@ export class UserModel {
       `UPDATE password_reset_tokens
        SET used_at = NOW()
        WHERE token = ?`,
-      [token]
+      [token],
     );
   }
 }

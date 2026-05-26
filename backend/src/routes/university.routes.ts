@@ -88,7 +88,6 @@ router.post(
       .notEmpty()
       .withMessage('Mã ngành (viết tắt) không được để trống'),
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('admission_combinations_id').isInt({ gt: 0 }).withMessage('Admission combination ID must be a positive integer'),
     body('min_score').optional().isDecimal().withMessage('Min score must be a decimal number'),
     body('status').optional().isIn(['ACTIVE', 'INACTIVE']),
   ],
@@ -108,7 +107,6 @@ router.put(
       .notEmpty()
       .withMessage('Mã ngành (viết tắt) không được để trống'),
     body('name').optional().trim().notEmpty(),
-    body('admission_combinations_id').optional().isInt({ gt: 0 }),
     body('min_score').optional().isDecimal(),
     body('status').optional().isIn(['ACTIVE', 'INACTIVE']),
   ],
