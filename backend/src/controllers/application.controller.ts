@@ -3,7 +3,6 @@ import { validationResult } from 'express-validator';
 import { ApplicationModel } from '../models/application.model';
 import { CandidateProfileModel } from '../models/candidate-profile.model';
 import { MajorModel, UniversityModel } from '../models/university.model';
-import { MajorCombinationModel } from '../models/combination.model';
 import { EmailNotificationModel, ApplicationStatusLogModel } from '../models/notification.model';
 
 // ===================== CANDIDATE APPLICATION TRACKING =====================
