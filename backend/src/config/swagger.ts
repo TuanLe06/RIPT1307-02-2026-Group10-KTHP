@@ -151,24 +151,24 @@ const swaggerSpec = {
                 properties: {
                   code: {
                     type: "string",
-                    example: "PTIT",
+                    example: "HUST",
                     description: "Mã viết tắt của trường",
                   },
                   name: {
                     type: "string",
-                    example: "Học viện Công nghệ bưu chính viễn thông",
+                    example: "Đại học Bách khoa Hà Nội",
                   },
-                  address: { type: "string", example: "Hà Đông, Hà nội" },
-                  phone: { type: "string", example: "02812345678" },
+                  address: { type: "string", example: "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội" },
+                  phone: { type: "string", example: "02438695172" },
                   email: {
                     type: "string",
                     format: "email",
-                    example: "ptit@ptit.edu.vn",
+                    example: "info@hust.edu.vn",
                   },
-                  website: { type: "string", example: "https://ptit.edu.vn" },
+                  website: { type: "string", example: "https://hust.edu.vn" },
                   description: {
                     type: "string",
-                    example: "Trường công nghệ hàng đầu Việt Nam",
+                    example: "Trường đại học kỹ thuật hàng đầu Việt Nam",
                   },
                 },
               },
@@ -214,7 +214,7 @@ const swaggerSpec = {
             required: true,
             schema: {
               type: "string",
-              example: "UEH",
+              example: "HUST",
               description: "Mã viết tắt của trường",
             },
           },
@@ -252,12 +252,12 @@ const swaggerSpec = {
                 properties: {
                   code: {
                     type: "string",
-                    example: "HUST",
+                    example: "NEU",
                     description: "Mã viết tắt của trường",
                   },
                   name: {
                     type: "string",
-                    example: "Trường Đại học Công nghệ Thông tin",
+                    example: "Trường Đại học Kinh tế Quốc dân",
                   },
                   address: { type: "string" },
                   phone: { type: "string" },
@@ -314,7 +314,7 @@ const swaggerSpec = {
             required: true,
             schema: {
               type: "string",
-              example: "UEH",
+              example: "HUST",
               description: "Mã viết tắt của trường",
             },
           },
@@ -400,28 +400,28 @@ const swaggerSpec = {
             required: true,
             schema: {
               type: "string",
-              example: "UEH",
-              description: "Mã viết tắt của trường",
-            },
-          },
-          {
-            name: "code",
-            in: "path",
-            required: true,
-            schema: {
-              type: "string",
-              example: "CNTT",
-              description: "Mã viết tắt của ngành",
-            },
-          },
-        ],
-        responses: {
-          200: { description: "Lấy thông tin ngành thành công" },
-          404: { description: "Không tìm thấy ngành" },
-        },
-      },
-    },
-    "/api/universities/{universityId}/majors/{majorId}": {
+             example: "HUST",
+               description: "Mã viết tắt của trường",
+             },
+           },
+           {
+             name: "code",
+             in: "path",
+             required: true,
+             schema: {
+               type: "string",
+               example: "CNTT",
+               description: "Mã viết tắt của ngành",
+             },
+           },
+         ],
+         responses: {
+           200: { description: "Lấy thông tin ngành thành công" },
+           404: { description: "Không tìm thấy ngành" },
+         },
+       },
+     },
+     "/api/universities/{universityId}/majors/{majorId}": {
       put: {
         tags: ["Majors"],
         summary: "Sửa thông tin ngành học",
@@ -885,27 +885,27 @@ const swaggerSpec = {
                     example: "A00",
                     description: "Mã tổ hợp",
                   },
-                  subject_1: { type: "string", example: "Toan" },
-                  subject_2: { type: "string", example: "Ly" },
-                  subject_3: { type: "string", example: "Hoa" },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          201: { description: "Them to hop thanh cong" },
-          400: { description: "Du lieu khong hop le" },
-          404: { description: "Khong tim thay truong hoac nganh" },
-          409: { description: "Ma to hop da ton tai trong nganh nay" },
-        },
+                   subject_1: { type: "string", example: "Toán" },
+                   subject_2: { type: "string", example: "Lý" },
+                   subject_3: { type: "string", example: "Hóa" },
+                 },
+               },
+             },
+           },
+         },
+         responses: {
+           201: { description: "Thêm tổ hợp thành công" },
+           400: { description: "Dữ liệu không hợp lệ" },
+           404: { description: "Không tìm thấy trường hoặc ngành" },
+           409: { description: "Mã tổ hợp đã tồn tại trong ngành này" },
+         },
       },
     },
     "/api/universities/{universityCode}/majors/{majorCode}/combinations/{combinationId}":
       {
         get: {
           tags: ["AdmissionCombinations"],
-          summary: "Chi tiet to hop xet tuyen (tim bang id TH+6)",
+          summary: "Chi tiết tổ hợp xét tuyển (tìm bằng id TH+6)",
           parameters: [
             {
               name: "universityCode",
@@ -940,13 +940,13 @@ const swaggerSpec = {
             },
           ],
           responses: {
-            200: { description: "Lay thong tin to hop thanh cong" },
-            404: { description: "Khong tim thay to hop" },
+             200: { description: "Lấy thông tin tổ hợp thành công" },
+             404: { description: "Không tìm thấy tổ hợp" },
           },
         },
         put: {
           tags: ["AdmissionCombinations"],
-          summary: "Sua to hop xet tuyen cua mot nganh",
+          summary: "Sửa tổ hợp xét tuyển của một ngành",
           security: [{ bearerAuth: [] }],
           parameters: [
             {
@@ -989,24 +989,24 @@ const swaggerSpec = {
                   type: "object",
                   properties: {
                     code: { type: "string", example: "A00" },
-                    subject_1: { type: "string", example: "Toan" },
-                    subject_2: { type: "string", example: "Ly" },
-                    subject_3: { type: "string", example: "Hoa" },
+                    subject_1: { type: "string", example: "Toán" },
+                    subject_2: { type: "string", example: "Lý" },
+                    subject_3: { type: "string", example: "Hóa" },
                   },
                 },
               },
             },
           },
-          responses: {
-            200: { description: "Cap nhat to hop thanh cong" },
-            400: { description: "Du lieu khong hop le" },
-            404: { description: "Khong tim thay to hop" },
-            409: { description: "Ma to hop da ton tai trong nganh nay" },
-          },
-        },
-        delete: {
-          tags: ["AdmissionCombinations"],
-          summary: "Xoa to hop xet tuyen cua mot nganh",
+           responses: {
+             200: { description: "Cập nhật tổ hợp thành công" },
+             400: { description: "Dữ liệu không hợp lệ" },
+             404: { description: "Không tìm thấy tổ hợp" },
+             409: { description: "Mã tổ hợp đã tồn tại trong ngành này" },
+           },
+         },
+         delete: {
+           tags: ["AdmissionCombinations"],
+           summary: "Xóa tổ hợp xét tuyển của một ngành",
           security: [{ bearerAuth: [] }],
           parameters: [
             {
@@ -1041,9 +1041,9 @@ const swaggerSpec = {
               },
             },
           ],
-          responses: {
-            200: { description: "Xoa to hop thanh cong" },
-            404: { description: "Khong tim thay truong, nganh, hoac to hop" },
+           responses: {
+             200: { description: "Xóa tổ hợp thành công" },
+             404: { description: "Không tìm thấy trường, ngành, hoặc tổ hợp" },
           },
         },
       },
