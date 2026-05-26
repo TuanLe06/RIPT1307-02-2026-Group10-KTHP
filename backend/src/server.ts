@@ -9,8 +9,12 @@ import { testConnection } from "./config/database";
 import swaggerSpec from "./config/swagger";
 import { errorHandler, notFound } from "./middleware/error.middleware";
 import adminRoutes from "./routes/admin.routes";
+import adminApplicationRoutes from "./routes/admin-application.routes";
+import adminNotificationRoutes from "./routes/admin-notification.routes";
+import adminReportRoutes from "./routes/admin-report.routes";
 import admissionCombinationRoutes from "./routes/admissionCombination.routes";
 import authRoutes from "./routes/auth.routes";
+import candidateRoutes from "./routes/candidate.routes";
 import candidateProfileRoutes from "./routes/candidate-profile.routes";
 import combinationRoutes from "./routes/combination.routes";
 import combinationAssignmentRoutes from "./routes/combinationAssignment.routes";
@@ -54,7 +58,11 @@ app.use(
 );
 app.use("/api/combinations", combinationRoutes);
 app.use("/api/candidate", candidateProfileRoutes);
+app.use("/api/candidate", candidateRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/applications", adminApplicationRoutes);
+app.use("/api/admin/notifications", adminNotificationRoutes);
+app.use("/api/admin/reports", adminReportRoutes);
 
 // Error handling
 app.use(notFound);
