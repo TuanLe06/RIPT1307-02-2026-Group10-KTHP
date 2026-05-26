@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import AdminDashboard from './pages/AdminDashboard';
+import Register from './pages/auth/Register';
+import Login from './pages/auth/Login';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLayout from './components/layout/AdminLayout';
 import DashboardOverview from './pages/admin/Dashboard';
 import Universities from './pages/admin/Universities';
