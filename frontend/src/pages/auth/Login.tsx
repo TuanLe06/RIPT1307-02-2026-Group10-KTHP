@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form, Input, Button, App } from "antd";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-import PasswordInput from "../components/common/PasswordInput";
-import { authApi } from "../api/auth";
-import { useAuthStore } from "../store/auth";
+import Header from "../../components/layout/Header";
+import Footer from "../../components/layout/Footer";
+import PasswordInput from "../../components/common/PasswordInput";
+import { authApi } from "../../api/auth";
+import { useAuthStore } from "../../store/auth";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
