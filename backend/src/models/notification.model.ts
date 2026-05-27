@@ -7,7 +7,7 @@ export interface EmailNotification {
   receiver_email: string;
   subject: string;
   content: string;
-  type: 'APPLICATION_SUBMITTED' | 'STATUS_CHANGED' | 'REJECTION' | 'APPROVAL' | 'RESULT' | 'MANUAL';
+  type: 'APPLICATION_SUBMITTED' | 'STATUS_CHANGED' | 'REJECTION' | 'APPROVAL' | 'RESULT' | 'MANUAL' | 'PASSWORD_RESET';
   status: 'PENDING' | 'SENT' | 'FAILED';
   sent_by: number | null;
   sent_at: Date | null;
@@ -141,11 +141,11 @@ export class ApplicationStatusLogModel {
   ): Promise<ApplicationStatusLogWithDetails[]> {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT asl.id, asl.application_id, asl.old_status, asl.new_status, asl.changed_by, asl.note, asl.created_at,
-              a.application_code, cp.full_name as candidate_name, u.full_name as changed_by_name
+              a.application_code, cp.full_name as candidate_name, u.email as changed_by_name
        FROM application_status_logs asl
        LEFT JOIN applications a ON asl.application_id = a.id
        LEFT JOIN users u ON asl.changed_by = u.id
-       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.citizen_id
+       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.user_id
        WHERE asl.application_id = ?
        ORDER BY asl.created_at DESC`,
       [applicationId]
@@ -162,11 +162,11 @@ export class ApplicationStatusLogModel {
 
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT asl.id, asl.application_id, asl.old_status, asl.new_status, asl.changed_by, asl.note, asl.created_at,
-              a.application_code, cp.full_name as candidate_name, u.full_name as changed_by_name
+              a.application_code, cp.full_name as candidate_name, u.email as changed_by_name
        FROM application_status_logs asl
        LEFT JOIN applications a ON asl.application_id = a.id
        LEFT JOIN users u ON asl.changed_by = u.id
-       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.citizen_id
+       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.user_id
        WHERE asl.changed_by = ?
        ORDER BY asl.created_at DESC
        LIMIT ? OFFSET ?`,
