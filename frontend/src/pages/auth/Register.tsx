@@ -6,8 +6,17 @@ import Footer from '../../components/layout/Footer';
 import PasswordInput from '../../components/common/PasswordInput';
 import { authApi } from '../../api/auth';
 
+const PASSWORD_REQUIREMENTS = [
+  { label: 'Ít nhất 8 ký tự', test: (v: string) => v.length >= 8 },
+  { label: 'Có chữ hoa (A-Z)', test: (v: string) => /[A-Z]/.test(v) },
+  { label: 'Có chữ thường (a-z)', test: (v: string) => /[a-z]/.test(v) },
+  { label: 'Có chữ số (0-9)', test: (v: string) => /\d/.test(v) },
+  { label: 'Có ký tự đặc biệt', test: (v: string) => /[^a-zA-Z0-9]/.test(v) },
+];
+
 const Register = () => {
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
   const { message } = App.useApp();
 
@@ -73,7 +82,7 @@ const Register = () => {
               <p className="text-[17px] md:text-[18px] leading-[1.6] text-text-secondary">Điền thông tin của bạn để bắt đầu hành trình nhập học.</p>
             </div>
 
-            <Form layout="vertical" onFinish={onFinish} autoComplete="off" requiredMark={false}>
+            <Form layout="vertical" onFinish={onFinish} autoComplete="off" requiredMark={false} onValuesChange={(changed) => { if ('mat_khau' in changed) setPassword(changed.mat_khau); }}>
               <Form.Item
                 name="ho_ten"
                 label={<span className="text-[17px] md:text-[18px] leading-[1.5] font-semibold text-text-primary">Họ và tên</span>}
@@ -125,11 +134,32 @@ const Register = () => {
                 label={<span className="text-[17px] md:text-[18px] leading-[1.5] font-semibold text-text-primary">Mật khẩu</span>}
                 rules={[
                   { required: true, message: 'Vui lòng nhập mật khẩu' },
-                  { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+                      const fail = PASSWORD_REQUIREMENTS.find((r) => !r.test(value));
+                      return fail ? Promise.reject(new Error('Mật khẩu chưa đạt yêu cầu')) : Promise.resolve();
+                    },
+                  },
                 ]}
               >
                 <PasswordInput />
               </Form.Item>
+              {password && (
+                <div className="-mt-4 mb-2">
+                  {PASSWORD_REQUIREMENTS.map((req) => {
+                    const ok = req.test(password);
+                    return (
+                      <div key={req.label} className="flex items-center gap-1.5 text-sm leading-6">
+                        <span className={`text-base leading-none ${ok ? 'text-green-600' : 'text-red-500'}`}>
+                          {ok ? '✓' : '✗'}
+                        </span>
+                        <span className={ok ? 'text-green-600' : 'text-red-500'}>{req.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               <Form.Item
                 name="xac_nhan_mat_khau"

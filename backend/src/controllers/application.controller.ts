@@ -36,7 +36,7 @@ export const createApplication = async (req: Request, res: Response): Promise<vo
     }
 
     const application = await ApplicationModel.create({
-      candidate_id: candidateProfile.citizen_id,
+      candidate_id: req.user!.id,
       university_id,
       major_id,
       combination_id,
@@ -112,7 +112,7 @@ export const getApplications = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const result = await ApplicationModel.findByCandidateId(candidateProfile.citizen_id, page, limit);
+    const result = await ApplicationModel.findByCandidateId(req.user!.id, page, limit);
 
     res.json({
       success: true,

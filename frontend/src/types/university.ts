@@ -64,3 +64,31 @@ export interface Application {
   created_at: string;
   updated_at: string;
 }
+
+export interface ApplicationWithDetails extends Application {
+  university_name: string;
+  university_code: string;
+  major_name: string;
+  major_code: string;
+  candidate_name: string;
+  candidate_email: string;
+  reviewer_name?: string;
+}
+
+export interface StatusLog {
+  id: number;
+  application_id: number;
+  old_status: string;
+  new_status: string;
+  changed_by: number;
+  changed_by_name?: string;
+  note: string;
+  created_at: string;
+}
+
+export interface StatusStat {
+  status: string;
+  count: number;
+  percentage: number;
+  status_display: string;
+}

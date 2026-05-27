@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import {
+  listApplications,
   getApplicationDetailAdmin,
   updateApplicationStatus,
 } from '../controllers/admin-application.controller';
@@ -9,6 +10,8 @@ import { authenticate, authorize } from '../middleware/auth.middleware';
 const router = Router();
 
 router.use(authenticate, authorize('ADMIN'));
+
+router.get('/', listApplications);
 
 router.get(
   '/:id',
