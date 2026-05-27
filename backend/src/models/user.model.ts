@@ -232,6 +232,13 @@ export class UserModel {
     );
   }
 
+  static async updatePassword(userId: number, passwordHash: string): Promise<void> {
+    await query(
+      `UPDATE users SET password_hash = ? WHERE id = ?`,
+      [passwordHash, userId],
+    );
+  }
+
   static async saveResetToken(
     userId: number,
     token: string,
@@ -254,6 +261,33 @@ export class UserModel {
       VALUES (?, ?, ?)`,
       [userId, token, expiresAt],
     );
+  }
+
+  static async findValidResetTokens(userId: number): Promise<{ token: string; created_at: Date }[]> {
+    return query<{ token: string; created_at: Date }>(
+      `SELECT token, created_at FROM password_reset_tokens
+       WHERE user_id = ? AND expires_at > NOW() AND used_at IS NULL
+       ORDER BY created_at DESC`,
+      [userId],
+    );
+  }
+
+  static async getLastResetToken(userId: number): Promise<{ created_at: Date } | null> {
+    return queryOne<{ created_at: Date }>(
+      `SELECT created_at FROM password_reset_tokens
+       WHERE user_id = ? AND used_at IS NULL
+       ORDER BY created_at DESC LIMIT 1`,
+      [userId],
+    );
+  }
+
+  static async countRecentTokens(userId: number, withinMinutes: number): Promise<number> {
+    const row = await queryOne<{ count: number }>(
+      `SELECT COUNT(*) as count FROM password_reset_tokens
+       WHERE user_id = ? AND created_at > DATE_SUB(NOW(), INTERVAL ? MINUTE)`,
+      [userId, withinMinutes],
+    );
+    return row?.count ?? 0;
   }
 
   static async markResetTokenUsed(token: string): Promise<void> {

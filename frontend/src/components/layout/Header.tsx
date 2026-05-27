@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useTheme } from '../../hooks/useTheme';
 
 const Header = () => {
+  const { theme, toggle } = useTheme();
 
   return (
     <header className="bg-surface-container-lowest shadow-sm z-50 fixed top-0 left-0 right-0">
@@ -19,6 +21,15 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-md ml-auto">
+          <button
+            onClick={toggle}
+            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant mr-2"
+            aria-label="Toggle theme"
+          >
+            <span className="material-symbols-outlined text-lg">
+              {theme === 'light' ? 'dark_mode' : 'light_mode'}
+            </span>
+          </button>
           <Link
             to="/login"
             className="bg-primary hover:bg-primary-hover text-on-primary px-md py-2 rounded-lg font-body text-[15px] md:text-[16px] font-bold transition-all shadow-sm"

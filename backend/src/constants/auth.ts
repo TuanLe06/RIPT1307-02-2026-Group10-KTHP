@@ -5,6 +5,11 @@ export const AUTH_ERRORS = {
   INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
   ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
   UNAUTHORIZED: 'UNAUTHORIZED',
+  USER_NOT_FOUND: 'USER_NOT_FOUND',
+  OTP_INVALID: 'OTP_INVALID',
+  OTP_EXPIRED: 'OTP_EXPIRED',
+  RESEND_COOLDOWN: 'RESEND_COOLDOWN',
+  RESEND_LIMIT_EXCEEDED: 'RESEND_LIMIT_EXCEEDED',
 } as const;
 
 export const AUTH_MESSAGES = {
@@ -13,4 +18,13 @@ export const AUTH_MESSAGES = {
   LOGOUT_SUCCESS: 'Đăng xuất thành công',
   INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng',
   ACCOUNT_LOCKED: 'Tài khoản đã bị khóa',
+  FORGOT_PASSWORD_SUCCESS: 'Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư đến.',
+  RESET_PASSWORD_SUCCESS: 'Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.',
+  RESEND_OTP_SUCCESS: 'Mã OTP mới đã được gửi đến email của bạn.',
+  OTP_SEND_FAILED: 'Không thể gửi email xác thực. Vui lòng thử lại sau.',
+  OTP_INVALID: 'Mã OTP không hợp lệ.',
+  OTP_EXPIRED: 'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.',
+  RESEND_COOLDOWN: 'Vui lòng đợi 60 giây trước khi yêu cầu gửi lại mã.',
+  RESEND_LIMIT_EXCEEDED: 'Bạn đã yêu cầu gửi mã quá nhiều lần. Vui lòng thử lại sau 1 giờ.',
+  USER_NOT_FOUND: 'Email này chưa được đăng ký tài khoản.',
 } as const;
