@@ -10,8 +10,8 @@ export const listApplications = async (req: Request, res: Response): Promise<voi
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const universityId = req.query.university_id ? parseInt(req.query.university_id as string) : undefined;
-    const majorId = req.query.major_id ? parseInt(req.query.major_id as string) : undefined;
+    const universityId = req.query.university_id as string | undefined;
+    const majorId = req.query.major_id as string | undefined;
     const status = req.query.status as string | undefined;
     const search = req.query.search as string | undefined;
 
@@ -99,7 +99,7 @@ export const getApplicationDetailAdmin = async (req: Request, res: Response): Pr
   try {
     const { id } = req.params;
 
-    const application = await ApplicationModel.findById(parseInt(id as string));
+    const application = await ApplicationModel.findByIdWithDetails(parseInt(id as string));
     if (!application) {
       res.status(404).json({ success: false, message: 'Application not found' });
       return;

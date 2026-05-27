@@ -20,4 +20,24 @@ export const authApi = {
     const response = await apiClient.get('/auth/profile');
     return response.data;
   },
+
+  verifyOtp: async (data: { email: string; otp: string }): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.post('/auth/verify-otp', data);
+    return response.data;
+  },
+
+  forgotPassword: async (data: { email: string }): Promise<{ success: boolean; message: string; code?: string }> => {
+    const response = await apiClient.post('/auth/forgot-password', data);
+    return response.data;
+  },
+
+  resendOtp: async (data: { email: string }): Promise<{ success: boolean; message: string; code?: string; data?: { remaining: number } }> => {
+    const response = await apiClient.post('/auth/resend-otp', data);
+    return response.data;
+  },
+
+  resetPassword: async (data: { email: string; otp: string; password: string }): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.post('/auth/reset-password', data);
+    return response.data;
+  },
 };
