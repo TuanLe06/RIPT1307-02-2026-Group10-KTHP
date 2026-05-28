@@ -392,6 +392,60 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
   }
 };
 
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      success: false,
+      message: 'Dữ liệu không hợp lệ',
+      code: AUTH_ERRORS.VALIDATION_FAILED,
+      errors: errors.array(),
+    });
+    return;
+  }
+
+  const { current_password, new_password } = req.body as {
+    current_password: string;
+    new_password: string;
+  };
+
+  try {
+    const user = await UserModel.findAuthById(req.user!.id);
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: AUTH_MESSAGES.USER_NOT_FOUND,
+        code: AUTH_ERRORS.USER_NOT_FOUND,
+      });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(current_password, user.password_hash);
+    if (!isMatch) {
+      res.status(400).json({
+        success: false,
+        message: 'Mật khẩu hiện tại không đúng',
+        code: AUTH_ERRORS.INVALID_CREDENTIALS,
+      });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(new_password, 12);
+    await UserModel.updatePassword(user.id, passwordHash);
+
+    res.json({
+      success: true,
+      message: 'Đổi mật khẩu thành công',
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
 export const logout = async (_req: Request, res: Response): Promise<void> => {
   res.json({
     success: true,
