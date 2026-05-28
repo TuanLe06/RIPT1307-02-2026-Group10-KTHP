@@ -26,7 +26,8 @@ const Login = () => {
         if (res.data.user.role === "ADMIN") {
           navigate("/admin", { replace: true });
         } else {
-          window.location.href = import.meta.env.VITE_CANDIDATE_URL || "https://www.youtube.com";
+          const candidateUrl = import.meta.env.VITE_CANDIDATE_URL || "http://localhost:3000";
+          window.location.href = `${candidateUrl}?token=${res.data.token}`;
         }
       }
     } catch (err: unknown) {

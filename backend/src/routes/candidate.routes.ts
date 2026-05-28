@@ -32,9 +32,9 @@ router.get('/profile/completeness', getProfileCompletenessHandler);
 router.post(
   '/applications',
   [
-    body('university_id').isInt({ gt: 0 }).withMessage('University ID is required'),
-    body('major_id').isInt({ gt: 0 }).withMessage('Major ID is required'),
-    body('combination_id').isInt({ gt: 0 }).withMessage('Combination ID is required'),
+    body('university_id').matches(/^DH\d{6}$/i).withMessage('University ID is required (DHxxxxxx)'),
+    body('major_id').matches(/^NH\d{6}$/i).withMessage('Major ID is required (NHxxxxxx)'),
+    body('combination_id').matches(/^TH\d{6}$/i).withMessage('Combination ID is required (THxxxxxx)'),
     body('subject_1_score').optional({ values: 'null' }).isFloat({ min: 0, max: 10 }).withMessage('subject_1_score must be between 0 and 10'),
     body('subject_2_score').optional({ values: 'null' }).isFloat({ min: 0, max: 10 }).withMessage('subject_2_score must be between 0 and 10'),
     body('subject_3_score').optional({ values: 'null' }).isFloat({ min: 0, max: 10 }).withMessage('subject_3_score must be between 0 and 10'),

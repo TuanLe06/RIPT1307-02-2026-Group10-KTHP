@@ -52,6 +52,7 @@ const testRegisterSuccess = async (): Promise<void> => {
     id: 1,
     email: 'a@b.com',
     full_name: 'Nguyen Van A',
+    password_hash: 'hash',
     role: 'CANDIDATE',
     status: 'ACTIVE',
     last_login_at: null,
