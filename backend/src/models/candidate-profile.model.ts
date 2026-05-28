@@ -32,7 +32,13 @@ type AcademicProgressRow = {
 type CandidateDocumentRow = {
   id: number;
   candidate_id: number;
-  document_type: 'TRANSCRIPT' | 'CITIZEN_ID' | 'PORTRAIT' | 'CERTIFICATE' | 'OTHER';
+  document_type:
+    | 'TRANSCRIPT'
+    | 'CITIZEN_ID_Front'
+    | 'CITIZEN_ID_Back'
+    | 'PORTRAIT'
+    | 'CERTIFICATE'
+    | 'OTHER';
   file_name: string;
   file_url: string;
   file_type: 'PDF' | 'JPEG' | 'PNG';
@@ -43,7 +49,13 @@ type CandidateDocumentRow = {
 
 export type CandidateDocumentItem = {
   id: number;
-  document_type: 'TRANSCRIPT' | 'CITIZEN_ID' | 'PORTRAIT' | 'CERTIFICATE' | 'OTHER';
+  document_type:
+    | 'TRANSCRIPT'
+    | 'CITIZEN_ID_Front'
+    | 'CITIZEN_ID_Back'
+    | 'PORTRAIT'
+    | 'CERTIFICATE'
+    | 'OTHER';
   file_name: string;
   file_url: string;
   file_type: 'PDF' | 'JPEG' | 'PNG';
@@ -484,7 +496,13 @@ export class CandidateProfileModel {
   static async createDocumentByUserId(
     userId: number,
     data: {
-      document_type: 'TRANSCRIPT' | 'CITIZEN_ID' | 'PORTRAIT' | 'CERTIFICATE' | 'OTHER';
+      document_type:
+        | 'TRANSCRIPT'
+        | 'CITIZEN_ID_Front'
+        | 'CITIZEN_ID_Back'
+        | 'PORTRAIT'
+        | 'CERTIFICATE'
+        | 'OTHER';
       file_name: string;
       file_url: string;
       file_type: 'PDF' | 'JPEG' | 'PNG';
