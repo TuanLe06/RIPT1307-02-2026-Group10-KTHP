@@ -131,7 +131,7 @@ router.post(
     body('document_type')
       .exists()
       .withMessage('document_type is required')
-      .isIn(['TRANSCRIPT', 'CITIZEN_ID', 'PORTRAIT', 'CERTIFICATE', 'OTHER'])
+      .isIn(['TRANSCRIPT', 'CITIZEN_ID_Front', 'CITIZEN_ID_Back', 'PORTRAIT', 'CERTIFICATE', 'OTHER'])
       .withMessage('document_type is invalid'),
   ],
   uploadCandidateDocument

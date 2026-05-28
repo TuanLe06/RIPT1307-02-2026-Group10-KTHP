@@ -728,7 +728,8 @@ const swaggerSpec = {
                     type: "string",
                     enum: [
                       "TRANSCRIPT",
-                      "CITIZEN_ID",
+                      "CITIZEN_ID_Front",
+                      "CITIZEN_ID_Back",
                       "PORTRAIT",
                       "CERTIFICATE",
                       "OTHER",
