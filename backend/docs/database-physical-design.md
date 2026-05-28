@@ -175,13 +175,19 @@ CREATE TABLE academic_records (
   candidate_id BIGINT UNSIGNED NOT NULL,
   graduation_year INT NULL,
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> 08b762f (fix)
   subject_1_score DECIMAL(4,2) NULL,
   subject_2_score DECIMAL(4,2) NULL,
   subject_3_score DECIMAL(4,2) NULL,
 =======
 >>>>>>> 6a8de82 (a)
+<<<<<<< HEAD
+>>>>>>> 08b762f (fix)
+=======
 >>>>>>> 08b762f (fix)
   total_score DECIMAL(5,2) NULL,
   priority_score DECIMAL(4,2) NOT NULL DEFAULT 0,
@@ -214,13 +220,19 @@ CREATE TABLE candidate_documents (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   candidate_id BIGINT UNSIGNED NOT NULL,
 <<<<<<< HEAD
+<<<<<<< HEAD
   document_type ENUM('TRANSCRIPT','CITIZEN_ID_FRONT_SIDE', 'CITIZEN_ID_BACK_SIDE','PORTRAIT','CERTIFICATE','OTHER') NOT NULL,
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> 08b762f (fix)
   document_type ENUM('TRANSCRIPT','CITIZEN_ID','PORTRAIT','CERTIFICATE','OTHER') NOT NULL,
 =======
   document_type ENUM('TRANSCRIPT','CITIZEN_ID_FRONT_SIDE', 'CITIZEN_ID_BACK_SIDE','PORTRAIT','CERTIFICATE','OTHER') NOT NULL,
 >>>>>>> 6a8de82 (a)
+<<<<<<< HEAD
+>>>>>>> 08b762f (fix)
+=======
 >>>>>>> 08b762f (fix)
   file_name VARCHAR(255) NOT NULL,
   file_url TEXT NOT NULL,
