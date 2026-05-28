@@ -1,0 +1,345 @@
+Project admission_system_schema {
+  database_type: "MySQL"
+  Note: "Generated from src/database/migrate.ts"
+}
+
+Enum user_role {
+  CANDIDATE
+  ADMIN
+}
+
+Enum user_status {
+  ACTIVE
+  LOCKED
+  PENDING
+}
+
+Enum active_inactive_status {
+  ACTIVE
+  INACTIVE
+}
+
+Enum gender_type {
+  MALE
+  FEMALE
+  OTHER
+}
+
+Enum application_status_type {
+  DRAFT
+  SUBMITTED
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  PASSED
+  FAILED
+}
+
+Enum exam_subject_code {
+  TOAN
+  VAN
+  LY
+  HOA
+  SINH
+  SU
+  DIA
+  GDKTPL
+  TINHOC
+  CONGNGHE
+  NGOAINGU
+}
+
+Enum foreign_language_code {
+  ANH
+  PHAP
+  DUC
+  NHAT
+  HAN
+  NGA
+  TRUNG
+}
+
+Enum candidate_document_type {
+  TRANSCRIPT
+  CITIZEN_ID_FRONT
+  CITIZEN_ID_BACK
+  PORTRAIT
+  CERTIFICATE
+  OTHER
+}
+
+Enum candidate_file_type {
+  PDF
+  JPEG
+  PNG
+}
+
+Enum email_notification_type {
+  APPLICATION_SUBMITTED
+  STATUS_CHANGED
+  MANUAL
+  PASSWORD_RESET
+}
+
+Enum email_notification_status {
+  PENDING
+  SENT
+  FAILED
+}
+
+Table users {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  email varchar(255) [not null]
+  password_hash varchar(255) [not null]
+  role user_role [not null]
+  status user_status [not null, default: 'ACTIVE']
+  last_login_at datetime
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: "ON UPDATE CURRENT_TIMESTAMP"]
+
+  indexes {
+    email [unique, name: "uq_users_email"]
+  }
+}
+
+Table password_reset_tokens {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  user_id bigint [not null, ref: > users.id, note: "UNSIGNED"]
+  token varchar(255) [not null]
+  expires_at datetime [not null]
+  used_at datetime
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    token [unique, name: "uq_prt_token"]
+    user_id [name: "idx_prt_user_id"]
+  }
+}
+
+Table universities {
+  id varchar(20) [pk, not null]
+  code varchar(50) [not null]
+  name varchar(255) [not null]
+  address text
+  phone varchar(20)
+  email varchar(255)
+  website varchar(255)
+  description text
+  status active_inactive_status [not null, default: 'ACTIVE']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: "ON UPDATE CURRENT_TIMESTAMP"]
+
+  indexes {
+    code [name: "idx_universities_code"]
+  }
+}
+
+Table majors {
+  id varchar(20) [pk, not null]
+  university_id varchar(20) [not null, ref: > universities.id]
+  code varchar(50) [not null]
+  name varchar(255) [not null]
+  description text
+  min_score decimal(4,2)
+  status active_inactive_status [not null, default: 'ACTIVE']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: "ON UPDATE CURRENT_TIMESTAMP"]
+
+  indexes {
+    (university_id, code) [name: "idx_majors_university_code"]
+    university_id [name: "idx_majors_university_id"]
+  }
+}
+
+Table admission_combinations {
+  id varchar(20) [pk, not null]
+  code varchar(20) [not null]
+  subject_1 varchar(100) [not null]
+  subject_2 varchar(100) [not null]
+  subject_3 varchar(100) [not null]
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    code [unique, name: "uq_admission_combination_code"]
+  }
+}
+
+Table major_combinations {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  major_id varchar(20) [not null, ref: > majors.id]
+  combination_id varchar(20) [not null, ref: > admission_combinations.id]
+  min_score decimal(4,2)
+  status active_inactive_status [not null, default: 'ACTIVE']
+
+  indexes {
+    (major_id, combination_id) [unique, name: "uq_major_combination"]
+    major_id [name: "idx_mc_major_id"]
+    combination_id [name: "idx_mc_combination_id"]
+  }
+}
+
+Table candidate_profiles {
+  citizen_id bigint [pk, not null, note: "UNSIGNED"]
+  user_id bigint [not null, unique, ref: > users.id, note: "UNSIGNED"]
+  full_name varchar(255) [not null]
+  phone varchar(20)
+  date_of_birth date
+  gender gender_type
+  citizen_issue_date date
+  citizen_issue_place varchar(255)
+  religion varchar(20)
+  ethnic varchar(20)
+  nation varchar(20)
+  province varchar(255)
+  ward varchar(255)
+  address text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: "ON UPDATE CURRENT_TIMESTAMP"]
+}
+
+Table applications {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  candidate_id bigint [not null, ref: > users.id, note: "UNSIGNED"]
+  application_code varchar(50) [not null]
+  university_id varchar(20) [not null, ref: > universities.id]
+  major_id varchar(20) [not null, ref: > majors.id]
+  combination_id varchar(20) [not null, ref: > admission_combinations.id]
+  status application_status_type [not null, default: 'DRAFT']
+  submitted_at datetime
+  reviewed_by bigint [ref: > users.id, note: "UNSIGNED"]
+  reviewed_at datetime
+  reject_reason text
+  subject_1_score decimal(4,2)
+  subject_2_score decimal(4,2)
+  subject_3_score decimal(4,2)
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: "ON UPDATE CURRENT_TIMESTAMP"]
+
+  indexes {
+    application_code [unique, name: "uq_applications_code"]
+    candidate_id [name: "idx_app_candidate_id"]
+    status [name: "idx_app_status"]
+    university_id [name: "idx_app_university_id"]
+    major_id [name: "idx_app_major_id"]
+    combination_id [name: "idx_app_combination_id"]
+    reviewed_by [name: "idx_app_reviewed_by"]
+  }
+}
+
+Table academic_records {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  candidate_id bigint [not null, unique, ref: > candidate_profiles.citizen_id, note: "UNSIGNED"]
+  graduation_year int
+  total_score decimal(5,2)
+  priority_score decimal(4,2) [not null, default: 0]
+  final_score decimal(5,2)
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: "ON UPDATE CURRENT_TIMESTAMP"]
+}
+
+Table academic_progress {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  record_id bigint [not null, ref: > academic_records.id, note: "UNSIGNED"]
+  grade_level int
+  school_name varchar(255)
+  avg_score decimal(4,2)
+
+  indexes {
+    record_id [name: "idx_academic_progress_record_id"]
+  }
+}
+
+Table exam_scores {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  record_id bigint [not null, ref: > academic_records.id, note: "UNSIGNED"]
+  subject_code exam_subject_code [not null]
+  is_required boolean [not null, default: false, note: "true = TOAN, VAN | false = optional subject"]
+  score decimal(4,2) [not null]
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (record_id, subject_code) [unique, name: "uq_exam_scores_record_subject"]
+    record_id [name: "idx_exam_scores_record_id"]
+  }
+}
+
+Table foreign_language_scores {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  record_id bigint [not null, unique, ref: > academic_records.id, note: "UNSIGNED"]
+  language_code foreign_language_code [not null]
+  language_name varchar(50) [not null]
+  score decimal(4,2) [not null]
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    record_id [name: "idx_foreign_language_scores_record_id"]
+  }
+}
+
+Table candidate_documents {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  candidate_id bigint [not null, ref: > candidate_profiles.citizen_id, note: "UNSIGNED"]
+  document_type candidate_document_type [not null]
+  file_name varchar(255) [not null]
+  file_url text [not null]
+  file_type candidate_file_type [not null]
+  file_size bigint
+  uploaded_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+  deleted_at datetime
+
+  indexes {
+    candidate_id [name: "idx_candidate_documents_candidate_id"]
+  }
+}
+
+Table application_status_logs {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  application_id bigint [not null, ref: > applications.id, note: "UNSIGNED"]
+  old_status varchar(50)
+  new_status varchar(50) [not null]
+  changed_by bigint [ref: > users.id, note: "UNSIGNED"]
+  note text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    application_id [name: "idx_asl_application_id"]
+    changed_by [name: "idx_asl_changed_by"]
+  }
+}
+
+Table email_notifications {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  receiver_id bigint [ref: > users.id, note: "UNSIGNED"]
+  receiver_email varchar(255) [not null]
+  subject varchar(255) [not null]
+  content text [not null]
+  type email_notification_type [not null]
+  status email_notification_status [not null, default: 'PENDING']
+  sent_by bigint [ref: > users.id, note: "UNSIGNED"]
+  sent_at datetime
+  error_message text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    status [name: "idx_email_notifications_status"]
+    receiver_id [name: "idx_email_notifications_receiver_id"]
+    sent_by [name: "idx_email_notifications_sent_by"]
+  }
+}
+
+Table audit_logs {
+  id bigint [pk, increment, not null, note: "UNSIGNED"]
+  user_id bigint [ref: > users.id, note: "UNSIGNED"]
+  action varchar(100) [not null]
+  table_name varchar(100)
+  record_id bigint
+  old_data json
+  new_data json
+  ip_address varchar(50)
+  user_agent text
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    user_id [name: "idx_audit_logs_user_id"]
+  }
+}
