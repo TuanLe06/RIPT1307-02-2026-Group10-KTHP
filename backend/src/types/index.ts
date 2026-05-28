@@ -1,6 +1,7 @@
 export interface User {
   id: number;
   email: string;
+  full_name: string | null;
   password_hash: string;
   role: 'CANDIDATE' | 'ADMIN';
   status: 'ACTIVE' | 'LOCKED' | 'PENDING';

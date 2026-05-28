@@ -65,6 +65,10 @@ export class UserModel {
     return queryOne<User>(`SELECT * FROM users WHERE email = ?`, [email]);
   }
 
+  static async findAuthById(id: number): Promise<User | null> {
+    return queryOne<User>(`SELECT * FROM users WHERE id = ?`, [id]);
+  }
+
   static async findAuthByCitizenId(citizenId: number): Promise<User | null> {
     return queryOne<User>(
       `SELECT u.* FROM users u
@@ -149,11 +153,12 @@ export class UserModel {
     await query(
       `INSERT INTO users (
         email,
+        full_name,
         password_hash,
         role
       )
-      VALUES (?, ?, ?)`,
-      [data.email, data.password_hash, "CANDIDATE"],
+      VALUES (?, ?, ?, ?)`,
+      [data.email, data.full_name, data.password_hash, "CANDIDATE"],
     );
 
     const user = await queryOne<User>(`SELECT * FROM users WHERE email = ?`, [

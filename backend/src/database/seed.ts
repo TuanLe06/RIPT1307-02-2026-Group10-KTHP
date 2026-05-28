@@ -22,26 +22,26 @@ const seed = async (): Promise<void> => {
   const candidatePassword = await bcrypt.hash("candidate123", 12);
 
   const [adminResult] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'ADMIN', 'ACTIVE')`,
-    ["admin@example.com", adminPassword],
+    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'ADMIN', 'ACTIVE')`,
+    ["admin@example.com", "Quản trị viên", adminPassword],
   );
   const adminId = adminResult.insertId;
 
   const [candidateResult] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
-    ["candidate@example.com", candidatePassword],
+    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'CANDIDATE', 'ACTIVE')`,
+    ["candidate@example.com", "Nguyễn Văn An", candidatePassword],
   );
   const candidateId = candidateResult.insertId;
 
   const [candidate2Result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
-    ["nguyenvana@example.com", candidatePassword],
+    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'CANDIDATE', 'ACTIVE')`,
+    ["nguyenvana@example.com", "Trần Thị Hồng", candidatePassword],
   );
   const candidate2Id = candidate2Result.insertId;
 
   const [candidate3Result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
-    ["tranthib@example.com", candidatePassword],
+    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'CANDIDATE', 'ACTIVE')`,
+    ["tranthib@example.com", "Lê Minh Tâm", candidatePassword],
   );
   const candidate3Id = candidate3Result.insertId;
 

@@ -28,9 +28,10 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(",").map((s) => s.trim());
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: corsOrigins,
     credentials: true,
   }),
 );

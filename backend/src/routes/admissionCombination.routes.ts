@@ -84,8 +84,6 @@ router.delete(
 
 router.get(
   '/',
-  authenticate,
-  authorize('ADMIN'),
   [
     param('universityCode').trim().notEmpty().withMessage('Mã trường không được để trống'),
     param('majorCode').trim().notEmpty().withMessage('Mã ngành không được để trống'),
