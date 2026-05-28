@@ -3,9 +3,15 @@ import { validationResult } from 'express-validator';
 import { ApplicationModel } from '../models/application.model';
 import { CandidateProfileModel } from '../models/candidate-profile.model';
 import { MajorModel, UniversityModel } from '../models/university.model';
+import { AdmissionCombinationModel } from '../models/admissionCombination.model';
 import { EmailNotificationModel, ApplicationStatusLogModel } from '../models/notification.model';
+import { isWithinDeadline, getDeadlineStatus } from '../utils/deadline.util';
 
 // ===================== CANDIDATE APPLICATION TRACKING =====================
+
+export const getDeadlineInfo = async (_req: Request, res: Response): Promise<void> => {
+  res.json({ success: true, data: getDeadlineStatus() });
+};
 
 export const createApplication = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
@@ -15,7 +21,13 @@ export const createApplication = async (req: Request, res: Response): Promise<vo
   }
 
   try {
-    const { university_id, major_id, combination_id } = req.body;
+    if (!isWithinDeadline()) {
+      const info = getDeadlineStatus();
+      res.status(400).json({ success: false, message: info.message, deadline: info });
+      return;
+    }
+
+    const { university_id, major_id, combination_id, subject_1_score, subject_2_score, subject_3_score } = req.body;
 
     const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
     if (!candidateProfile) {
@@ -35,11 +47,20 @@ export const createApplication = async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    const combination = await AdmissionCombinationModel.findById(combination_id.toString());
+    if (!combination) {
+      res.status(404).json({ success: false, message: 'Combination not found' });
+      return;
+    }
+
     const application = await ApplicationModel.create({
       candidate_id: req.user!.id,
       university_id,
       major_id,
       combination_id,
+      subject_1_score: subject_1_score ?? null,
+      subject_2_score: subject_2_score ?? null,
+      subject_3_score: subject_3_score ?? null,
     });
 
     res.status(201).json({
@@ -55,6 +76,12 @@ export const createApplication = async (req: Request, res: Response): Promise<vo
 
 export const submitApplication = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!isWithinDeadline()) {
+      const info = getDeadlineStatus();
+      res.status(400).json({ success: false, message: info.message, deadline: info });
+      return;
+    }
+
     const { application_id } = req.params;
 
     const application = await ApplicationModel.findById(parseInt(application_id as string));
