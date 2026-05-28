@@ -1534,6 +1534,49 @@ const swaggerSpec = {
         },
       },
     },
+    // ─── Candidate Deadline ───────────────────────────────────────
+    "/api/candidate/deadline": {
+      get: {
+        tags: ["Candidate Applications"],
+        summary: "Lấy thông tin hạn chót đăng ký xét tuyển",
+        responses: {
+          200: {
+            description: "Thông tin hạn chót",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    success: { type: "boolean" },
+                    data: {
+                      type: "object",
+                      properties: {
+                        start_date: { type: "string", example: "02/07/2025" },
+                        end_date: { type: "string", example: "12/07/2025" },
+                        days_remaining: { type: "integer", nullable: true },
+                        status: { type: "string", enum: ["before", "during", "after"] },
+                        message: { type: "string" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/candidate/profile/completeness": {
+      get: {
+        tags: ["Candidate Profile"],
+        summary: "Kiểm tra mức độ hoàn thiện hồ sơ cá nhân và học tập",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: "Kết quả kiểm tra hồ sơ" },
+          401: { description: "Chưa xác thực" },
+        },
+      },
+    },
     // ─── Candidate Notifications ──────────────────────────────────
     "/api/candidate/notifications": {
       get: {
@@ -1626,6 +1669,9 @@ const swaggerSpec = {
                     enum: ["PENDING_REVIEW", "APPROVED", "REJECTED", "PASSED", "FAILED"],
                   },
                   reject_reason: { type: "string" },
+                  subject_1_score: { type: "number", nullable: true, description: "Điểm môn 1 của tổ hợp" },
+                  subject_2_score: { type: "number", nullable: true, description: "Điểm môn 2" },
+                  subject_3_score: { type: "number", nullable: true, description: "Điểm môn 3" },
                 },
               },
             },

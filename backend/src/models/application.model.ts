@@ -13,6 +13,9 @@ export interface Application {
   reviewed_by: number | null;
   reviewed_at: Date | null;
   reject_reason: string | null;
+  subject_1_score: number | null;
+  subject_2_score: number | null;
+  subject_3_score: number | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -33,13 +36,17 @@ export class ApplicationModel {
     university_id: number;
     major_id: number;
     combination_id: number;
+    subject_1_score?: number | null;
+    subject_2_score?: number | null;
+    subject_3_score?: number | null;
   }): Promise<Application> {
     const application_code = `APP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     const [result] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO applications (candidate_id, application_code, university_id, major_id, combination_id, status)
-       VALUES (?, ?, ?, ?, ?, 'DRAFT')`,
-      [data.candidate_id, application_code, data.university_id, data.major_id, data.combination_id]
+      `INSERT INTO applications (candidate_id, application_code, university_id, major_id, combination_id, status, subject_1_score, subject_2_score, subject_3_score)
+       VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?)`,
+      [data.candidate_id, application_code, data.university_id, data.major_id, data.combination_id,
+       data.subject_1_score ?? null, data.subject_2_score ?? null, data.subject_3_score ?? null]
     );
 
     const application = await ApplicationModel.findById(result.insertId);
@@ -50,7 +57,8 @@ export class ApplicationModel {
   static async findById(id: number): Promise<Application | null> {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT id, candidate_id, application_code, university_id, major_id, combination_id, status,
-              submitted_at, reviewed_by, reviewed_at, reject_reason, created_at, updated_at
+              submitted_at, reviewed_by, reviewed_at, reject_reason,
+              subject_1_score, subject_2_score, subject_3_score, created_at, updated_at
        FROM applications WHERE id = ?`,
       [id]
     );
@@ -61,6 +69,7 @@ export class ApplicationModel {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT a.id, a.candidate_id, a.application_code, a.university_id, a.major_id, a.combination_id,
               a.status, a.submitted_at, a.reviewed_by, a.reviewed_at, a.reject_reason,
+              a.subject_1_score, a.subject_2_score, a.subject_3_score,
               a.created_at, a.updated_at, u.name as university_name, u.code as university_code,
               m.name as major_name, m.code as major_code, cp.full_name as candidate_name,
               u2.email as candidate_email, reviewer.email as reviewer_name
@@ -79,7 +88,8 @@ export class ApplicationModel {
   static async findByApplicationCode(code: string): Promise<Application | null> {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT id, candidate_id, application_code, university_id, major_id, combination_id, status,
-              submitted_at, reviewed_by, reviewed_at, reject_reason, created_at, updated_at
+              submitted_at, reviewed_by, reviewed_at, reject_reason,
+              subject_1_score, subject_2_score, subject_3_score, created_at, updated_at
        FROM applications WHERE application_code = ?`,
       [code]
     );
@@ -96,6 +106,7 @@ export class ApplicationModel {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT a.id, a.candidate_id, a.application_code, a.university_id, a.major_id, a.combination_id,
               a.status, a.submitted_at, a.reviewed_by, a.reviewed_at, a.reject_reason,
+              a.subject_1_score, a.subject_2_score, a.subject_3_score,
               a.created_at, a.updated_at, u.name as university_name, u.code as university_code,
               m.name as major_name, m.code as major_code, cp.full_name as candidate_name,
               u2.email as candidate_email, reviewer.email as reviewer_name
@@ -152,6 +163,7 @@ export class ApplicationModel {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT a.id, a.candidate_id, a.application_code, a.university_id, a.major_id, a.combination_id,
               a.status, a.submitted_at, a.reviewed_by, a.reviewed_at, a.reject_reason,
+              a.subject_1_score, a.subject_2_score, a.subject_3_score,
               a.created_at, a.updated_at, u.name as university_name, u.code as university_code,
               m.name as major_name, m.code as major_code, cp.full_name as candidate_name,
               u2.email as candidate_email, reviewer.email as reviewer_name

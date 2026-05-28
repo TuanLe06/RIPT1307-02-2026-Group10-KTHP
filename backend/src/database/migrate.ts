@@ -25,6 +25,7 @@ const migrate = async (): Promise<void> => {
     `CREATE TABLE IF NOT EXISTS users (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       email VARCHAR(255) NOT NULL,
+      full_name VARCHAR(255) NULL,
       password_hash VARCHAR(255) NOT NULL,
       role ENUM('CANDIDATE','ADMIN') NOT NULL,
       status ENUM('ACTIVE','LOCKED','PENDING') NOT NULL DEFAULT 'ACTIVE',
@@ -137,6 +138,9 @@ const migrate = async (): Promise<void> => {
       reviewed_by BIGINT UNSIGNED NULL,
       reviewed_at DATETIME NULL,
       reject_reason TEXT NULL,
+      subject_1_score DECIMAL(4,2) NULL,
+      subject_2_score DECIMAL(4,2) NULL,
+      subject_3_score DECIMAL(4,2) NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       UNIQUE KEY uq_applications_code (application_code),
