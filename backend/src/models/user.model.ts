@@ -1,5 +1,15 @@
-import { query, queryOne } from "../config/database";
+import { ResultSetHeader } from "mysql2/promise";
+import pool, { query, queryOne } from "../config/database";
 import { User } from "../types";
+
+type CreateCandidateWithProfilePayload = {
+  email: string;
+  password_hash: string;
+  citizen_id: number;
+  full_name: string;
+  phone?: string | null;
+  address?: string | null;
+};
 
 export class UserModel {
   static async findAll(page = 1, limit = 10, search = "") {
@@ -113,18 +123,16 @@ export class UserModel {
   static async create(data: {
     email: string;
     password_hash: string;
-    full_name?: string;
     role: string;
   }): Promise<User> {
     await query(
       `INSERT INTO users (
         email,
         password_hash,
-        full_name,
         role
       )
-      VALUES (?, ?, ?, ?)`,
-      [data.email, data.password_hash, data.full_name ?? null, data.role],
+      VALUES (?, ?, ?)`,
+      [data.email, data.password_hash, data.role],
     );
 
     const user = await queryOne<User>(
@@ -149,52 +157,63 @@ export class UserModel {
     return user;
   }
 
-  static async createCandidateWithProfile(data: any): Promise<User> {
-    await query(
-      `INSERT INTO users (
-        email,
-        full_name,
-        password_hash,
-        role
-      )
-      VALUES (?, ?, ?, ?)`,
-      [data.email, data.full_name, data.password_hash, "CANDIDATE"],
-    );
+  static async createCandidateWithProfile(data: CreateCandidateWithProfilePayload): Promise<User> {
+    const connection = await pool.getConnection();
 
-    const user = await queryOne<User>(`SELECT * FROM users WHERE email = ?`, [
-      data.email,
-    ]);
+    try {
+      await connection.beginTransaction();
 
-    if (!user) {
-      throw new Error("Cannot create user");
+      const [insertResult] = await connection.execute<ResultSetHeader>(
+        `INSERT INTO users (
+          email,
+          password_hash,
+          role
+        )
+        VALUES (?, ?, ?)`,
+        [data.email, data.password_hash, "CANDIDATE"],
+      );
+
+      const userId = Number(insertResult.insertId);
+
+      await connection.execute(
+        `INSERT INTO candidate_profiles (
+          user_id,
+          citizen_id,
+          full_name,
+          phone,
+          address
+        )
+        VALUES (?, ?, ?, ?, ?)`,
+        [
+          userId,
+          data.citizen_id,
+          data.full_name,
+          data.phone ?? null,
+          data.address ?? null,
+        ],
+      );
+
+      await connection.commit();
+
+      const createdUser = await this.findById(userId);
+      if (!createdUser) {
+        throw new Error("Cannot load created user");
+      }
+
+      return createdUser;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
     }
-
-    await query(
-      `INSERT INTO candidate_profiles (
-        user_id,
-        citizen_id,
-        full_name,
-        phone,
-        address
-      )
-      VALUES (?, ?, ?, ?, ?)`,
-      [
-        user.id,
-        data.citizen_id,
-        data.full_name,
-        data.phone ?? null,
-        data.address ?? null,
-      ],
-    );
-
-    return user;
   }
 
   static async update(
     id: number,
     data: Record<string, any>,
   ): Promise<User | null> {
-    const allowed = ["full_name", "status", "password_hash", "last_login_at"];
+    const allowed = ["status", "password_hash", "last_login_at"];
 
     const fields = Object.keys(data).filter((k) => allowed.includes(k));
 

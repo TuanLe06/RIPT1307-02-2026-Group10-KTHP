@@ -94,7 +94,7 @@ const swaggerSpec = {
                   password: {
                     type: "string",
                     minLength: 6,
-                    example: "secret123",
+                    example: "Secret@123",
                   },
                 },
               },
@@ -125,7 +125,7 @@ const swaggerSpec = {
                     format: "email",
                     example: "a@example.com",
                   },
-                  password: { type: "string", example: "secret123" },
+                  password: { type: "string", example: "Secret@123" },
                 },
               },
             },
@@ -618,10 +618,6 @@ const swaggerSpec = {
                 type: "object",
                 properties: {
                   graduation_year: { type: "integer", example: 2024 },
-                  science_group: {
-                    type: "string",
-                    enum: ["NATURAL", "SOCIAL"],
-                  },
                   priority_score: {
                     type: "number",
                     format: "float",
@@ -779,7 +775,7 @@ const swaggerSpec = {
     "/api/admin/candidates/{citizenId}/exam-scores-by-group": {
       put: {
         tags: ["Admin"],
-        summary: "Admin cập nhật điểm thi theo khối KHTN/KHXH cho thí sinh",
+        summary: "Admin cập nhật điểm thi 4 môn cho thí sinh",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -795,12 +791,8 @@ const swaggerSpec = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["science_group", "scores"],
+                required: ["scores"],
                 properties: {
-                  science_group: {
-                    type: "string",
-                    enum: ["NATURAL", "SOCIAL"],
-                  },
                   scores: {
                     type: "object",
                     additionalProperties: {
@@ -812,11 +804,21 @@ const swaggerSpec = {
                     example: {
                       TOAN: 8.5,
                       VAN: 8.25,
-                      ANH: 8.0,
+                      NGOAINGU: 8.0,
                       LY: 8.0,
-                      HOA: 7.75,
-                      SINH: 8.5,
                     },
+                  },
+                  foreign_language: {
+                    type: "object",
+                    properties: {
+                      language_code: {
+                        type: "string",
+                        enum: ["ANH", "PHAP", "DUC", "NHAT", "HAN", "NGA", "TRUNG"],
+                        example: "ANH",
+                      },
+                    },
+                    description:
+                      "Chỉ gửi khi có môn NGOAINGU trong scores. Không được gửi nếu không có NGOAINGU.",
                   },
                 },
               },
@@ -824,9 +826,10 @@ const swaggerSpec = {
           },
         },
         responses: {
-          200: { description: "Cập nhật điểm theo khối thành công" },
+          200: { description: "Cập nhật điểm thi thành công" },
           400: {
-            description: "Payload không hợp lệ hoặc sai tổ hợp môn theo khối",
+            description:
+              "Payload không hợp lệ (bắt buộc 4 môn, có TOÁN+VĂN, 2 môn tự chọn hợp lệ, NGOAINGU thì phải có foreign_language)",
           },
           401: { description: "Chưa xác thực" },
           403: { description: "Không đủ quyền ADMIN" },
@@ -834,11 +837,11 @@ const swaggerSpec = {
         },
       },
     },
-    // ─── Admission Combinations (per Major) ──────────────────────
+    // Admission Combinations (per Major)
     "/api/universities/{universityCode}/majors/{majorCode}/combinations": {
       get: {
         tags: ["AdmissionCombinations"],
-        summary: "Danh sach to hop xet tuyen cua mot nganh (co phan trang)",
+        summary: "Danh sách tổ hợp xét tuyển của một ngành (có phân trang)",
         parameters: [
           {
             name: "universityCode",
@@ -872,13 +875,13 @@ const swaggerSpec = {
           },
         ],
         responses: {
-          200: { description: "Lay danh sach to hop thanh cong" },
-          404: { description: "Khong tim thay truong hoac nganh" },
+          200: { description: "Lấy danh sách tổ hợp thành công" },
+          404: { description: "Không tìm thấy trường hoặc ngành" },
         },
       },
       post: {
         tags: ["AdmissionCombinations"],
-        summary: "Them to hop xet tuyen cho mot nganh",
+        summary: "Thêm tổ hợp xét tuyển cho một ngành",
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1857,3 +1860,6 @@ const swaggerSpec = {
 } as const;
 
 export default swaggerSpec;
+
+
+

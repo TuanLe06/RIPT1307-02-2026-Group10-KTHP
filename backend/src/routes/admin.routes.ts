@@ -11,27 +11,40 @@ router.put(
   '/candidates/:citizenId/exam-scores-by-group',
   [
     param('citizenId').isInt({ min: 1 }).withMessage('citizenId must be a positive integer'),
-    body('science_group')
-      .exists()
-      .withMessage('science_group is required')
-      .isIn(['NATURAL', 'SOCIAL'])
-      .withMessage('science_group is invalid'),
     body('scores').exists().withMessage('scores is required').isObject().withMessage('scores must be an object'),
+    body('foreign_language')
+      .optional()
+      .isObject()
+      .withMessage('foreign_language must be an object'),
+    body('foreign_language.language_code')
+      .optional()
+      .isIn(['ANH', 'PHAP', 'DUC', 'NHAT', 'HAN', 'NGA', 'TRUNG'])
+      .withMessage('foreign_language.language_code is invalid'),
     body().custom((value) => {
-      const group = value?.science_group;
       const scores = value?.scores;
       if (!scores || typeof scores !== 'object' || Array.isArray(scores)) return true;
-      const expected =
-        group === 'NATURAL'
-          ? ['TOAN', 'VAN', 'ANH', 'LY', 'HOA', 'SINH']
-          : group === 'SOCIAL'
-            ? ['TOAN', 'VAN', 'ANH', 'SU', 'DIA', 'GDCD']
-            : [];
-      if (!expected.length) return true;
-      const keys = Object.keys(scores).sort();
-      const expectedKeys = [...expected].sort();
-      if (keys.length !== expectedKeys.length || keys.some((key, idx) => key !== expectedKeys[idx])) {
-        throw new Error(`scores must contain exactly: ${expected.join(', ')}`);
+      const keys = Object.keys(scores);
+      if (keys.length !== 4) {
+        throw new Error('scores must contain exactly 4 subjects');
+      }
+      if (!keys.includes('TOAN') || !keys.includes('VAN')) {
+        throw new Error('scores must include TOAN and VAN');
+      }
+      const optionalKeys = keys.filter((key) => key !== 'TOAN' && key !== 'VAN');
+      const allowedOptional = ['LY', 'HOA', 'SINH', 'SU', 'DIA', 'GDKTPL', 'TINHOC', 'CONGNGHE', 'NGOAINGU'];
+      if (optionalKeys.length !== 2 || optionalKeys.some((key) => !allowedOptional.includes(key))) {
+        throw new Error(
+          `scores optional subjects must be exactly 2 and in: ${allowedOptional.join(', ')}`
+        );
+      }
+
+      const hasForeignLanguageSubject = keys.includes('NGOAINGU');
+      const languageCode = value?.foreign_language?.language_code;
+      if (hasForeignLanguageSubject && !languageCode) {
+        throw new Error('foreign_language.language_code is required when NGOAINGU is selected');
+      }
+      if (!hasForeignLanguageSubject && value?.foreign_language) {
+        throw new Error('foreign_language is only allowed when NGOAINGU is selected');
       }
       return true;
     }),

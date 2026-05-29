@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { CandidateProfileModel } from '../models/candidate-profile.model';
+import { CandidateExamScoresPayload, CandidateProfileModel } from '../models/candidate-profile.model';
 import { deleteAssetByPublicId, uploadDocumentBuffer } from '../services/cloudinary.service';
 
 export const candidateDocumentDeps = {
@@ -75,7 +75,6 @@ export const upsertCandidateAcademicRecord = async (req: Request, res: Response)
 
   const allowedFields = [
     'graduation_year',
-    'science_group',
     'priority_score',
   ] as const;
 
@@ -109,17 +108,21 @@ export const upsertCandidateExamScoresByGroupAsAdmin = async (
     return;
   }
 
-  const updated = await CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId(citizenId, {
-    science_group: req.body.science_group,
+  const scorePayload: CandidateExamScoresPayload = {
     scores: req.body.scores,
-  });
+    ...(req.body.foreign_language ? { foreign_language: req.body.foreign_language } : {}),
+  };
+  const updated = await CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId(
+    citizenId,
+    scorePayload
+  );
 
   if (!updated) {
     res.status(404).json({ success: false, message: 'Candidate profile not found' });
     return;
   }
 
-  res.json({ success: true, message: 'Candidate exam scores updated by group', data: updated });
+  res.json({ success: true, message: 'Candidate exam scores updated', data: updated });
 };
 
 export const upsertCandidateAcademicProgress = async (req: Request, res: Response): Promise<void> => {
