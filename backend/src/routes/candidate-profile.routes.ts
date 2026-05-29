@@ -77,10 +77,6 @@ router.put(
       .optional()
       .isInt({ min: 1900, max: 2100 })
       .withMessage('graduation_year must be a valid year'),
-    body('science_group')
-      .optional()
-      .isIn(['NATURAL', 'SOCIAL'])
-      .withMessage('science_group is invalid'),
     body('priority_score')
       .optional()
       .isFloat({ min: 0, max: 10 })

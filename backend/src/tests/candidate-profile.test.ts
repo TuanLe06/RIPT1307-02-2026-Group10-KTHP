@@ -172,16 +172,14 @@ const testGetAcademicRecordSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
       exam_scores: [
-        { subject_code: 'ANH', subject_name: 'Tieng Anh', score: 8.0 },
-        { subject_code: 'SINH', subject_name: 'Sinh hoc', score: 8.5 },
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.5 },
-        { subject_code: 'VAN', subject_name: 'Ngu van', score: 8.25 },
-        { subject_code: 'LY', subject_name: 'Vat ly', score: 8.25 },
-        { subject_code: 'HOA', subject_name: 'Hoa hoc', score: 9 },
+        { subject_code: 'TOAN', subject_name: 'Toan', is_required: true, score: 8.5 },
+        { subject_code: 'VAN', subject_name: 'Ngu van', is_required: true, score: 8.25 },
+        { subject_code: 'LY', subject_name: 'Vat ly', is_required: false, score: 8.25 },
+        { subject_code: 'NGOAINGU', subject_name: 'Ngoai ngu', is_required: false, score: 8.0 },
       ],
+      foreign_language: { language_code: 'ANH', language_name: 'Tiếng Anh' },
     },
     academic_progress: {
       grade_10: { school_name: 'THPT A', avg_score: 8.0 },
@@ -199,8 +197,8 @@ const testGetAcademicRecordSuccess = async (): Promise<void> => {
 const testUpsertAcademicRecordValidationFail = async (): Promise<void> => {
   const req = {
     user: { id: 1, role: 'CANDIDATE' },
-    body: { science_group: 'INVALID' },
-    'express-validator#contexts': [{ errors: [{ msg: 'science_group is invalid' }] }],
+    body: { priority_score: 11 },
+    'express-validator#contexts': [{ errors: [{ msg: 'priority_score must be between 0 and 10' }] }],
   } as any;
   const res = createMockResponse();
   await upsertCandidateAcademicRecord(req, res as any);
@@ -213,13 +211,12 @@ const testUpsertAcademicRecordSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
       exam_scores: [
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.5 },
-        { subject_code: 'LY', subject_name: 'Vat ly', score: 8.25 },
-        { subject_code: 'HOA', subject_name: 'Hoa hoc', score: 9 },
+        { subject_code: 'TOAN', subject_name: 'Toan', is_required: true, score: 8.5 },
+        { subject_code: 'VAN', subject_name: 'Ngu van', is_required: true, score: 8.25 },
       ],
+      foreign_language: null,
     },
     academic_progress: { grade_10: {}, grade_11: {}, grade_12: {} },
   });
@@ -228,7 +225,6 @@ const testUpsertAcademicRecordSuccess = async (): Promise<void> => {
     user: { id: 1, role: 'CANDIDATE' },
     body: {
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
     },
     'express-validator#contexts': [],
@@ -244,9 +240,9 @@ const testUpsertAcademicProgressSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 0,
       exam_scores: [],
+      foreign_language: null,
     },
     academic_progress: {
       grade_10: { school_name: 'THPT A', avg_score: 8.0 },
@@ -271,13 +267,14 @@ const testAdminUpsertGroupScoresNaturalSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
       exam_scores: [
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.5 },
-        { subject_code: 'LY', subject_name: 'Vat ly', score: 8.25 },
-        { subject_code: 'HOA', subject_name: 'Hoa hoc', score: 9 },
+        { subject_code: 'TOAN', subject_name: 'Toan', is_required: true, score: 8.5 },
+        { subject_code: 'VAN', subject_name: 'Ngu van', is_required: true, score: 8.25 },
+        { subject_code: 'LY', subject_name: 'Vat ly', is_required: false, score: 8.25 },
+        { subject_code: 'NGOAINGU', subject_name: 'Ngoai ngu', is_required: false, score: 8.0 },
       ],
+      foreign_language: { language_code: 'ANH', language_name: 'Tieng Anh' },
     },
     academic_progress: { grade_10: {}, grade_11: {}, grade_12: {} },
   });
@@ -285,7 +282,10 @@ const testAdminUpsertGroupScoresNaturalSuccess = async (): Promise<void> => {
   const req = {
     user: { id: 10, role: 'ADMIN' },
     params: { citizenId: '123456789012' },
-    body: { science_group: 'NATURAL', scores: { TOAN: 8.5, VAN: 8.25, ANH: 8.0, LY: 8.25, HOA: 9, SINH: 8.5 } },
+    body: {
+      scores: { TOAN: 8.5, VAN: 8.25, NGOAINGU: 8.0, LY: 8.25 },
+      foreign_language: { language_code: 'ANH' },
+    },
     'express-validator#contexts': [],
   } as any;
   const res = createMockResponse();
@@ -299,16 +299,14 @@ const testAdminUpsertGroupScoresSocialSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'SOCIAL',
       priority_score: 1.5,
       exam_scores: [
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.0 },
-        { subject_code: 'ANH', subject_name: 'Tieng Anh', score: 7.25 },
-        { subject_code: 'VAN', subject_name: 'Ngu van', score: 8.5 },
-        { subject_code: 'SU', subject_name: 'Lich su', score: 8.25 },
-        { subject_code: 'DIA', subject_name: 'Dia ly', score: 9 },
-        { subject_code: 'GDCD', subject_name: 'GDCD', score: 8.0 },
+        { subject_code: 'TOAN', subject_name: 'Toan', is_required: true, score: 8.0 },
+        { subject_code: 'VAN', subject_name: 'Ngu van', is_required: true, score: 8.5 },
+        { subject_code: 'SU', subject_name: 'Lich su', is_required: false, score: 8.25 },
+        { subject_code: 'DIA', subject_name: 'Dia ly', is_required: false, score: 9 },
       ],
+      foreign_language: null,
     },
     academic_progress: { grade_10: {}, grade_11: {}, grade_12: {} },
   });
@@ -316,7 +314,7 @@ const testAdminUpsertGroupScoresSocialSuccess = async (): Promise<void> => {
   const req = {
     user: { id: 10, role: 'ADMIN' },
     params: { citizenId: '123456789012' },
-    body: { science_group: 'SOCIAL', scores: { TOAN: 8.0, VAN: 8.5, ANH: 7.25, SU: 8.25, DIA: 9, GDCD: 8.0 } },
+    body: { scores: { TOAN: 8.0, VAN: 8.5, SU: 8.25, DIA: 9 } },
     'express-validator#contexts': [],
   } as any;
   const res = createMockResponse();
@@ -328,8 +326,8 @@ const testAdminUpsertGroupScoresInvalidPayload = async (): Promise<void> => {
   const req = {
     user: { id: 10, role: 'ADMIN' },
     params: { citizenId: '123456789012' },
-    body: { science_group: 'INVALID' },
-    'express-validator#contexts': [{ errors: [{ msg: 'science_group is invalid' }] }],
+    body: { scores: { TOAN: 8.5 } },
+    'express-validator#contexts': [{ errors: [{ msg: 'scores must contain exactly 4 subjects' }] }],
   } as any;
   const res = createMockResponse();
   await upsertCandidateExamScoresByGroupAsAdmin(req, res as any);
@@ -341,7 +339,7 @@ const testAdminUpsertGroupScoresCandidateNotFound = async (): Promise<void> => {
   const req = {
     user: { id: 10, role: 'ADMIN' },
     params: { citizenId: '999999999999' },
-    body: { science_group: 'NATURAL', scores: { TOAN: 8.5, VAN: 8.25, ANH: 8.0, LY: 8.25, HOA: 9, SINH: 8.5 } },
+    body: { scores: { TOAN: 8.5, VAN: 8.25, LY: 8.25, HOA: 9 } },
     'express-validator#contexts': [],
   } as any;
   const res = createMockResponse();
@@ -447,8 +445,8 @@ const run = async (): Promise<void> => {
     ['upsert academic record validation failed', testUpsertAcademicRecordValidationFail],
     ['upsert academic record success', testUpsertAcademicRecordSuccess],
     ['upsert academic progress success', testUpsertAcademicProgressSuccess],
-    ['admin upsert NATURAL group scores success', testAdminUpsertGroupScoresNaturalSuccess],
-    ['admin upsert SOCIAL group scores success', testAdminUpsertGroupScoresSocialSuccess],
+    ['admin upsert scores success with NGOAINGU', testAdminUpsertGroupScoresNaturalSuccess],
+    ['admin upsert scores success without NGOAINGU', testAdminUpsertGroupScoresSocialSuccess],
     ['admin upsert group scores invalid payload', testAdminUpsertGroupScoresInvalidPayload],
     ['admin upsert group scores candidate not found', testAdminUpsertGroupScoresCandidateNotFound],
     ['list documents success', testListDocumentsSuccess],

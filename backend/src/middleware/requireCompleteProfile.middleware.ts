@@ -28,7 +28,7 @@ const checkCompleteness = async (userId: number): Promise<CompletenessResult> =>
   if (!p.address) missingFields.push('Địa chỉ');
 
   const [recordRows] = await pool.execute<RowDataPacket[]>(
-    `SELECT ar.id, ar.graduation_year, ar.science_group
+    `SELECT ar.id, ar.graduation_year
      FROM academic_records ar
      JOIN candidate_profiles cp ON cp.citizen_id = ar.candidate_id
      WHERE cp.user_id = ?
@@ -41,7 +41,42 @@ const checkCompleteness = async (userId: number): Promise<CompletenessResult> =>
   } else {
     const r = recordRows[0];
     if (!r.graduation_year) missingFields.push('Năm tốt nghiệp');
-    if (!r.science_group) missingFields.push('Khối học (KHTN/KHXH)');
+
+    const [scoreRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT subject_code
+       FROM exam_scores
+       WHERE record_id = ?`,
+      [r.id]
+    );
+    const subjectCodes = scoreRows.map((row) => String(row.subject_code));
+    if (subjectCodes.length !== 4) {
+      missingFields.push('Điểm thi phải đủ đúng 4 môn');
+    } else {
+      if (!subjectCodes.includes('TOAN') || !subjectCodes.includes('VAN')) {
+        missingFields.push('Điểm thi bắt buộc có TOÁN và VĂN');
+      }
+
+      const optionalCodes = subjectCodes.filter((code) => code !== 'TOAN' && code !== 'VAN');
+      const allowedOptionalCodes = ['LY', 'HOA', 'SINH', 'SU', 'DIA', 'GDKTPL', 'TINHOC', 'CONGNGHE', 'NGOAINGU'];
+      if (optionalCodes.length !== 2 || optionalCodes.some((code) => !allowedOptionalCodes.includes(code))) {
+        missingFields.push('2 môn tự chọn chưa hợp lệ');
+      }
+
+      const [foreignLanguageRows] = await pool.execute<RowDataPacket[]>(
+        `SELECT language_code
+         FROM foreign_language_scores
+         WHERE record_id = ?
+         LIMIT 1`,
+        [r.id]
+      );
+      const hasForeignLanguageSubject = subjectCodes.includes('NGOAINGU');
+      if (hasForeignLanguageSubject && !foreignLanguageRows.length) {
+        missingFields.push('Thiếu thông tin ngoại ngữ cho môn NGOAINGU');
+      }
+      if (!hasForeignLanguageSubject && foreignLanguageRows.length) {
+        missingFields.push('Dữ liệu ngoại ngữ không khớp môn đã chọn');
+      }
+    }
 
     const [progressRows] = await pool.execute<RowDataPacket[]>(
       `SELECT school_name FROM academic_progress WHERE record_id = ? AND grade_level = 12 LIMIT 1`,

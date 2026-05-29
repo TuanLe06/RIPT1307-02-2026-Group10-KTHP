@@ -72,6 +72,7 @@ const testRegisterSuccess = async (): Promise<void> => {
 
   await register(req, res as any);
   assert.equal(res.statusCode, 201);
+  assert.equal((res.body as any)?.data?.full_name, 'Nguyen Van A');
 };
 
 const testRegisterDuplicateEmail = async (): Promise<void> => {

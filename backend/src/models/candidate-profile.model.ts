@@ -16,13 +16,16 @@ type AcademicRecordRow = {
   id: number;
   candidate_id: number;
   graduation_year: number | null;
-  science_group: 'NATURAL' | 'SOCIAL' | null;
   priority_score: string;
 };
 type AcademicSubjectScoreRow = {
   subject_code: string;
-  subject_name: string;
+  is_required: number;
   score: string;
+};
+type ForeignLanguageScoreRow = {
+  language_code: 'ANH' | 'PHAP' | 'DUC' | 'NHAT' | 'HAN' | 'NGA' | 'TRUNG';
+  language_name: string;
 };
 type AcademicProgressRow = {
   grade_level: number | null;
@@ -73,14 +76,21 @@ export type CandidateAcademicRecordFull = {
     id: number | null;
     candidate_id: number;
     graduation_year: number | null;
-    science_group: 'NATURAL' | 'SOCIAL' | null;
     priority_score: number;
-    exam_scores: Array<{ subject_code: string; subject_name: string; score: number }>;
+    exam_scores: Array<{ subject_code: string; subject_name: string; is_required: boolean; score: number }>;
+    foreign_language: ForeignLanguageScoreRow | null;
   } | null;
   academic_progress: {
     grade_10: CandidateAcademicProgressPayload;
     grade_11: CandidateAcademicProgressPayload;
     grade_12: CandidateAcademicProgressPayload;
+  };
+};
+
+export type CandidateExamScoresPayload = {
+  scores: Record<string, number>;
+  foreign_language?: {
+    language_code: 'ANH' | 'PHAP' | 'DUC' | 'NHAT' | 'HAN' | 'NGA' | 'TRUNG';
   };
 };
 
@@ -96,16 +106,42 @@ export type CandidateProfileFull = {
 };
 
 export class CandidateProfileModel {
+  private static readonly REQUIRED_SUBJECT_CODES = ['TOAN', 'VAN'] as const;
+  private static readonly OPTIONAL_SUBJECT_CODES = [
+    'LY',
+    'HOA',
+    'SINH',
+    'SU',
+    'DIA',
+    'GDKTPL',
+    'TINHOC',
+    'CONGNGHE',
+    'NGOAINGU',
+  ] as const;
+  private static readonly FOREIGN_LANGUAGE_CODES = ['ANH', 'PHAP', 'DUC', 'NHAT', 'HAN', 'NGA', 'TRUNG'] as const;
+
+  private static readonly FOREIGN_LANGUAGE_NAME_BY_CODE: Record<string, string> = {
+    ANH: 'Tiếng Anh',
+    PHAP: 'Tiếng Pháp',
+    DUC: 'Tiếng Đức',
+    NHAT: 'Tiếng Nhật',
+    HAN: 'Tiếng Hàn',
+    NGA: 'Tiếng Nga',
+    TRUNG: 'Tiếng Trung',
+  };
+
   private static readonly SUBJECT_NAME_BY_CODE: Record<string, string> = {
-    TOAN: 'Toan',
-    VAN: 'Ngu van',
-    ANH: 'Tieng Anh',
-    LY: 'Vat ly',
-    HOA: 'Hoa hoc',
-    SINH: 'Sinh hoc',
-    SU: 'Lich su',
-    DIA: 'Dia ly',
-    GDCD: 'GDCD',
+    TOAN: 'Toán',
+    VAN: 'Ngữ văn',
+    LY: 'Vật lý',
+    HOA: 'Hóa học',
+    SINH: 'Sinh học',
+    SU: 'Lịch sử',
+    DIA: 'Địa lý',
+    GDKTPL: 'GDKT và PL',
+    TINHOC: 'Tin học',
+    CONGNGHE: 'Công nghệ',
+    NGOAINGU: 'Ngoại ngữ',
   };
 
   private static async getCandidateIdByUserId(userId: number): Promise<number | null> {
@@ -164,7 +200,7 @@ export class CandidateProfileModel {
 
   private static async getAcademicByCandidateId(candidateId: number): Promise<CandidateAcademicRecordFull> {
     const [recordRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT id, candidate_id, graduation_year, science_group, priority_score
+      `SELECT id, candidate_id, graduation_year, priority_score
        FROM academic_records
        WHERE candidate_id = ?
        LIMIT 1`,
@@ -186,10 +222,17 @@ export class CandidateProfileModel {
       [record.id]
     );
     const [subjectScoreRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT subject_code, subject_name, score
+      `SELECT subject_code, is_required, score
        FROM exam_scores
        WHERE record_id = ?
        ORDER BY subject_code ASC`,
+      [record.id]
+    );
+    const [foreignLanguageRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT language_code, language_name
+       FROM foreign_language_scores
+       WHERE record_id = ?
+       LIMIT 1`,
       [record.id]
     );
 
@@ -198,13 +241,16 @@ export class CandidateProfileModel {
         id: record.id,
         candidate_id: record.candidate_id,
         graduation_year: record.graduation_year,
-        science_group: record.science_group,
         priority_score: Number(record.priority_score),
         exam_scores: (subjectScoreRows as unknown as AcademicSubjectScoreRow[]).map((item) => ({
           subject_code: item.subject_code,
-          subject_name: item.subject_name,
+          subject_name: this.SUBJECT_NAME_BY_CODE[item.subject_code] ?? item.subject_code,
+          is_required: Boolean(item.is_required),
           score: Number(item.score),
         })),
+        foreign_language: foreignLanguageRows.length
+          ? (foreignLanguageRows[0] as unknown as ForeignLanguageScoreRow)
+          : null,
       },
       academic_progress: this.mapAcademicProgress(progressRows as unknown as AcademicProgressRow[]),
     };
@@ -332,7 +378,6 @@ export class CandidateProfileModel {
     userId: number,
     data: Partial<{
       graduation_year: number | null;
-      science_group: 'NATURAL' | 'SOCIAL' | null;
       priority_score: number | null;
       exam_scores: Array<{ subject_code: string; score: number }>;
     }>
@@ -372,12 +417,11 @@ export class CandidateProfileModel {
     if (currentRecordRows.length && data.exam_scores && data.exam_scores.length > 0) {
       const recordId = Number(currentRecordRows[0].id);
       for (const item of data.exam_scores) {
-        const subjectName = this.SUBJECT_NAME_BY_CODE[item.subject_code] ?? item.subject_code;
         await pool.execute(
-          `INSERT INTO exam_scores (record_id, subject_code, subject_name, score)
-           VALUES (?, ?, ?, ?)
-           ON DUPLICATE KEY UPDATE score = VALUES(score), subject_name = VALUES(subject_name)`,
-          [recordId, item.subject_code, subjectName, item.score]
+          `INSERT INTO exam_scores (record_id, subject_code, score)
+           VALUES (?, ?, ?)
+           ON DUPLICATE KEY UPDATE score = VALUES(score)`,
+          [recordId, item.subject_code, item.score]
         );
       }
     }
@@ -394,33 +438,77 @@ export class CandidateProfileModel {
 
   static async upsertExamScoresByGroupForCandidateByCitizenId(
     citizenId: number,
-    payload: {
-      science_group: 'NATURAL' | 'SOCIAL';
-      scores: Record<string, number>;
-    }
+    payload: CandidateExamScoresPayload
   ): Promise<CandidateAcademicRecordFull | null> {
     const candidateId = await this.getCandidateIdByCitizenId(citizenId);
     if (!candidateId) return null;
 
     const recordId = await this.ensureAcademicRecordByCandidateId(candidateId);
-    await pool.execute(`UPDATE academic_records SET science_group = ?, updated_at = NOW() WHERE id = ?`, [
-      payload.science_group,
-      recordId,
-    ]);
+    const scoreKeys = Object.keys(payload.scores);
+    if (scoreKeys.length !== 4) {
+      throw new Error('scores must contain exactly 4 subjects');
+    }
 
-    const subjectCodes =
-      payload.science_group === 'NATURAL'
-        ? ['TOAN', 'VAN', 'ANH', 'LY', 'HOA', 'SINH']
-        : ['TOAN', 'VAN', 'ANH', 'SU', 'DIA', 'GDCD'];
-    for (const subjectCode of subjectCodes) {
-      const subjectName = this.SUBJECT_NAME_BY_CODE[subjectCode] ?? subjectCode;
-      await pool.execute(
-        `INSERT INTO exam_scores (record_id, subject_code, subject_name, score)
-         VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE score = VALUES(score), subject_name = VALUES(subject_name)`,
-        [recordId, subjectCode, subjectName, payload.scores[subjectCode]]
+    const missingRequired = this.REQUIRED_SUBJECT_CODES.filter((code) => !scoreKeys.includes(code));
+    if (missingRequired.length > 0) {
+      throw new Error(`scores must include required subjects: ${missingRequired.join(', ')}`);
+    }
+
+    const optionalCodes = scoreKeys.filter((code) => !this.REQUIRED_SUBJECT_CODES.includes(code as 'TOAN' | 'VAN'));
+    if (optionalCodes.length !== 2) {
+      throw new Error('scores must include exactly 2 optional subjects');
+    }
+
+    const invalidOptionalCodes = optionalCodes.filter(
+      (code) => !this.OPTIONAL_SUBJECT_CODES.includes(code as (typeof this.OPTIONAL_SUBJECT_CODES)[number])
+    );
+    if (invalidOptionalCodes.length > 0) {
+      throw new Error(`invalid optional subjects: ${invalidOptionalCodes.join(', ')}`);
+    }
+
+    const hasForeignLanguageSubject = scoreKeys.includes('NGOAINGU');
+    if (hasForeignLanguageSubject && !payload.foreign_language?.language_code) {
+      throw new Error('foreign_language.language_code is required when NGOAINGU is selected');
+    }
+    if (!hasForeignLanguageSubject && payload.foreign_language) {
+      throw new Error('foreign_language is only allowed when NGOAINGU is selected');
+    }
+
+    const foreignLanguageCode = payload.foreign_language?.language_code;
+    if (
+      foreignLanguageCode &&
+      !this.FOREIGN_LANGUAGE_CODES.includes(
+        foreignLanguageCode as (typeof this.FOREIGN_LANGUAGE_CODES)[number]
+      )
+    ) {
+      throw new Error(
+        `foreign_language.language_code must be one of: ${this.FOREIGN_LANGUAGE_CODES.join(', ')}`
       );
     }
+
+    await pool.execute(`DELETE FROM foreign_language_scores WHERE record_id = ?`, [recordId]);
+    await pool.execute(`DELETE FROM exam_scores WHERE record_id = ?`, [recordId]);
+
+    for (const subjectCode of scoreKeys) {
+      const isRequired = this.REQUIRED_SUBJECT_CODES.includes(subjectCode as 'TOAN' | 'VAN');
+      const score = payload.scores[subjectCode];
+      await pool.execute(
+        `INSERT INTO exam_scores (record_id, subject_code, is_required, score)
+         VALUES (?, ?, ?, ?)`,
+        [recordId, subjectCode, isRequired, score]
+      );
+    }
+
+    if (hasForeignLanguageSubject && foreignLanguageCode) {
+      const languageName = this.FOREIGN_LANGUAGE_NAME_BY_CODE[foreignLanguageCode];
+      await pool.execute(
+        `INSERT INTO foreign_language_scores (record_id, language_code, language_name)
+         VALUES (?, ?, ?)`,
+        [recordId, foreignLanguageCode, languageName]
+      );
+    }
+
+    await pool.execute(`UPDATE academic_records SET updated_at = NOW() WHERE id = ?`, [recordId]);
 
     return this.getAcademicByCandidateId(candidateId);
   }

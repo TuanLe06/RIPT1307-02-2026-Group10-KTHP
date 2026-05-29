@@ -221,9 +221,8 @@ const migrate = async (): Promise<void> => {
     'HAN',
     'NGA',
     'TRUNG'
-  ) NOT NULL,
+ ) NOT NULL,
   language_name VARCHAR(50) NOT NULL,
-  score DECIMAL(4,2) NOT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_foreign_language_scores_record_id (record_id),
   CONSTRAINT fk_foreign_language_scores_record
