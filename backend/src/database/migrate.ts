@@ -232,7 +232,7 @@ const migrate = async (): Promise<void> => {
     `CREATE TABLE IF NOT EXISTS candidate_documents (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       candidate_id BIGINT UNSIGNED NOT NULL,
-      document_type ENUM('TRANSCRIPT','CITIZEN_ID_Front','CITIZEN_ID_Back','PORTRAIT','CERTIFICATE','OTHER') NOT NULL,
+      document_type ENUM('TRANSCRIPT','CITIZEN_ID_Front','CITIZEN_ID_Back','PORTRAIT','CERTIFICATE','EXAM_CERTIFICATE','OTHER') NOT NULL,
       file_name VARCHAR(255) NOT NULL,
       file_url TEXT NOT NULL,
       file_type ENUM('PDF','JPEG','PNG') NOT NULL,

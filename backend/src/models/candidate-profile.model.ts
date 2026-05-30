@@ -32,16 +32,18 @@ type AcademicProgressRow = {
   school_name: string | null;
   avg_score: string | null;
 };
+type CandidateDocumentType =
+  | 'TRANSCRIPT'
+  | 'CITIZEN_ID_Front'
+  | 'CITIZEN_ID_Back'
+  | 'PORTRAIT'
+  | 'CERTIFICATE'
+  | 'EXAM_CERTIFICATE'
+  | 'OTHER';
 type CandidateDocumentRow = {
   id: number;
   candidate_id: number;
-  document_type:
-    | 'TRANSCRIPT'
-    | 'CITIZEN_ID_Front'
-    | 'CITIZEN_ID_Back'
-    | 'PORTRAIT'
-    | 'CERTIFICATE'
-    | 'OTHER';
+  document_type: CandidateDocumentType;
   file_name: string;
   file_url: string;
   file_type: 'PDF' | 'JPEG' | 'PNG';
@@ -52,13 +54,7 @@ type CandidateDocumentRow = {
 
 export type CandidateDocumentItem = {
   id: number;
-  document_type:
-    | 'TRANSCRIPT'
-    | 'CITIZEN_ID_Front'
-    | 'CITIZEN_ID_Back'
-    | 'PORTRAIT'
-    | 'CERTIFICATE'
-    | 'OTHER';
+  document_type: CandidateDocumentType;
   file_name: string;
   file_url: string;
   file_type: 'PDF' | 'JPEG' | 'PNG';
@@ -443,6 +439,23 @@ export class CandidateProfileModel {
     const candidateId = await this.getCandidateIdByCitizenId(citizenId);
     if (!candidateId) return null;
 
+    return this.upsertExamScoresByGroupForCandidateId(candidateId, payload);
+  }
+
+  static async upsertExamScoresByGroupForCandidateByUserId(
+    userId: number,
+    payload: CandidateExamScoresPayload
+  ): Promise<CandidateAcademicRecordFull | null> {
+    const candidateId = await this.getCandidateIdByUserId(userId);
+    if (!candidateId) return null;
+
+    return this.upsertExamScoresByGroupForCandidateId(candidateId, payload);
+  }
+
+  private static async upsertExamScoresByGroupForCandidateId(
+    candidateId: number,
+    payload: CandidateExamScoresPayload
+  ): Promise<CandidateAcademicRecordFull> {
     const recordId = await this.ensureAcademicRecordByCandidateId(candidateId);
     const scoreKeys = Object.keys(payload.scores);
     if (scoreKeys.length !== 4) {
@@ -584,13 +597,7 @@ export class CandidateProfileModel {
   static async createDocumentByUserId(
     userId: number,
     data: {
-      document_type:
-        | 'TRANSCRIPT'
-        | 'CITIZEN_ID_Front'
-        | 'CITIZEN_ID_Back'
-        | 'PORTRAIT'
-        | 'CERTIFICATE'
-        | 'OTHER';
+      document_type: CandidateDocumentType;
       file_name: string;
       file_url: string;
       file_type: 'PDF' | 'JPEG' | 'PNG';
@@ -652,6 +659,21 @@ export class CandidateProfileModel {
        SET deleted_at = NOW()
        WHERE id = ? AND candidate_id = ? AND deleted_at IS NULL`,
       [documentId, candidateId]
+    );
+    return result.affectedRows > 0;
+  }
+
+  static async softDeleteDocumentsByTypeByUserId(
+    userId: number,
+    documentType: CandidateDocumentType
+  ): Promise<boolean | null> {
+    const candidateId = await this.getCandidateIdByUserId(userId);
+    if (!candidateId) return null;
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE candidate_documents
+       SET deleted_at = NOW()
+       WHERE candidate_id = ? AND document_type = ? AND deleted_at IS NULL`,
+      [candidateId, documentType]
     );
     return result.affectedRows > 0;
   }

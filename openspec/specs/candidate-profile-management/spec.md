@@ -4,42 +4,42 @@
 TBD - created by archiving change add-candidate-profile-api. Update Purpose after archive.
 ## Requirements
 ### Requirement: Candidate can view personal profile
-Há»‡ thá»‘ng SHALL cung cáº¥p API `GET /api/candidate/profile` Ä‘á»ƒ thÃ­ sinh Ä‘Ã£ Ä‘Äƒng nháº­p láº¥y há»“ sÆ¡ cÃ¡ nhÃ¢n tá»•ng há»£p tá»« `users` vÃ  `candidate_profiles`, vá»›i cáº¥u trÃºc response gá»“m `user` vÃ  `candidate_profile`.
+Hệ thống SHALL cung cấp API `GET /api/candidate/profile` để thí sinh đã đăng nhập lấy hồ sơ cá nhân tổng hợp từ `users` và `candidate_profiles`, với cấu trúc response gồm `user` và `candidate_profile`.
 
 #### Scenario: Get profile successfully
-- **WHEN** thÃ­ sinh Ä‘Äƒng nháº­p há»£p lá»‡ gá»i `GET /api/candidate/profile`
-- **THEN** há»‡ thá»‘ng tráº£ `200 OK` vá»›i dá»¯ liá»‡u cÃ³ 2 pháº§n `user` vÃ  `candidate_profile`
+- **WHEN** thí sinh đăng nhập hợp lệ gọi `GET /api/candidate/profile`
+- **THEN** hệ thống trả `200 OK` với dữ liệu có 2 phần `user` và `candidate_profile`
 
 #### Scenario: Reject unauthenticated request
-- **WHEN** client gá»i `GET /api/candidate/profile` mÃ  khÃ´ng cÃ³ token há»£p lá»‡
-- **THEN** há»‡ thá»‘ng tráº£ `401 Unauthorized`
+- **WHEN** client gọi `GET /api/candidate/profile` mà không có token hợp lệ
+- **THEN** hệ thống trả `401 Unauthorized`
 
 #### Scenario: Reject non-candidate role
-- **WHEN** ngÆ°á»i dÃ¹ng cÃ³ role khÃ¡c `CANDIDATE` gá»i `GET /api/candidate/profile`
-- **THEN** há»‡ thá»‘ng tráº£ `403 Forbidden`
+- **WHEN** người dùng có role khác `CANDIDATE` gọi `GET /api/candidate/profile`
+- **THEN** hệ thống trả `403 Forbidden`
 
 #### Scenario: Candidate profile not found
-- **WHEN** user cÃ³ role `CANDIDATE` nhÆ°ng chÆ°a cÃ³ báº£n ghi tÆ°Æ¡ng á»©ng trong `candidate_profiles`
-- **THEN** há»‡ thá»‘ng tráº£ `404 Not Found` vá»›i thÃ´ng bÃ¡o há»“ sÆ¡ chÆ°a tá»“n táº¡i
+- **WHEN** user có role `CANDIDATE` nhưng chưa có bản ghi tương ứng trong `candidate_profiles`
+- **THEN** hệ thống trả `404 Not Found` với thông báo hồ sơ chưa tồn tại
 
 ### Requirement: Candidate can update personal profile
-Há»‡ thá»‘ng SHALL cung cáº¥p API `PUT /api/candidate/profile` Ä‘á»ƒ thÃ­ sinh cáº­p nháº­t thÃ´ng tin cÃ¡ nhÃ¢n theo whitelist trÆ°á»ng Ä‘Æ°á»£c phÃ©p, vá»›i `full_name` Ä‘Æ°á»£c lÆ°u chuáº©n táº¡i `candidate_profiles`.
+Hệ thống SHALL cung cấp API `PUT /api/candidate/profile` để thí sinh cập nhật thông tin cá nhân theo whitelist trường được phép, với `full_name` được lưu chuẩn tại `candidate_profiles`.
 
 #### Scenario: Update profile successfully
-- **WHEN** thÃ­ sinh gá»­i `PUT /api/candidate/profile` vá»›i payload há»£p lá»‡
-- **THEN** há»‡ thá»‘ng cáº­p nháº­t cÃ¡c trÆ°á»ng Ä‘Æ°á»£c phÃ©p vÃ  tráº£ `200 OK` vá»›i dá»¯ liá»‡u profile má»›i nháº¥t theo cáº¥u trÃºc `{ user, candidate_profile }`
+- **WHEN** thí sinh gửi `PUT /api/candidate/profile` với payload hợp lệ
+- **THEN** hệ thống cập nhật các trường được phép và trả `200 OK` với dữ liệu profile mới nhất theo cấu trúc `{ user, candidate_profile }`
 
 #### Scenario: Update full_name in candidate profile
-- **WHEN** payload cáº­p nháº­t cÃ³ thay Ä‘á»•i `full_name`
-- **THEN** há»‡ thá»‘ng cáº­p nháº­t `candidate_profiles.full_name` vÃ  pháº£n há»“i dá»¯ liá»‡u má»›i nháº¥t tá»« nguá»“n chuáº©n nÃ y
+- **WHEN** payload cập nhật có thay đổi `full_name`
+- **THEN** hệ thống cập nhật `candidate_profiles.full_name` và phản hồi dữ liệu mới nhất từ nguồn chuẩn này
 
 #### Scenario: Reject invalid update payload
-- **WHEN** thÃ­ sinh gá»­i `PUT /api/candidate/profile` vá»›i trÆ°á»ng khÃ´ng há»£p lá»‡ hoáº·c dá»¯ liá»‡u sai Ä‘á»‹nh dáº¡ng
-- **THEN** há»‡ thá»‘ng tráº£ `400 Bad Request` kÃ¨m chi tiáº¿t lá»—i validation
+- **WHEN** thí sinh gửi `PUT /api/candidate/profile` với trường không hợp lệ hoặc dữ liệu sai định dạng
+- **THEN** hệ thống trả `400 Bad Request` kèm chi tiết lỗi validation
 
 #### Scenario: Reject unauthorized update request
-- **WHEN** client gá»i `PUT /api/candidate/profile` mÃ  khÃ´ng cÃ³ token há»£p lá»‡ hoáº·c khÃ´ng pháº£i role `CANDIDATE`
-- **THEN** há»‡ thá»‘ng tráº£ `401 Unauthorized` hoáº·c `403 Forbidden` tÆ°Æ¡ng á»©ng
+- **WHEN** client gọi `PUT /api/candidate/profile` mà không có token hợp lệ hoặc không phải role `CANDIDATE`
+- **THEN** hệ thống trả `401 Unauthorized` hoặc `403 Forbidden` tương ứng
 
 ### Requirement: Candidate can view academic record
 Hệ thống SHALL cung cấp API `GET /api/candidate/profile/academic-record` để thí sinh đang đăng nhập lấy thông tin học tập hiện tại, bao gồm dữ liệu tổng quan và tiến trình học theo lớp.
@@ -111,30 +111,29 @@ Hệ thống SHALL cung cấp API `DELETE /api/candidate/profile/documents/:docu
 - **WHEN** hệ thống không thể xóa file trên Cloudinary
 - **THEN** hệ thống trả lỗi phù hợp và KHÔNG cập nhật `deleted_at`
 
-### Requirement: Admin can update candidate exam scores by science group
-Hệ thống SHALL cung cấp API `PUT /api/admin/candidates/:citizenId/exam-scores-by-group` để admin cập nhật điểm thi theo khối cho thí sinh, với khối `NATURAL` dùng các môn `TOAN`, `LY`, `HOA` và khối `SOCIAL` dùng các môn `VAN`, `SU`, `DIA`.
+### Requirement: Candidate can update exam scores with exam certificate
+System SHALL provide `PUT /api/candidate/profile/exam-scores-by-group` for the logged-in candidate to update exam scores and upload an `exam_certificate` file in the same `multipart/form-data` request.
 
-#### Scenario: Update NATURAL group scores successfully
-- **WHEN** admin gọi API với `citizenId` hợp lệ, `science_group = NATURAL`, và payload `scores` chứa đủ `TOAN`, `LY`, `HOA` với điểm trong khoảng `0..10`
-- **THEN** hệ thống upsert điểm vào `exam_scores`, cập nhật `academic_records.science_group = NATURAL`, và trả `200 OK`
+#### Scenario: Update exam scores and certificate successfully
+- **WHEN** candidate sends valid `scores` (JSON string with valid 4-subject rule), optional `foreign_language` (when `NGOAINGU` is present), and a valid `exam_certificate` file (PDF/JPEG/PNG)
+- **THEN** system upserts `exam_scores`, soft-deletes old `EXAM_CERTIFICATE` documents, creates a new `EXAM_CERTIFICATE` document, and returns `200 OK`
 
-#### Scenario: Update SOCIAL group scores successfully
-- **WHEN** admin gọi API với `citizenId` hợp lệ, `science_group = SOCIAL`, và payload `scores` chứa đủ `VAN`, `SU`, `DIA` với điểm trong khoảng `0..10`
-- **THEN** hệ thống upsert điểm vào `exam_scores`, cập nhật `academic_records.science_group = SOCIAL`, và trả `200 OK`
+#### Scenario: Reject request missing exam certificate
+- **WHEN** candidate calls the API without `exam_certificate`
+- **THEN** system returns `400 Bad Request`
 
-#### Scenario: Reject invalid subject set for selected group
-- **WHEN** admin gửi payload `scores` thiếu môn, thừa môn, hoặc dùng mã môn không thuộc tổ hợp của `science_group` đã chọn
-- **THEN** hệ thống trả `400 Bad Request` với thông tin lỗi validation
+#### Scenario: Reject malformed multipart JSON fields
+- **WHEN** `scores` or `foreign_language` cannot be parsed as JSON
+- **THEN** system returns `400 Bad Request`
 
-#### Scenario: Reject invalid score range
-- **WHEN** admin gửi bất kỳ điểm môn nào nhỏ hơn `0` hoặc lớn hơn `10`
-- **THEN** hệ thống trả `400 Bad Request` với thông tin lỗi validation
+#### Scenario: Reject invalid scores payload
+- **WHEN** payload violates score rules (not exactly 4 subjects, missing TOAN/VAN, invalid optional subjects, or score out of 0..10)
+- **THEN** system returns `400 Bad Request` with validation error details
 
-#### Scenario: Candidate not found
-- **WHEN** admin gọi API với `citizenId` không tồn tại trong `candidate_profiles`
-- **THEN** hệ thống trả `404 Not Found`
+#### Scenario: Candidate profile not found
+- **WHEN** authenticated user has no candidate profile
+- **THEN** system returns `404 Not Found`
 
-#### Scenario: Reject non-admin caller
-- **WHEN** client gọi API mà không có token hợp lệ hoặc không có role `ADMIN`
-- **THEN** hệ thống trả `401 Unauthorized` hoặc `403 Forbidden` tương ứng
-
+#### Scenario: Profile completeness requires exam certificate
+- **WHEN** candidate has complete score data but has no active `EXAM_CERTIFICATE` document
+- **THEN** completeness middleware marks profile incomplete and blocks application submission
