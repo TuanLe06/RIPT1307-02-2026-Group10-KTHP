@@ -772,53 +772,33 @@ const swaggerSpec = {
         },
       },
     },
-    "/api/admin/candidates/{citizenId}/exam-scores-by-group": {
+    "/api/candidate/profile/exam-scores-by-group": {
       put: {
-        tags: ["Admin"],
-        summary: "Admin cập nhật điểm thi 4 môn cho thí sinh",
+        tags: ["Candidate Profile"],
+        summary: "Thí sinh cập nhật điểm thi theo tổ hợp và upload giấy chứng nhận kết quả thi",
         security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: "citizenId",
-            in: "path",
-            required: true,
-            schema: { type: "integer", minimum: 1 },
-          },
-        ],
         requestBody: {
           required: true,
           content: {
-            "application/json": {
+            "multipart/form-data": {
               schema: {
                 type: "object",
-                required: ["scores"],
+                required: ["scores", "exam_certificate"],
                 properties: {
                   scores: {
-                    type: "object",
-                    additionalProperties: {
-                      type: "number",
-                      format: "float",
-                      minimum: 0,
-                      maximum: 10,
-                    },
-                    example: {
-                      TOAN: 8.5,
-                      VAN: 8.25,
-                      NGOAINGU: 8.0,
-                      LY: 8.0,
-                    },
+                    type: "string",
+                    description: "JSON string. Bắt buộc 4 môn, phải có TOAN và VAN",
+                    example: "{\"TOAN\":8.5,\"VAN\":8.25,\"NGOAINGU\":8.0,\"LY\":8.0}",
                   },
                   foreign_language: {
-                    type: "object",
-                    properties: {
-                      language_code: {
-                        type: "string",
-                        enum: ["ANH", "PHAP", "DUC", "NHAT", "HAN", "NGA", "TRUNG"],
-                        example: "ANH",
-                      },
-                    },
-                    description:
-                      "Chỉ gửi khi có môn NGOAINGU trong scores. Không được gửi nếu không có NGOAINGU.",
+                    type: "string",
+                    description: "JSON string. Chỉ gửi khi có NGOAINGU trong scores",
+                    example: "{\"language_code\":\"ANH\"}",
+                  },
+                  exam_certificate: {
+                    type: "string",
+                    format: "binary",
+                    description: "PDF/JPEG/PNG, t?i da 10MB",
                   },
                 },
               },
@@ -826,14 +806,14 @@ const swaggerSpec = {
           },
         },
         responses: {
-          200: { description: "Cập nhật điểm thi thành công" },
+          200: { description: "Cập nhật điểm thi và lưu chứng nhận thành công" },
           400: {
             description:
-              "Payload không hợp lệ (bắt buộc 4 môn, có TOÁN+VĂN, 2 môn tự chọn hợp lệ, NGOAINGU thì phải có foreign_language)",
+              "Payload hoặc file không hợp lệ (JSON parse lại, sai rule 4 môn, thiếu ngoại ngữ khi có NGOAINGU, sai định dạng file)",
           },
           401: { description: "Chưa xác thực" },
-          403: { description: "Không đủ quyền ADMIN" },
-          404: { description: "Không tìm thấy thí sinh theo citizenId" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Không tìm thấy hồ sơ thí sinh" },
         },
       },
     },
@@ -1860,6 +1840,7 @@ const swaggerSpec = {
 } as const;
 
 export default swaggerSpec;
+
 
 
 

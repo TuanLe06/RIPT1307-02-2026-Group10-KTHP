@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import pool from '../config/database';
 import { RowDataPacket } from 'mysql2/promise';
+import pool from '../config/database';
 
 interface CompletenessResult {
   isComplete: boolean;
@@ -85,6 +85,21 @@ const checkCompleteness = async (userId: number): Promise<CompletenessResult> =>
 
     if (!progressRows.length || !progressRows[0].school_name) {
       missingFields.push('Trường THPT (lớp 12)');
+    }
+
+    const [certificateRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT id
+       FROM candidate_documents cd
+       JOIN candidate_profiles cp ON cp.citizen_id = cd.candidate_id
+       WHERE cp.user_id = ?
+         AND cd.document_type = 'EXAM_CERTIFICATE'
+         AND cd.deleted_at IS NULL
+       LIMIT 1`,
+      [userId]
+    );
+
+    if (!certificateRows.length) {
+      missingFields.push('Giấy chứng nhận kết quả thi');
     }
   }
 
