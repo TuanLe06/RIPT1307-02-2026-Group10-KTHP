@@ -153,7 +153,13 @@ router.put(
 );
 router.put(
   '/profile/exam-scores-by-group',
-  uploadExamCertificateMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    if (req.headers['content-type']?.includes('multipart/form-data')) {
+      uploadExamCertificateMiddleware(req, res, next);
+    } else {
+      next();
+    }
+  },
   parseExamScoresFormDataMiddleware,
   [
     body('scores').exists().withMessage('scores is required').isObject().withMessage('scores must be an object'),
@@ -204,18 +210,25 @@ router.post(
   '/profile/documents',
   uploadDocumentMiddleware,
   [
-    body('document_type')
-      .exists()
-      .withMessage('document_type is required')
-      .isIn([
-        'TRANSCRIPT',
-        'CITIZEN_ID_Front',
-        'CITIZEN_ID_Back',
-        'PORTRAIT',
-        'CERTIFICATE',
-        'OTHER',
-      ])
-      .withMessage('document_type is invalid'),
+  body('document_type')
+    .exists()
+    .withMessage('document_type is required')
+    .isIn([
+      'TRANSCRIPT',
+      'CITIZEN_ID_Front',
+      'CITIZEN_ID_Back',
+      'PORTRAIT',
+      'CERTIFICATE',
+      'EXAM_CERTIFICATE',
+      'OTHER',
+    ])
+    .withMessage('document_type is invalid'),
+  body('display_name')
+    .optional()
+    .isString()
+    .withMessage('display_name must be a string')
+    .isLength({ max: 255 })
+    .withMessage('display_name max length is 255'),
   ],
   uploadCandidateDocument
 );

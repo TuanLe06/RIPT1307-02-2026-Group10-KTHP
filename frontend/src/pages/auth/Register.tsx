@@ -76,13 +76,13 @@ const Register = () => {
         </div>
 
         <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
-          <div className="w-full max-w-[580px] bg-surface-container-lowest p-6 sm:p-8 md:p-10 rounded-3xl shadow-xl border border-border">
+          <div className="w-full max-w-[580px] bg-surface-container-lowest p-6 sm:p-8 md:p-10 rounded-xxxl border border-hairline-soft">
             <div className="mb-7 md:mb-8">
               <h2 className="text-[32px] sm:text-[34px] md:text-[38px] leading-[1.2] font-bold text-text-primary mb-2">Tạo tài khoản mới</h2>
               <p className="text-[17px] md:text-[18px] leading-[1.6] text-text-secondary">Điền thông tin của bạn để bắt đầu hành trình nhập học.</p>
             </div>
 
-            <Form layout="vertical" onFinish={onFinish} autoComplete="off" requiredMark={false} onValuesChange={(changed) => { if ('mat_khau' in changed) setPassword(changed.mat_khau); }}>
+            <Form layout="vertical" onFinish={onFinish} autoComplete="off" requiredMark={false} onValuesChange={(changed) => { if ('mat_khau' in changed) setPassword(changed.mat_khau ?? ''); }}>
               <Form.Item
                 name="ho_ten"
                 label={<span className="text-[17px] md:text-[18px] leading-[1.5] font-semibold text-text-primary">Họ và tên</span>}
@@ -187,13 +187,13 @@ const Register = () => {
                   loading={loading}
                   block
                   size="large"
-                  className="font-bold shadow-sm"
+                  className="font-bold"
                   style={{
-                    backgroundColor: '#00a1e0',
-                    borderColor: '#00a1e0',
+                    backgroundColor: '#0143b5',
+                    borderColor: '#0143b5',
                     height: 54,
                     fontSize: 18,
-                    borderRadius: 8,
+                    borderRadius: 9999,
                   }}
                 >
                   Đăng ký ngay
@@ -210,11 +210,11 @@ const Register = () => {
               </p>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-border flex justify-center">
+            <div className="mt-6 pt-6 border-t border-hairline-soft flex justify-center">
               <Button
                 type="default"
-                className="text-text-secondary"
-                style={{ fontSize: 16, borderColor: '#D8DDE6', background: 'transparent' }}
+                className="text-text-secondary rounded-full"
+                style={{ fontSize: 16, borderColor: '#d8dde6', background: 'transparent' }}
               >
                 Hỗ trợ kỹ thuật
               </Button>

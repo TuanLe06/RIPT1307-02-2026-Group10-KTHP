@@ -8,7 +8,7 @@ const seed = async (): Promise<void> => {
   await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   const tables = [
     "audit_logs", "email_notifications", "application_status_logs",
-    "candidate_documents", "exam_scores", "academic_progress",
+    "candidate_documents", "foreign_language_scores", "exam_scores", "academic_progress",
     "academic_records", "applications", "candidate_profiles",
     "major_combinations", "majors", "admission_combinations",
     "universities", "password_reset_tokens", "users",

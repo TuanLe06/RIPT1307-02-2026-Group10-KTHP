@@ -5,7 +5,7 @@ const Header = () => {
   const { theme, toggle } = useTheme();
 
   return (
-    <header className="bg-surface-container-lowest shadow-sm z-50 fixed top-0 left-0 right-0">
+    <header className="bg-surface-container-lowest border-b border-border z-50 fixed top-0 left-0 right-0">
       <div className="flex items-center h-14 md:h-16 px-6 md:px-8 lg:px-10">
         <div className="flex items-center gap-2 shrink-0">
           <a
@@ -35,7 +35,7 @@ const Header = () => {
           </button>
           <Link
             to="/login"
-            className="bg-primary hover:bg-primary-hover text-on-primary px-md py-2 rounded-lg font-body text-[15px] md:text-[16px] font-bold transition-all shadow-sm"
+            className="bg-primary hover:bg-primary-hover text-on-primary px-md py-2 rounded-full font-body text-[15px] md:text-[16px] font-bold transition-all"
           >
             Đăng nhập
           </Link>

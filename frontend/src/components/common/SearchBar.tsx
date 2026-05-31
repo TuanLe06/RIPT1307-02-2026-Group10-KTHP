@@ -52,7 +52,7 @@ const SearchBar = ({
 
   return (
     <div
-      className="flex items-center h-[44px] w-full min-w-[240px] bg-surface-container-lowest border border-border rounded-lg overflow-hidden transition-all duration-200 focus-within:border-primary-container focus-within:ring-2 focus-within:ring-primary-container/20"
+      className="flex items-center h-[44px] w-full min-w-[240px] bg-surface-container-lowest border border-hairline rounded-full overflow-hidden transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-soft"
       role="search"
     >
       <label htmlFor="search-bar-input" className="sr-only">
@@ -71,7 +71,7 @@ const SearchBar = ({
         spellCheck={false}
         aria-autocomplete="none"
       />
-      <div className="flex-shrink-0 w-[48px] h-full flex items-center justify-center border-l border-border bg-surface-container-low">
+      <div className="flex-shrink-0 w-[48px] h-full flex items-center justify-center border-l border-hairline bg-surface-container-low rounded-r-full">
         <span className="material-symbols-outlined text-outline text-[20px] select-none">
           search
         </span>
