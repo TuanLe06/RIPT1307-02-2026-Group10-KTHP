@@ -526,6 +526,23 @@ export class CandidateProfileModel {
     return this.getAcademicByCandidateId(candidateId);
   }
 
+  static async deleteExamScoresByUserId(userId: number): Promise<boolean> {
+    const candidateId = await this.getCandidateIdByUserId(userId);
+    if (!candidateId) return false;
+
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT id FROM academic_records WHERE candidate_id = ? LIMIT 1`,
+      [candidateId]
+    );
+    if (!rows.length) return false;
+
+    const recordId = rows[0].id;
+    await pool.execute(`DELETE FROM foreign_language_scores WHERE record_id = ?`, [recordId]);
+    await pool.execute(`DELETE FROM exam_scores WHERE record_id = ?`, [recordId]);
+    await pool.execute(`UPDATE academic_records SET updated_at = NOW() WHERE id = ?`, [recordId]);
+    return true;
+  }
+
   static async upsertAcademicProgressByUserId(
     userId: number,
     progress: {

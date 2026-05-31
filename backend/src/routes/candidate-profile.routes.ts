@@ -9,6 +9,7 @@ import {
   listCandidateDocuments,
   uploadCandidateDocument,
   upsertCandidateExamScoresByGroup,
+  deleteCandidateExamScores,
   upsertCandidateAcademicProgress,
   upsertCandidateAcademicRecord,
   updateCandidateProfile,
@@ -198,6 +199,7 @@ router.put(
   ],
   upsertCandidateExamScoresByGroup
 );
+router.delete('/profile/exam-scores-by-group', deleteCandidateExamScores);
 router.post(
   '/profile/documents',
   uploadDocumentMiddleware,

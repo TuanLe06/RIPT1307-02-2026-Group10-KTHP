@@ -174,17 +174,40 @@ CREATE TABLE academic_records (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   candidate_id BIGINT UNSIGNED NOT NULL,
   graduation_year INT NULL,
-  subject_1_score DECIMAL(4,2) NULL,
-  subject_2_score DECIMAL(4,2) NULL,
-  subject_3_score DECIMAL(4,2) NULL,
-  total_score DECIMAL(5,2) NULL,
   priority_score DECIMAL(4,2) NOT NULL DEFAULT 0,
-  final_score DECIMAL(5,2) NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_academic_records_candidate_id (candidate_id),
   CONSTRAINT fk_academic_records_candidate
     FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(citizen_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+### 9a) Bảng `exam_scores`
+```sql
+CREATE TABLE exam_scores (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  record_id BIGINT UNSIGNED NOT NULL,
+  subject_code ENUM('TOAN','VAN','LY','HOA','SINH','SU','DIA','GDKTPL','TINHOC','CONGNGHE','NGOAINGU') NOT NULL,
+  is_required BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'true = TOAN, VAN | false = môn tự chọn',
+  score DECIMAL(4,2) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_exam_scores_record_subject (record_id, subject_code),
+  KEY idx_exam_scores_record_id (record_id),
+  CONSTRAINT fk_exam_scores_record
+    FOREIGN KEY (record_id) REFERENCES academic_records(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+### 9b) Bảng `foreign_language_scores`
+```sql
+CREATE TABLE foreign_language_scores (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  record_id BIGINT UNSIGNED NOT NULL UNIQUE COMMENT 'Chỉ có nếu thí sinh chọn ngoại ngữ là môn tự chọn',
+  language_code ENUM('ANH','PHAP','DUC','NHAT','HAN','NGA','TRUNG') NOT NULL,
+  language_name VARCHAR(255) NOT NULL,
+  CONSTRAINT fk_fls_record
+    FOREIGN KEY (record_id) REFERENCES academic_records(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ```
 
@@ -207,7 +230,7 @@ CREATE TABLE academic_progress (
 CREATE TABLE candidate_documents (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   candidate_id BIGINT UNSIGNED NOT NULL,
-  document_type ENUM('TRANSCRIPT','CITIZEN_ID','PORTRAIT','CERTIFICATE','OTHER') NOT NULL,
+  document_type ENUM('TRANSCRIPT','CITIZEN_ID_Front','CITIZEN_ID_Back','PORTRAIT','CERTIFICATE','EXAM_CERTIFICATE','OTHER') NOT NULL,
   file_name VARCHAR(255) NOT NULL,
   file_url TEXT NOT NULL,
   file_type ENUM('PDF','JPEG','PNG') NOT NULL,

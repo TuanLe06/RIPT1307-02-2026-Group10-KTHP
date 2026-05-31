@@ -191,6 +191,20 @@ export const upsertCandidateExamScoresByGroup = async (
   }
 };
 
+export const deleteCandidateExamScores = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const deleted = await CandidateProfileModel.deleteExamScoresByUserId(req.user!.id);
+    if (!deleted) {
+      res.status(404).json({ success: false, message: 'Candidate profile not found' });
+      return;
+    }
+    res.json({ success: true, message: 'Exam scores deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting exam scores:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 export const upsertCandidateAcademicProgress = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
