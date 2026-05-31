@@ -247,6 +247,15 @@ export class UserModel {
     return true;
   }
 
+  static async findByRole(role: string): Promise<User[]> {
+    const rows = await query<User>(
+      `SELECT id, email, role, status, created_at, updated_at
+       FROM users WHERE role = ? AND status = 'ACTIVE'`,
+      [role],
+    );
+    return rows;
+  }
+
   static async touchLastLoginAt(userId: number): Promise<void> {
     await query(
       `UPDATE users

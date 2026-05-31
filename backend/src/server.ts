@@ -1,3 +1,4 @@
+import http from 'http';
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
@@ -20,10 +21,16 @@ import combinationRoutes from "./routes/combination.routes";
 import combinationAssignmentRoutes from "./routes/combinationAssignment.routes";
 import universityRoutes from "./routes/university.routes";
 import userRoutes from "./routes/user.routes";
+import path from 'path';
+import { initSocket } from "./socket";
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = initSocket(server);
+app.set('io', io);
+
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -38,6 +45,9 @@ app.use(
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files locally
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -72,7 +82,7 @@ app.use(errorHandler);
 // Start
 const start = async (): Promise<void> => {
   await testConnection();
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
     console.log(`📌 Environment: ${process.env.NODE_ENV || "development"}`);
   });
