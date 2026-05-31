@@ -8,7 +8,7 @@ export interface EmailNotification {
   subject: string;
   content: string;
   type: 'APPLICATION_SUBMITTED' | 'STATUS_CHANGED' | 'REJECTION' | 'APPROVAL' | 'RESULT' | 'MANUAL' | 'PASSWORD_RESET';
-  status: 'PENDING' | 'SENT' | 'FAILED';
+  status: 'PENDING' | 'SENT' | 'FAILED' | 'READ';
   sent_by: number | null;
   sent_at: Date | null;
   error_message: string | null;
@@ -70,6 +70,15 @@ export class EmailNotificationModel {
     return rows as EmailNotification[];
   }
 
+  static async markAsRead(id: number): Promise<EmailNotification | null> {
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE email_notifications SET status = 'READ' WHERE id = ? AND status != 'READ'`,
+      [id]
+    );
+    if (result.affectedRows === 0) return null;
+    return EmailNotificationModel.findById(id);
+  }
+
   static async updateStatus(
     id: number,
     status: 'SENT' | 'FAILED',
@@ -87,18 +96,21 @@ export class EmailNotificationModel {
     page = 1,
     limit = 20
   ): Promise<{ notifications: EmailNotification[]; total: number }> {
-    const offset = (page - 1) * limit;
+    const p = Math.max(1, Math.floor(Number(page) || 1));
+    const l = Math.min(100, Math.max(1, Math.floor(Number(limit) || 20)));
+    const offset = (p - 1) * l;
+    const rid = Number(receiverId);
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT id, receiver_id, receiver_email, subject, content, type, status, sent_by, sent_at, error_message, created_at
        FROM email_notifications WHERE receiver_id = ?
        ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [receiverId, limit, offset]
+      [rid, l, offset]
     );
 
-    const [countRows] = await pool.execute<RowDataPacket[]>(
+    const [countRows] = await pool.query<RowDataPacket[]>(
       `SELECT COUNT(*) as total FROM email_notifications WHERE receiver_id = ?`,
-      [receiverId]
+      [rid]
     );
 
     return {

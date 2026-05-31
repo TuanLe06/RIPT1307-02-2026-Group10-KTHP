@@ -86,10 +86,14 @@ export const sendNotificationToMultipleCandidates = async (req: Request, res: Re
 
 export const getNotifications = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!req.user || !req.user.id) {
+      res.status(401).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
 
-    const result = await EmailNotificationModel.findByReceiverId(req.user!.id, page, limit);
+    const result = await EmailNotificationModel.findByReceiverId(req.user.id, page, limit);
 
     res.json({
       success: true,
@@ -103,7 +107,12 @@ export const getNotifications = async (req: Request, res: Response): Promise<voi
     });
   } catch (error) {
     console.error('Error getting notifications:', error);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    res.status(500).json({ success: false, message: 'Internal server error', error: error instanceof Error ? error.message : 'Unknown error' });
   }
 };
 
@@ -144,6 +153,27 @@ export const getPendingNotifications = async (req: Request, res: Response): Prom
     });
   } catch (error) {
     console.error('Error getting pending notifications:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const markNotificationAsRead = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const notification = await EmailNotificationModel.markAsRead(parseInt(id as string));
+    if (!notification) {
+      res.status(404).json({ success: false, message: 'Notification not found or already read' });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: 'Notification marked as read',
+      data: notification,
+    });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

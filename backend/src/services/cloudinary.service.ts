@@ -1,4 +1,8 @@
 import cloudinary, { ensureCloudinaryConfigured } from '../config/cloudinary';
+import { saveFileLocally, deleteLocalFile } from './local-upload.service';
+
+const isCloudinaryDisabled = (): boolean =>
+  process.env.CLOUDINARY_DISABLED === 'true';
 
 export type UploadImageOptions = {
   folder?: string;
@@ -19,6 +23,11 @@ export const uploadImageBuffer = async (
   buffer: Buffer,
   options: UploadImageOptions = {}
 ): Promise<UploadedImage> => {
+  if (isCloudinaryDisabled()) {
+    const { publicId, secureUrl } = saveFileLocally(buffer, 'image.jpg');
+    return { publicId, secureUrl, width: 0, height: 0, format: 'jpg', bytes: buffer.length, resourceType: 'image' };
+  }
+
   ensureCloudinaryConfigured();
   const folder = options.folder ?? process.env.CLOUDINARY_UPLOAD_FOLDER ?? 'he-thong-tuyen-sinh';
 
@@ -60,6 +69,11 @@ export const uploadDocumentBuffer = async (
   originalFilename: string,
   options: UploadImageOptions = {}
 ): Promise<UploadedImage> => {
+  if (isCloudinaryDisabled()) {
+    const { publicId, secureUrl } = saveFileLocally(buffer, originalFilename);
+    return { publicId, secureUrl, width: 0, height: 0, format: '', bytes: buffer.length, resourceType: 'raw' };
+  }
+
   ensureCloudinaryConfigured();
   const folder = options.folder ?? process.env.CLOUDINARY_UPLOAD_FOLDER ?? 'he-thong-tuyen-sinh';
 
@@ -98,6 +112,11 @@ export const uploadDocumentBuffer = async (
 };
 
 export const deleteAssetByPublicId = async (publicId: string): Promise<void> => {
+  if (publicId.startsWith('local/')) {
+    deleteLocalFile(publicId);
+    return;
+  }
+
   ensureCloudinaryConfigured();
   const resourceTypes: Array<'image' | 'raw' | 'video'> = ['image', 'raw', 'video'];
   let deleted = false;
