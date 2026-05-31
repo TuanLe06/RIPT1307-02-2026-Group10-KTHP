@@ -103,14 +103,25 @@ erDiagram
         BIGINT id PK
         BIGINT candidate_id FK
         INT graduation_year
-        DECIMAL_4_2 subject_1_score
-        DECIMAL_4_2 subject_2_score
-        DECIMAL_4_2 subject_3_score
-        DECIMAL_5_2 total_score
         DECIMAL_4_2 priority_score
-        DECIMAL_5_2 final_score
         DATETIME created_at
         DATETIME updated_at
+    }
+
+    EXAM_SCORES {
+        BIGINT id PK
+        BIGINT record_id FK
+        ENUM subject_code
+        BOOLEAN is_required
+        DECIMAL_4_2 score
+        DATETIME created_at
+    }
+
+    FOREIGN_LANGUAGE_SCORES {
+        BIGINT id PK
+        BIGINT record_id FK
+        ENUM language_code
+        VARCHAR_255 language_name
     }
 
     ACADEMIC_PROGRESS {
@@ -188,6 +199,8 @@ erDiagram
     USERS ||--o{ EMAIL_NOTIFICATIONS : nhan_email
     USERS ||--o{ EMAIL_NOTIFICATIONS : gui_email
     USERS ||--o{ AUDIT_LOGS : tao_nhat_ky
+    ACADEMIC_RECORDS ||--o{ EXAM_SCORES : co_diem_thi
+    ACADEMIC_RECORDS ||--o{ FOREIGN_LANGUAGE_SCORES : co_ngoai_ngu
 ```
 
 ## Giá trị Enum
@@ -196,7 +209,7 @@ erDiagram
 - `common_status`: `ACTIVE`, `INACTIVE`
 - `gender`: `MALE`, `FEMALE`, `OTHER`
 - `application_status`: `DRAFT`, `SUBMITTED`, `PENDING_REVIEW`, `APPROVED`, `REJECTED`, `PASSED`, `FAILED`
-- `document_type`: `TRANSCRIPT`, `CITIZEN_ID`, `PORTRAIT`, `CERTIFICATE`, `OTHER`
+- `document_type`: `TRANSCRIPT`, `CITIZEN_ID_Front`, `CITIZEN_ID_Back`, `PORTRAIT`, `CERTIFICATE`, `EXAM_CERTIFICATE`, `OTHER`
 - `file_type`: `PDF`, `JPEG`, `PNG`
 - `email_type`: `APPLICATION_SUBMITTED`, `STATUS_CHANGED`, `MANUAL`, `PASSWORD_RESET`
 - `email_status`: `PENDING`, `SENT`, `FAILED`

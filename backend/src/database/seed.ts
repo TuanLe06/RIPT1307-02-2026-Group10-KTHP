@@ -22,26 +22,26 @@ const seed = async (): Promise<void> => {
   const candidatePassword = await bcrypt.hash("candidate123", 12);
 
   const [adminResult] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'ADMIN', 'ACTIVE')`,
-    ["admin@example.com", "Quản trị viên", adminPassword],
+    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'ADMIN', 'ACTIVE')`,
+    ["admin@example.com", adminPassword],
   );
   const adminId = adminResult.insertId;
 
   const [candidateResult] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'CANDIDATE', 'ACTIVE')`,
-    ["candidate@example.com", "Nguyễn Văn An", candidatePassword],
+    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
+    ["candidate@example.com", candidatePassword],
   );
   const candidateId = candidateResult.insertId;
 
   const [candidate2Result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'CANDIDATE', 'ACTIVE')`,
-    ["nguyenvana@example.com", "Trần Thị Hồng", candidatePassword],
+    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
+    ["nguyenvana@example.com", candidatePassword],
   );
   const candidate2Id = candidate2Result.insertId;
 
   const [candidate3Result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO users (email, full_name, password_hash, role, status) VALUES (?, ?, ?, 'CANDIDATE', 'ACTIVE')`,
-    ["tranthib@example.com", "Lê Minh Tâm", candidatePassword],
+    `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'CANDIDATE', 'ACTIVE')`,
+    ["tranthib@example.com", candidatePassword],
   );
   const candidate3Id = candidate3Result.insertId;
 
@@ -128,6 +128,57 @@ const seed = async (): Promise<void> => {
     );
   }
 
+  // Academic records & exam scores
+  const academicData = [
+    { userId: candidateId, graduationYear: 2024, priorityScore: 0.25, scores: [
+      { subjectCode: 'TOAN', score: 8.5, isRequired: true },
+      { subjectCode: 'VAN', score: 7.0, isRequired: true },
+      { subjectCode: 'LY', score: 7.5, isRequired: false },
+      { subjectCode: 'HOA', score: 8.0, isRequired: false },
+    ]},
+    { userId: candidate2Id, graduationYear: 2024, priorityScore: 0, scores: [
+      { subjectCode: 'TOAN', score: 9.0, isRequired: true },
+      { subjectCode: 'VAN', score: 8.0, isRequired: true },
+      { subjectCode: 'NGOAINGU', score: 9.5, isRequired: false },
+      { subjectCode: 'LY', score: 8.5, isRequired: false },
+    ], foreignLanguage: { languageCode: 'ANH', languageName: 'Tiếng Anh' }},
+    { userId: candidate3Id, graduationYear: 2024, priorityScore: 0.5, scores: [
+      { subjectCode: 'TOAN', score: 7.0, isRequired: true },
+      { subjectCode: 'VAN', score: 6.5, isRequired: true },
+      { subjectCode: 'SINH', score: 8.0, isRequired: false },
+      { subjectCode: 'HOA', score: 7.5, isRequired: false },
+    ]},
+  ];
+
+  for (const a of academicData) {
+    const [cpRow] = await pool.execute<RowDataPacket[]>(
+      `SELECT citizen_id FROM candidate_profiles WHERE user_id = ? LIMIT 1`,
+      [a.userId],
+    );
+    if (!cpRow.length) continue;
+    const citizenId = cpRow[0].citizen_id;
+
+    const [arResult] = await pool.execute<ResultSetHeader>(
+      `INSERT INTO academic_records (candidate_id, graduation_year, priority_score) VALUES (?, ?, ?)`,
+      [citizenId, a.graduationYear, a.priorityScore],
+    );
+    const recordId = arResult.insertId;
+
+    for (const s of a.scores) {
+      await pool.execute(
+        `INSERT INTO exam_scores (record_id, subject_code, is_required, score) VALUES (?, ?, ?, ?)`,
+        [recordId, s.subjectCode, s.isRequired, s.score],
+      );
+    }
+
+    if (a.foreignLanguage) {
+      await pool.execute(
+        `INSERT INTO foreign_language_scores (record_id, language_code, language_name) VALUES (?, ?, ?)`,
+        [recordId, a.foreignLanguage.languageCode, a.foreignLanguage.languageName],
+      );
+    }
+  }
+
   // Applications with various statuses
   const appData = [
     { candidateId: candidateId, code: "HS-2024-001", uniId: "DH000001", majorId: "NH000001", combId: "TH000002", status: "PASSED", submittedAt: "2024-05-24 08:30:00", reviewedBy: adminId },
@@ -196,6 +247,7 @@ const seed = async (): Promise<void> => {
   console.log("  Trường đại học/Ngành học/Tổ hợp: đã chèn");
   console.log("  Hồ sơ ứng tuyển: 10 hồ sơ mẫu");
   console.log("  Lịch sử trạng thái: đã chèn");
+  console.log("  Học bạ + Điểm thi: 3 thí sinh mẫu");
   process.exit(0);
 };
 
