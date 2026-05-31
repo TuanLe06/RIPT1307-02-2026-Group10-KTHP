@@ -45,6 +45,7 @@ type CandidateDocumentRow = {
   candidate_id: number;
   document_type: CandidateDocumentType;
   file_name: string;
+  display_name: string | null;
   file_url: string;
   file_type: 'PDF' | 'JPEG' | 'PNG';
   file_size: number | null;
@@ -56,6 +57,7 @@ export type CandidateDocumentItem = {
   id: number;
   document_type: CandidateDocumentType;
   file_name: string;
+  display_name: string | null;
   file_url: string;
   file_type: 'PDF' | 'JPEG' | 'PNG';
   file_size: number | null;
@@ -593,7 +595,7 @@ export class CandidateProfileModel {
     if (!candidateId) return null;
 
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT id, candidate_id, document_type, file_name, file_url, file_type, file_size, uploaded_at, deleted_at
+      `SELECT id, candidate_id, document_type, file_name, display_name, file_url, file_type, file_size, uploaded_at, deleted_at
        FROM candidate_documents
        WHERE candidate_id = ? AND deleted_at IS NULL
        ORDER BY uploaded_at DESC`,
@@ -604,6 +606,7 @@ export class CandidateProfileModel {
       id: item.id,
       document_type: item.document_type,
       file_name: item.file_name,
+      display_name: item.display_name,
       file_url: item.file_url,
       file_type: item.file_type,
       file_size: item.file_size,
@@ -616,6 +619,7 @@ export class CandidateProfileModel {
     data: {
       document_type: CandidateDocumentType;
       file_name: string;
+      display_name?: string | null;
       file_url: string;
       file_type: 'PDF' | 'JPEG' | 'PNG';
       file_size: number | null;
@@ -625,13 +629,13 @@ export class CandidateProfileModel {
     if (!candidateId) return null;
 
     const [result] = await pool.execute<ResultSetHeader>(
-      `INSERT INTO candidate_documents (candidate_id, document_type, file_name, file_url, file_type, file_size)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [candidateId, data.document_type, data.file_name, data.file_url, data.file_type, data.file_size]
+      `INSERT INTO candidate_documents (candidate_id, document_type, file_name, display_name, file_url, file_type, file_size)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [candidateId, data.document_type, data.file_name, data.display_name ?? null, data.file_url, data.file_type, data.file_size]
     );
 
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT id, candidate_id, document_type, file_name, file_url, file_type, file_size, uploaded_at, deleted_at
+      `SELECT id, candidate_id, document_type, file_name, display_name, file_url, file_type, file_size, uploaded_at, deleted_at
        FROM candidate_documents
        WHERE id = ?
        LIMIT 1`,
@@ -644,6 +648,7 @@ export class CandidateProfileModel {
       id: item.id,
       document_type: item.document_type,
       file_name: item.file_name,
+      display_name: item.display_name,
       file_url: item.file_url,
       file_type: item.file_type,
       file_size: item.file_size,
@@ -658,7 +663,7 @@ export class CandidateProfileModel {
     const candidateId = await this.getCandidateIdByUserId(userId);
     if (!candidateId) return null;
     const [rows] = await pool.execute<RowDataPacket[]>(
-      `SELECT id, candidate_id, document_type, file_name, file_url, file_type, file_size, uploaded_at, deleted_at
+      `SELECT id, candidate_id, document_type, file_name, display_name, file_url, file_type, file_size, uploaded_at, deleted_at
        FROM candidate_documents
        WHERE id = ? AND candidate_id = ? AND deleted_at IS NULL
        LIMIT 1`,

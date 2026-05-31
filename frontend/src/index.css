@@ -1,9 +1,40 @@
 @import "tailwindcss";
 
 @theme {
+  /* ── Meta Color Tokens ── */
+  --color-canvas: #ffffff;
+  --color-surface-soft: #f0f4f9;
+  --color-hairline: #d8dde6;
+  --color-hairline-soft: #e4e9ee;
+  --color-ink-deep: #171c20;
+  --color-ink: #2c3135;
+  --color-charcoal: #4a4f55;
+  --color-slate: #6e7881;
+  --color-steel: #8b95a0;
+  --color-stone: #a0a8b2;
+  --color-primary: #0143b5;
+  --color-primary-deep: #00318a;
+  --color-primary-soft: rgba(1, 67, 181, 0.12);
+  --color-fb-blue: #1877f2;
+  --color-meta-link: #0068e1;
+  --color-oculus-purple: #9147ff;
+  --color-success: #04844b;
+  --color-attention: #d97706;
+  --color-warning: #f59e0b;
+  --color-critical: #c23934;
+  --color-critical-strong: #93000a;
+  --color-ink-button: #1a1c20;
+  --color-on-ink-button: #ffffff;
+  --color-on-primary: #ffffff;
+  --color-on-primary-deep: #ffffff;
+  --color-on-critical: #ffffff;
+  --color-on-success: #ffffff;
+  --color-disabled-text: #c4c9d0;
+
+  /* ── Legacy / Compatibility Tokens (map to Meta equivalents) ── */
   --color-secondary-fixed: #d7e2ff;
   --color-on-error-container: #93000a;
-  --color-primary-hover: #0088c7;
+  --color-primary-hover: #003bb2;
   --color-surface-container: #eaeef4;
   --color-on-error: #ffffff;
   --color-secondary: #3f5e94;
@@ -12,15 +43,14 @@
   --color-on-secondary: #ffffff;
   --color-on-surface: #171c20;
   --color-outline-variant: #bdc8d1;
-  --color-on-primary-fixed-variant: #004c6c;
+  --color-on-primary-fixed-variant: #001e3c;
   --color-inverse-primary: #84cfff;
-  --color-warning: #ff9a3c;
-  --color-on-tertiary-container: #472900;
+  --color-on-tertiary-container: #3e2a00;
   --color-tertiary-fixed: #ffddbb;
-  --color-secondary-container: #a3c1fd;
+  --color-secondary-container: #d7e2ff;
   --color-on-surface-variant: #3e4850;
   --color-surface: #f4f6f9;
-  --color-text-secondary: #706e6b;
+  --color-text-secondary: #4a4f55;
   --color-surface-container-high: #e4e9ee;
   --color-outline: #6e7881;
   --color-border: #d8dde6;
@@ -30,89 +60,180 @@
   --color-on-secondary-fixed: #001b3f;
   --color-error-container: #ffdad6;
   --color-background: #f6faff;
-  --color-primary-container: #00a1e0;
+  --color-primary-container: #d7e2ff;
   --color-on-secondary-fixed-variant: #26467a;
   --color-tertiary-container: #d5850b;
   --color-tertiary-fixed-dim: #ffb867;
   --color-on-tertiary-fixed-variant: #673d00;
   --color-surface-container-low: #f0f4f9;
-  --color-success: #04844b;
   --color-primary-fixed: #c7e7ff;
   --color-on-primary: #ffffff;
-  --color-text-primary: #032d60;
+  --color-text-primary: #171c20;
   --color-surface-bright: #f6faff;
   --color-secondary-fixed-dim: #abc7ff;
   --color-inverse-surface: #2c3135;
   --color-surface-dim: #d6dae0;
   --color-on-secondary-container: #2f4e83;
-  --color-surface-tint: #00658e;
+  --color-surface-tint: #0143b5;
   --color-surface-container-highest: #dee3e8;
-  --color-on-primary-container: #00334a;
+  --color-on-primary-container: #001e3c;
   --color-tertiary: #885200;
-  --color-primary: #00658e;
   --color-surface-variant: #dee3e8;
   --color-error: #c23934;
   --color-on-primary-fixed: #001e2e;
   --color-surface-container-lowest: #ffffff;
   --color-on-tertiary: #ffffff;
 
-  --font-metadata: "Nunito Sans", sans-serif;
-  --font-h1-hero: "Nunito Sans", sans-serif;
-  --font-h4-card-header: "Nunito Sans", sans-serif;
-  --font-h5-subsection: "Nunito Sans", sans-serif;
-  --font-table-header: "Nunito Sans", sans-serif;
-  --font-h3-section-title: "Nunito Sans", sans-serif;
-  --font-body-sm: "Nunito Sans", sans-serif;
-  --font-h2-page-title: "Nunito Sans", sans-serif;
-  --font-label: "Nunito Sans", sans-serif;
-  --font-body: "Nunito Sans", sans-serif;
+  /* ── Typography ── */
+  --font-sans: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-metadata: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-h1-hero: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-h4-card-header: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-h5-subsection: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-table-header: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-h3-section-title: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-body-sm: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-h2-page-title: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-label: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  --font-body: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
 
-  --text-metadata: 11px;
-  --text-metadata--line-height: 1.4;
+  /* Meta type hierarchy */
+  --text-hero-display: 48px;
+  --text-hero-display--line-height: 1.16;
+  --text-hero-display--font-weight: 500;
+  --text-hero-display--letter-spacing: 0;
+
+  --text-display-lg: 40px;
+  --text-display-lg--line-height: 1.17;
+  --text-display-lg--font-weight: 500;
+
+  --text-heading-lg: 32px;
+  --text-heading-lg--line-height: 1.28;
+  --text-heading-lg--font-weight: 500;
+
+  --text-heading-md: 28px;
+  --text-heading-md--line-height: 1.21;
+  --text-heading-md--font-weight: 300;
+
+  --text-heading-sm: 24px;
+  --text-heading-sm--line-height: 1.25;
+  --text-heading-sm--font-weight: 500;
+
+  --text-subtitle-lg: 18px;
+  --text-subtitle-lg--line-height: 1.44;
+  --text-subtitle-lg--font-weight: 700;
+
+  --text-subtitle-md: 18px;
+  --text-subtitle-md--line-height: 1.44;
+  --text-subtitle-md--font-weight: 400;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 1.50;
+  --text-body-md--font-weight: 400;
+  --text-body-md--letter-spacing: -0.16px;
+
+  --text-body-md-bold: 16px;
+  --text-body-md-bold--line-height: 1.50;
+  --text-body-md-bold--font-weight: 700;
+  --text-body-md-bold--letter-spacing: -0.16px;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 1.43;
+  --text-body-sm--font-weight: 400;
+  --text-body-sm--letter-spacing: -0.14px;
+
+  --text-body-sm-bold: 14px;
+  --text-body-sm-bold--line-height: 1.43;
+  --text-body-sm-bold--font-weight: 700;
+  --text-body-sm-bold--letter-spacing: -0.14px;
+
+  --text-caption-bold: 12px;
+  --text-caption-bold--line-height: 1.33;
+  --text-caption-bold--font-weight: 700;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 1.33;
+  --text-caption--font-weight: 400;
+
+  --text-button-md: 14px;
+  --text-button-md--line-height: 1.43;
+  --text-button-md--font-weight: 700;
+  --text-button-md--letter-spacing: -0.14px;
+
+  /* Legacy type tokens (keep for backward compat) */
+  --text-metadata: 12px;
+  --text-metadata--line-height: 1.33;
   --text-metadata--font-weight: 400;
-  --text-h1-hero: 36px;
-  --text-h1-hero--line-height: 1.2;
-  --text-h1-hero--font-weight: 700;
+  --text-h1-hero: 32px;
+  --text-h1-hero--line-height: 1.28;
+  --text-h1-hero--font-weight: 500;
   --text-h4-card-header: 18px;
-  --text-h4-card-header--line-height: 1.4;
+  --text-h4-card-header--line-height: 1.44;
   --text-h4-card-header--font-weight: 700;
-  --text-h5-subsection: 15px;
-  --text-h5-subsection--line-height: 1.4;
+  --text-h5-subsection: 14px;
+  --text-h5-subsection--line-height: 1.43;
   --text-h5-subsection--font-weight: 700;
   --text-table-header: 12px;
-  --text-table-header--line-height: 1.5;
+  --text-table-header--line-height: 1.33;
   --text-table-header--letter-spacing: 0.05em;
   --text-table-header--font-weight: 700;
-  --text-h3-section-title: 22px;
-  --text-h3-section-title--line-height: 1.3;
+  --text-h3-section-title: 18px;
+  --text-h3-section-title--line-height: 1.44;
   --text-h3-section-title--font-weight: 700;
-  --text-body-sm: 13px;
-  --text-body-sm--line-height: 18px;
-  --text-body-sm--font-weight: 400;
-  --text-h2-page-title: 28px;
-  --text-h2-page-title--line-height: 1.2;
-  --text-h2-page-title--font-weight: 700;
+  --text-h2-page-title: 24px;
+  --text-h2-page-title--line-height: 1.25;
+  --text-h2-page-title--font-weight: 500;
   --text-label: 12px;
-  --text-label--line-height: 1.5;
+  --text-label--line-height: 1.33;
   --text-label--font-weight: 600;
   --text-body: 14px;
-  --text-body--line-height: 20px;
+  --text-body--line-height: 1.43;
   --text-body--font-weight: 400;
+  --text-body--letter-spacing: -0.14px;
 
-  --radius-default: 0.125rem;
-  --radius-lg: 0.25rem;
-  --radius-xl: 0.5rem;
-  --radius-full: 0.75rem;
+  /* ── Border Radius (Meta scale) ── */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 16px;
+  --radius-xxl: 24px;
+  --radius-xxxl: 32px;
+  --radius-feature: 40px;
+  --radius-full: 9999px;
+  --radius-circle: 50%;
+  /* Legacy aliases */
+  --radius-default: 2px;
 
-  --spacing-container-max: 1280px;
-  --spacing-xl: 28px;
-  --spacing-md: 14px;
+  /* ── Spacing (4px base increment) ── */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 10px;
+  --spacing-md: 12px;
+  --spacing-base: 16px;
   --spacing-lg: 20px;
-  --spacing-xs: 3px;
-  --spacing-base: 4px;
-  --spacing-sm: 6px;
+  --spacing-xl: 24px;
+  --spacing-xxl: 32px;
+  --spacing-xxxl: 40px;
+  --spacing-section-sm: 48px;
+  --spacing-section: 64px;
+  --spacing-section-lg: 80px;
+  /* Legacy aliases (keep backward compat) */
+  --spacing-container-max: 1280px;
   --spacing-margin: 20px;
   --spacing-gutter: 14px;
+}
+
+/* ── Ant Design override: make all buttons pill-shaped ── */
+:where(.ant-btn) {
+  border-radius: 9999px !important;
+}
+
+/* ── Base body style ── */
+body {
+  font-family: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .material-symbols-outlined {
@@ -120,6 +241,7 @@
   vertical-align: middle;
 }
 
+/* ── Dark Mode ── */
 .dark {
   --color-surface: #0f1215;
   --color-surface-container-lowest: #1a1d21;
@@ -133,13 +255,14 @@
   --color-outline: #8b95a0;
   --color-outline-variant: #3e4850;
   --color-text-primary: #e1e6ed;
-  --color-text-secondary: #9aa3af;
+  --color-text-secondary: #8b95a0;
   --color-on-surface: #e1e6ed;
   --color-on-surface-variant: #bdc8d1;
   --color-on-background: #e1e6ed;
   --color-primary: #84cfff;
-  --color-primary-container: #004c6c;
-  --color-on-primary: #00334a;
+  --color-primary-container: #003d8a;
+  --color-primary-deep: #5ab8ff;
+  --color-on-primary: #001e3c;
   --color-on-primary-container: #c7e7ff;
   --color-secondary: #abc7ff;
   --color-secondary-container: #26467a;
@@ -154,16 +277,16 @@
   --color-on-error: #601410;
   --color-on-error-container: #ffdad6;
   --color-success: #7ddfa0;
-  --color-warning: #ff9a3c;
+  --color-warning: #f59e0b;
   --color-border: #3e4850;
   --color-neutral-bg: #1a1d21;
   --color-inverse-surface: #e1e6ed;
   --color-inverse-on-surface: #1a1d21;
-  --color-inverse-primary: #00658e;
+  --color-inverse-primary: #0143b5;
   --color-primary-fixed: #c7e7ff;
   --color-primary-fixed-dim: #84cfff;
   --color-on-primary-fixed: #001e2e;
-  --color-on-primary-fixed-variant: #004c6c;
+  --color-on-primary-fixed-variant: #003d8a;
   --color-secondary-fixed: #d7e2ff;
   --color-secondary-fixed-dim: #abc7ff;
   --color-on-secondary-fixed: #001b3f;
@@ -172,6 +295,21 @@
   --color-tertiary-fixed-dim: #ffb867;
   --color-on-tertiary-fixed: #2b1700;
   --color-on-tertiary-fixed-variant: #673d00;
+  /* Meta dark tokens */
+  --color-canvas: #1a1d21;
+  --color-surface-soft: #23272b;
+  --color-hairline: #3e4850;
+  --color-hairline-soft: #2d3136;
+  --color-ink-deep: #e1e6ed;
+  --color-ink: #bdc8d1;
+  --color-charcoal: #8b95a0;
+  --color-slate: #6e7881;
+  --color-steel: #5a646d;
+  --color-stone: #4a545d;
+  --color-ink-button: #e1e6ed;
+  --color-on-ink-button: #1a1d21;
+  --color-primary-soft: rgba(132, 207, 255, 0.12);
+  --color-disabled-text: #4a545d;
 }
 
 .glass-effect {
