@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { ApplicationWithDetails, ApplicationStatus } from '../types/university';
+import type { ApplicationWithDetails, ApplicationStatus, ApplicationDetailData } from '../types/university';
 
 interface PaginatedResponse<T> {
   success: boolean;
@@ -20,7 +20,7 @@ interface ActionResponse {
 
 export interface ApplicationDetailResponse {
   success: boolean;
-  data: ApplicationWithDetails & { status_logs: import('../types/university').StatusLog[] };
+  data: ApplicationDetailData;
 }
 
 export interface ApplicationFilter {

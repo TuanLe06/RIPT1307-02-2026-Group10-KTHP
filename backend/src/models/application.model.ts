@@ -1,5 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import pool from '../config/database';
+import { getDeadlineConfig } from '../utils/deadline.util';
 
 export interface Application {
   id: number;
@@ -255,5 +256,18 @@ export class ApplicationModel {
     );
 
     return rows[0];
+  }
+
+  static async hasSubmittedInCurrentPeriod(candidateId: number): Promise<boolean> {
+    const { startDate, endDate } = getDeadlineConfig();
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) as count FROM applications 
+       WHERE candidate_id = ? 
+       AND submitted_at IS NOT NULL
+       AND submitted_at >= ?
+       AND submitted_at <= ?`,
+      [candidateId, startDate, endDate]
+    );
+    return Number((rows[0] as { count: number }).count) > 0;
   }
 }
