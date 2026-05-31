@@ -112,17 +112,6 @@ export const upsertCandidateExamScoresByGroup = async (
     return;
   }
 
-  if (!req.file) {
-    res.status(400).json({ success: false, message: 'exam_certificate is required' });
-    return;
-  }
-
-  const fileType = mimeToFileType[req.file.mimetype];
-  if (!fileType) {
-    res.status(400).json({ success: false, message: 'Unsupported file type. Only PDF/JPEG/PNG allowed' });
-    return;
-  }
-
   const scorePayload: CandidateExamScoresPayload = {
     scores: req.body.scores,
     ...(req.body.foreign_language ? { foreign_language: req.body.foreign_language } : {}),
@@ -130,47 +119,62 @@ export const upsertCandidateExamScoresByGroup = async (
 
   let uploadedPublicId: string | null = null;
   try {
-    const uploaded = await candidateDocumentDeps.uploadDocumentBuffer(
-      req.file.buffer,
-      req.file.originalname
-    );
-    uploadedPublicId = uploaded.publicId;
-
     const updated = await CandidateProfileModel.upsertExamScoresByGroupForCandidateByUserId(
       req.user!.id,
       scorePayload
     );
 
     if (!updated) {
-      await candidateDocumentDeps.deleteAssetByPublicId(uploaded.publicId);
       res.status(404).json({ success: false, message: 'Candidate profile not found' });
       return;
     }
 
-    await CandidateProfileModel.softDeleteDocumentsByTypeByUserId(req.user!.id, 'EXAM_CERTIFICATE');
+    if (req.file) {
+      const fileType = mimeToFileType[req.file.mimetype];
+      if (!fileType) {
+        res.status(400).json({ success: false, message: 'Unsupported file type. Only PDF/JPEG/PNG allowed' });
+        return;
+      }
 
-    const createdCertificate = await CandidateProfileModel.createDocumentByUserId(req.user!.id, {
-      document_type: 'EXAM_CERTIFICATE',
-      file_name: uploaded.publicId,
-      file_url: uploaded.secureUrl,
-      file_type: fileType,
-      file_size: req.file.size ?? null,
-    });
+      const uploaded = await candidateDocumentDeps.uploadDocumentBuffer(
+        req.file.buffer,
+        req.file.originalname
+      );
+      uploadedPublicId = uploaded.publicId;
 
-    if (!createdCertificate) {
-      await candidateDocumentDeps.deleteAssetByPublicId(uploaded.publicId);
-      res.status(404).json({ success: false, message: 'Candidate profile not found' });
-      return;
+      await CandidateProfileModel.softDeleteDocumentsByTypeByUserId(req.user!.id, 'EXAM_CERTIFICATE');
+
+      const createdCertificate = await CandidateProfileModel.createDocumentByUserId(req.user!.id, {
+        document_type: 'EXAM_CERTIFICATE',
+        file_name: uploaded.publicId,
+        file_url: uploaded.secureUrl,
+        file_type: fileType,
+        file_size: req.file.size ?? null,
+      });
+
+      if (!createdCertificate) {
+        await candidateDocumentDeps.deleteAssetByPublicId(uploaded.publicId);
+        res.status(404).json({ success: false, message: 'Candidate profile not found' });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Candidate exam scores updated',
+        data: {
+          academic_record: updated,
+          exam_certificate: createdCertificate,
+        },
+      });
+    } else {
+      res.json({
+        success: true,
+        message: 'Candidate exam scores updated',
+        data: {
+          academic_record: updated,
+        },
+      });
     }
-
-    res.json({
-      success: true,
-      message: 'Candidate exam scores updated',
-      data: {
-        academic_record: updated,
-        exam_certificate: createdCertificate,
-      },
-    });
   } catch (error) {
     if (uploadedPublicId) {
       try {
@@ -269,6 +273,7 @@ export const uploadCandidateDocument = async (req: Request, res: Response): Prom
   const created = await CandidateProfileModel.createDocumentByUserId(req.user!.id, {
     document_type: req.body.document_type,
     file_name: uploaded.publicId,
+    display_name: req.body.display_name || null,
     file_url: uploaded.secureUrl,
     file_type: fileType,
     file_size: req.file.size ?? null,

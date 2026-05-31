@@ -164,7 +164,7 @@ const Universities = () => {
             }
           },
         }}
-        className="bg-surface-container-lowest rounded-lg shadow-sm"
+        className="bg-surface-container-lowest rounded-xxl border border-hairline-soft"
       />
 
       <Modal

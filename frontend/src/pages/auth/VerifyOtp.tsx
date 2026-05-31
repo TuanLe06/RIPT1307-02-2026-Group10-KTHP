@@ -179,7 +179,7 @@ const VerifyOtp = () => {
           <input
             key={index}
             ref={(el) => { inputRefs.current[index] = el; }}
-            className="w-12 h-12 md:w-14 md:h-14 text-center text-xl font-bold border border-border rounded-lg focus:ring-4 focus:ring-primary-container/20 focus:border-primary outline-none bg-surface-container-lowest text-on-surface transition-all"
+            className="w-12 h-12 md:w-14 md:h-14 text-center text-xl font-bold border border-hairline rounded-lg focus:ring-4 focus:ring-primary-soft focus:border-primary outline-none bg-surface-container-lowest text-on-surface transition-all"
             maxLength={1}
             type="text"
             inputMode="numeric"
@@ -212,7 +212,7 @@ const VerifyOtp = () => {
 
       <div className="pt-sm">
         <button
-          className="w-full bg-primary-container hover:bg-primary-hover text-white font-bold text-[16px] py-3 rounded-lg shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-primary hover:bg-primary-hover text-on-primary font-bold text-[16px] py-3 rounded-full active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleVerifyOtp}
           disabled={loading || otp.join('').length !== 6}
         >
@@ -236,7 +236,7 @@ const VerifyOtp = () => {
             Mật khẩu mới
           </label>
           <input
-            className="w-full px-4 py-2.5 border border-border rounded-lg focus:ring-4 focus:ring-primary-container/20 focus:border-primary outline-none text-[15px] bg-surface-container-lowest text-on-surface transition-all"
+            className="w-full px-4 py-2.5 border border-hairline rounded-lg focus:ring-4 focus:ring-primary-soft focus:border-primary outline-none text-[15px] bg-surface-container-lowest text-on-surface transition-all"
             id="mat_khau_reset"
             name="mat_khau"
             type="password"
@@ -266,7 +266,7 @@ const VerifyOtp = () => {
             Xác nhận mật khẩu
           </label>
           <input
-            className="w-full px-4 py-2.5 border border-border rounded-lg focus:ring-4 focus:ring-primary-container/20 focus:border-primary outline-none text-[15px] bg-surface-container-lowest text-on-surface transition-all"
+            className="w-full px-4 py-2.5 border border-hairline rounded-lg focus:ring-4 focus:ring-primary-soft focus:border-primary outline-none text-[15px] bg-surface-container-lowest text-on-surface transition-all"
             id="xac_nhan_mat_khau_reset"
             name="xac_nhan_mat_khau"
             type="password"
@@ -277,7 +277,7 @@ const VerifyOtp = () => {
         </div>
         <div className="pt-sm">
           <button
-            className="w-full bg-primary-container hover:bg-primary-hover text-white font-bold text-[16px] py-3 rounded-lg shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary hover:bg-primary-hover text-on-primary font-bold text-[16px] py-3 rounded-full active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             type="submit"
             disabled={loading}
           >
@@ -323,7 +323,7 @@ const VerifyOtp = () => {
         </div>
 
         <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
-          <div className="w-full max-w-[580px] bg-surface-container-lowest p-6 sm:p-8 md:p-10 rounded-3xl shadow-xl border border-border">
+          <div className="w-full max-w-[580px] bg-surface-container-lowest p-6 sm:p-8 md:p-10 rounded-xxxl border border-hairline-soft">
             {step === 'otp' ? (
               <>
                 <div className="mb-7 md:mb-8">

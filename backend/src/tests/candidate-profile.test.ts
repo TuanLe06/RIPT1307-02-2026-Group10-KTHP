@@ -13,7 +13,10 @@ import {
 } from '../controllers/candidate-profile.controller';
 import pool from '../config/database';
 import { requireCompleteProfile } from '../middleware/requireCompleteProfile.middleware';
-import { CandidateProfileModel } from '../models/candidate-profile.model';
+import {
+  CandidateProfileModel,
+  type CandidateDocumentItem,
+} from '../models/candidate-profile.model';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
 type MockResponse = {
@@ -308,8 +311,9 @@ const testCandidateUpsertGroupScoresNaturalSuccess = async (): Promise<void> => 
     createdDocumentType = data.document_type;
     return {
       id: 100,
-      document_type: data.document_type,
+      document_type: data.document_type as CandidateDocumentItem['document_type'],
       file_name: data.file_name,
+      display_name: data.display_name ?? null,
       file_url: data.file_url,
       file_type: data.file_type,
       file_size: data.file_size,
@@ -434,6 +438,7 @@ const testListDocumentsSuccess = async (): Promise<void> => {
       id: 1,
       document_type: 'TRANSCRIPT',
       file_name: 'doc1',
+      display_name: null,
       file_url: 'https://res.cloudinary.com/demo/image/upload/v1/folder/doc1.pdf',
       file_type: 'PDF',
       file_size: 12345,
@@ -460,6 +465,7 @@ const testUploadDocumentSuccess = async (): Promise<void> => {
     id: 1,
     document_type: 'TRANSCRIPT',
     file_name: 'folder/doc1',
+    display_name: null,
     file_url: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/doc1.pdf',
     file_type: 'PDF',
     file_size: 12345,
@@ -487,6 +493,7 @@ const testDeleteDocumentSuccess = async (): Promise<void> => {
     candidate_id: 123456789012,
     document_type: 'TRANSCRIPT',
     file_name: 'folder/doc1',
+    display_name: null,
     file_url: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/doc1.pdf',
     file_type: 'PDF',
     file_size: 12345,

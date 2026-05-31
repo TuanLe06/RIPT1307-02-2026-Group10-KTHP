@@ -100,9 +100,9 @@ const AdminLayout = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 ${
                   isActive
-                    ? 'bg-secondary-container text-on-secondary-container font-extrabold underline decoration-2 underline-offset-4'
+                    ? 'bg-primary-soft text-primary font-bold'
                     : 'text-on-surface-variant hover:bg-surface-container-high'
                 } ${collapsed ? 'justify-center' : ''}`}
               >
@@ -120,14 +120,14 @@ const AdminLayout = () => {
         <div className="border-t border-outline-variant pt-2 pb-3 px-2">
           <Link
             to="#"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${collapsed ? 'justify-center' : ''}`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${collapsed ? 'justify-center' : ''}`}
           >
             <span className="material-symbols-outlined text-xl shrink-0">contact_support</span>
             {!collapsed && <span className="font-label text-label">Hỗ trợ</span>}
           </Link>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${collapsed ? 'justify-center' : ''}`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${collapsed ? 'justify-center' : ''}`}
           >
             <span className="material-symbols-outlined text-xl shrink-0">logout</span>
             {!collapsed && <span className="font-label text-label">Đăng xuất</span>}
@@ -136,7 +136,7 @@ const AdminLayout = () => {
       </aside>
 
       <main className={`flex-1 flex flex-col transition-all duration-200 ${collapsed ? 'ml-16' : 'ml-64'}`}>
-        <header className="bg-surface-container-lowest border-b border-outline-variant shadow-sm flex items-center justify-between h-14 px-4 lg:px-6 sticky top-0 z-40">
+        <header className="bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between h-14 px-4 lg:px-6 sticky top-0 z-40">
           <div className="flex items-center gap-3 flex-1">
             <Button
               type="text"
