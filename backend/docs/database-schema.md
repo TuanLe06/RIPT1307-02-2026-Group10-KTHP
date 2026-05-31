@@ -137,6 +137,7 @@ erDiagram
         BIGINT candidate_id FK
         VARCHAR_50 document_type
         VARCHAR_255 file_name
+        VARCHAR_255 display_name
         TEXT file_url
         VARCHAR_20 file_type
         BIGINT file_size

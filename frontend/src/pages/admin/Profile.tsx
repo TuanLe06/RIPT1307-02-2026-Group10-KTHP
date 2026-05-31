@@ -37,8 +37,8 @@ const Profile = () => {
 
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-12 lg:col-span-8 space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+          <div className="bg-surface-container-lowest border border-hairline-soft rounded-xxl overflow-hidden">
+            <div className="px-5 py-4 border-b border-hairline-soft bg-surface-container-low flex items-center justify-between">
               <h3 className="font-h5-subsection text-h5-subsection text-text-primary">
                 Thông tin cá nhân
               </h3>
@@ -58,7 +58,7 @@ const Profile = () => {
                   <div className="space-y-1">
                     <label className="font-label text-label text-text-primary">Họ và Tên</label>
                     <input
-                      className="w-full h-10 border border-border rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
+                      className="w-full h-10 border border-hairline rounded-lg px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
                       type="text"
                       value="Quản trị viên"
                       disabled
@@ -67,7 +67,7 @@ const Profile = () => {
                   <div className="space-y-1">
                     <label className="font-label text-label text-text-primary">Mã quản trị</label>
                     <input
-                      className="w-full h-10 border border-border rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
+                      className="w-full h-10 border border-hairline rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
                       type="text"
                       value={String(user.id)}
                       disabled
@@ -76,7 +76,7 @@ const Profile = () => {
                   <div className="space-y-1">
                     <label className="font-label text-label text-text-primary">Email liên hệ</label>
                     <input
-                      className="w-full h-10 border border-border rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
+                      className="w-full h-10 border border-hairline rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
                       type="email"
                       value={user.email}
                       disabled
@@ -85,7 +85,7 @@ const Profile = () => {
                   <div className="space-y-1">
                     <label className="font-label text-label text-text-primary">Số điện thoại</label>
                     <input
-                      className="w-full h-10 border border-border rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
+                      className="w-full h-10 border border-hairline rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
                       type="tel"
                       value="--"
                       disabled
@@ -93,7 +93,7 @@ const Profile = () => {
                   </div>
                   <div className="space-y-1">
                     <label className="font-label text-label text-text-primary">Vai trò hệ thống</label>
-                    <div className="w-full h-10 border border-border rounded px-4 flex items-center bg-surface-container-low">
+                    <div className="w-full h-10 border border-hairline rounded px-4 flex items-center bg-surface-container-low">
                       <span className="material-symbols-outlined text-sm mr-1 text-primary">
                         verified_user
                       </span>
@@ -103,7 +103,7 @@ const Profile = () => {
                   <div className="space-y-1">
                     <label className="font-label text-label text-text-primary">Ngày gia nhập</label>
                     <input
-                      className="w-full h-10 border border-border rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
+                      className="w-full h-10 border border-hairline rounded px-4 text-body bg-surface-container-low text-text-secondary cursor-not-allowed"
                       type="text"
                       value={createdDate}
                       disabled
@@ -116,8 +116,8 @@ const Profile = () => {
         </div>
 
         <div className="col-span-12 lg:col-span-4 space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+          <div className="bg-surface-container-lowest border border-hairline-soft rounded-xxl overflow-hidden">
+            <div className="px-5 py-4 border-b border-hairline-soft bg-surface-container-low flex items-center justify-between">
               <h3 className="font-h5-subsection text-h5-subsection text-text-primary">
                 Hoạt động tài khoản
               </h3>

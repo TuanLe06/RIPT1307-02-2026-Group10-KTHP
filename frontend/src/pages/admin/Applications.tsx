@@ -376,7 +376,7 @@ const Applications = () => {
 
       {/* Stats Bar */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-        <div className="bg-surface-container-lowest border border-border p-md rounded-xl shadow-sm hover:shadow-md transition-shadow group">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl group">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Tổng hồ sơ</span>
             <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
@@ -390,7 +390,7 @@ const Applications = () => {
           </p>
         </div>
 
-        <div className="bg-surface-container-lowest border border-border p-md rounded-xl shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Chờ duyệt</span>
             <div className="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
@@ -404,7 +404,7 @@ const Applications = () => {
           </p>
         </div>
 
-        <div className="bg-surface-container-lowest border border-border p-md rounded-xl shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Đã trúng tuyển</span>
             <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success">
@@ -418,7 +418,7 @@ const Applications = () => {
           </p>
         </div>
 
-        <div className="bg-surface-container-lowest border border-border p-md rounded-xl shadow-sm hover:shadow-md transition-shadow">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Từ chối</span>
             <div className="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-error">
@@ -434,7 +434,7 @@ const Applications = () => {
       </div>
 
       {/* Search & Filter Row */}
-      <div ref={filterRef} className="bg-surface-container-lowest border border-border p-md rounded-xl shadow-sm space-y-md">
+      <div ref={filterRef} className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl space-y-md">
         <div className="flex flex-wrap items-end gap-md">
           <div className="flex-1 min-w-[240px]">
             <label className="block text-xs font-bold text-text-primary mb-1">Tìm theo họ tên / mã HS</label>
@@ -448,7 +448,7 @@ const Applications = () => {
           <div className="w-48">
             <label className="block text-xs font-bold text-text-primary mb-1">Trường</label>
             <select
-              className="w-full border-border rounded-lg px-md py-sm focus:ring-primary-container focus:border-primary-container"
+              className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary"
               value={uniFilter}
                onChange={(e) => { setUniFilter(e.target.value); setMajorFilter(""); if (!e.target.value) setMajors([]); setPage(1); }}
             >
@@ -461,7 +461,7 @@ const Applications = () => {
           <div className="w-48">
             <label className="block text-xs font-bold text-text-primary mb-1">Ngành</label>
             <select
-              className="w-full border-border rounded-lg px-md py-sm focus:ring-primary-container focus:border-primary-container"
+              className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary"
               value={majorFilter}
               onChange={(e) => { setMajorFilter(e.target.value); setPage(1); }}
               disabled={!uniFilter}
@@ -475,7 +475,7 @@ const Applications = () => {
           <div className="w-48">
             <label className="block text-xs font-bold text-text-primary mb-1">Trạng thái</label>
             <select
-              className="w-full border-border rounded-lg px-md py-sm focus:ring-primary-container focus:border-primary-container"
+              className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary"
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             >
@@ -488,7 +488,7 @@ const Applications = () => {
           <div className="flex items-end gap-sm pb-[2px]">
             <button
               onClick={exportCSV}
-              className="bg-surface-container-low text-on-surface-variant px-lg py-[9px] rounded-lg font-label hover:bg-surface-container-high transition-colors flex items-center gap-sm border border-border"
+              className="bg-surface-container-low text-on-surface-variant px-lg py-[9px] rounded-full font-label hover:bg-surface-container-high transition-colors flex items-center gap-sm border border-hairline"
             >
               <span className="material-symbols-outlined text-[18px]">download</span>
               Xuất CSV
@@ -508,21 +508,21 @@ const Applications = () => {
           </div>
           <div className="flex items-center gap-sm">
             <button
-              className="bg-success text-white px-lg py-sm rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
+              className="bg-success text-on-primary px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
               onClick={() => openBatchUpdate("APPROVED")}
             >
               <span className="material-symbols-outlined text-[18px]">check</span>
               Duyệt tất cả
             </button>
             <button
-              className="bg-error text-white px-lg py-sm rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
+              className="bg-critical text-on-critical px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
               onClick={() => openBatchUpdate("REJECTED")}
             >
               <span className="material-symbols-outlined text-[18px]">close</span>
               Từ chối tất cả
             </button>
             <button
-              className="bg-surface-container-low text-on-surface-variant px-lg py-sm rounded-lg text-sm font-bold hover:bg-surface-container-high transition-all flex items-center gap-sm border border-border"
+              className="bg-surface-container-low text-on-surface-variant px-lg py-sm rounded-full text-sm font-bold hover:bg-surface-container-high transition-all flex items-center gap-sm border border-hairline"
               onClick={() => setSelectedIds(new Set())}
             >
               <span className="material-symbols-outlined text-[18px]">close</span>
@@ -533,7 +533,7 @@ const Applications = () => {
       )}
 
       {/* Application Data Table */}
-      <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest border border-hairline-soft rounded-xxl overflow-hidden">
         <Table
           columns={tableColumns}
           dataSource={applications}
@@ -642,7 +642,7 @@ const Applications = () => {
                           log.new_status === "APPROVED" || log.new_status === "PASSED" ? "#04844B" : "#00658e",
                       }} />
                       {idx < statusLogs.length - 1 && (
-                        <div className="absolute left-[-13.5px] top-3.5 bottom-[-16px] w-px bg-border" />
+                        <div className="absolute left-[-13.5px] top-3.5 bottom-[-16px] w-px bg-hairline" />
                       )}
                       <div className="flex items-center gap-2">
                         <span className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold ${getStatusStyle(log.new_status).bg} ${getStatusStyle(log.new_status).text} border ${getStatusStyle(log.new_status).border}`}>
@@ -662,7 +662,7 @@ const Applications = () => {
             {selectedApp.status !== "PASSED" && selectedApp.status !== "FAILED" && (
               <div className="flex justify-end gap-sm pt-2 border-t border-border">
                 <button
-                  className="bg-primary hover:bg-primary-hover text-white px-lg py-sm rounded-lg text-sm font-bold transition-all"
+                  className="bg-primary hover:bg-primary-hover text-on-primary px-lg py-sm rounded-full text-sm font-bold transition-all"
                   onClick={() => openUpdate(selectedApp)}
                 >
                   <span className="material-symbols-outlined text-[18px] mr-1">check_circle</span>
@@ -709,7 +709,7 @@ const Applications = () => {
                 Lý do <span className="text-error">*</span>
               </p>
               <textarea
-                className="w-full border-border rounded-lg px-md py-sm focus:ring-primary-container focus:border-primary-container min-h-[80px]"
+                className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary min-h-[80px]"
                 rows={3}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
@@ -754,7 +754,7 @@ const Applications = () => {
                 Lý do <span className="text-error">*</span>
               </p>
               <textarea
-                className="w-full border-border rounded-lg px-md py-sm focus:ring-primary-container focus:border-primary-container min-h-[80px]"
+                className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary min-h-[80px]"
                 rows={3}
                 value={batchRejectReason}
                 onChange={(e) => setBatchRejectReason(e.target.value)}
@@ -766,7 +766,7 @@ const Applications = () => {
       </Modal>
 
       {/* Contextual Banner */}
-      <div className="relative overflow-hidden bg-primary-container rounded-xl p-xl shadow-lg flex items-center justify-between group">
+      <div className="relative overflow-hidden bg-primary-container rounded-xxl p-xxl flex items-center justify-between group">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
           <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
             <path d="M0 0 L100 0 L100 100 Z" fill="white" />
@@ -778,7 +778,7 @@ const Applications = () => {
             Có {pendingCount} hồ sơ thuộc diện chờ duyệt chưa được phê duyệt. Hãy kiểm tra các hồ sơ này để đảm bảo đúng tiến độ tuyển sinh.
           </p>
           <button
-            className="mt-md bg-on-primary-container text-white px-lg py-sm rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
+            className="mt-md bg-on-primary text-on-primary-container px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
             onClick={() => {
               setStatusFilter("PENDING_REVIEW");
               setPage(1);

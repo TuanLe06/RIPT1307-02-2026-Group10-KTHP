@@ -183,7 +183,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm relative overflow-hidden">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-[0.07]">
             <BankOutlined className="text-[64px] text-primary" />
           </div>
@@ -199,7 +199,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm relative overflow-hidden">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-[0.07]">
             <BookOutlined className="text-[64px] text-primary" />
           </div>
@@ -217,7 +217,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm relative overflow-hidden">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-[0.07]">
             <AppstoreOutlined className="text-[64px] text-primary" />
           </div>
@@ -235,7 +235,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-primary text-on-primary p-5 rounded-xl shadow-lg relative overflow-hidden">
+        <div className="bg-primary text-on-primary p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute -right-4 -bottom-4 opacity-20">
             <span className="material-symbols-outlined text-[120px]">
               analytics
@@ -249,8 +249,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
-        <div className="px-5 py-4 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="bg-surface-container-lowest border border-hairline-soft rounded-xxl">
+        <div className="px-5 py-4 border-b border-hairline-soft flex flex-col sm:flex-row sm:items-center gap-3">
           <h4 className="font-h4-card-header text-h4-card-header text-text-primary shrink-0">
             Phân bố ngành học theo trường
           </h4>
@@ -331,8 +331,8 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        <div className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
-          <div className="px-5 py-4 border-b border-outline-variant">
+        <div className="lg:col-span-2 bg-surface-container-lowest border border-hairline-soft rounded-xxl">
+          <div className="px-5 py-4 border-b border-hairline-soft">
             <h4 className="font-h4-card-header text-h4-card-header text-text-primary">
               Thống kê trạng thái hồ sơ
             </h4>
@@ -352,8 +352,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-3 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
-          <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
+        <div className="lg:col-span-3 bg-surface-container-lowest border border-hairline-soft rounded-xxl">
+          <div className="px-5 py-4 border-b border-hairline-soft flex items-center justify-between">
             <h4 className="font-h4-card-header text-h4-card-header text-text-primary">
               Chi tiết theo trạng thái
             </h4>

@@ -11,13 +11,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         theme={{
           algorithm: theme === 'dark' ? antTheme.darkAlgorithm : antTheme.defaultAlgorithm,
           token: {
-            colorPrimary: theme === 'dark' ? '#84cfff' : '#00658e',
-            colorLink: theme === 'dark' ? '#84cfff' : '#00658e',
+            colorPrimary: theme === 'dark' ? '#84cfff' : '#0143b5',
+            colorLink: theme === 'dark' ? '#84cfff' : '#0143b5',
             colorError: '#C23934',
             colorSuccess: '#04844B',
-            colorWarning: '#FF9A3C',
-            fontFamily: '"Nunito Sans", sans-serif',
-            borderRadius: 4,
+            colorWarning: '#F59E0B',
+            fontFamily: '"Montserrat", Helvetica, Arial, Noto Sans, sans-serif',
+            borderRadius: 8,
           },
         }}
       >
