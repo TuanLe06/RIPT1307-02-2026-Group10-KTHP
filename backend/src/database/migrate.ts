@@ -269,7 +269,7 @@ const migrate = async (): Promise<void> => {
       subject VARCHAR(255) NOT NULL,
       content TEXT NOT NULL,
       type ENUM('APPLICATION_SUBMITTED','STATUS_CHANGED','MANUAL','PASSWORD_RESET') NOT NULL,
-      status ENUM('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
+      status ENUM('PENDING','SENT','FAILED','READ') NOT NULL DEFAULT 'PENDING',
       sent_by BIGINT UNSIGNED NULL,
       sent_at DATETIME NULL,
       error_message TEXT NULL,

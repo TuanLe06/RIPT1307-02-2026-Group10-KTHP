@@ -1,14 +1,32 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import {
   sendManualNotification,
   sendNotificationToMultipleCandidates,
+  getNotifications,
+  getNotificationDetail,
+  markNotificationAsRead,
+  updateNotificationStatus,
 } from '../controllers/notification.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
 const router = Router();
 
 router.use(authenticate, authorize('ADMIN'));
+
+router.get(
+  '/',
+  [
+    query('page').optional().isInt({ min: 1 }),
+    query('limit').optional().isInt({ min: 1, max: 100 }),
+  ],
+  getNotifications,
+);
+router.get(
+  '/:id',
+  [param('id').isInt({ gt: 0 }).withMessage('Invalid notification ID')],
+  getNotificationDetail,
+);
 
 router.post(
   '/send',
@@ -35,5 +53,8 @@ router.post(
   ],
   sendNotificationToMultipleCandidates,
 );
+
+router.put('/:id/status', updateNotificationStatus);
+router.put('/:id/read', markNotificationAsRead);
 
 export default router;
