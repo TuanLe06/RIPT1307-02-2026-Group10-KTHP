@@ -30,9 +30,9 @@ export class UserModel {
        LEFT JOIN candidate_profiles cp ON cp.user_id = u.id
        WHERE cp.full_name LIKE ? OR u.email LIKE ?
        ORDER BY u.created_at DESC
-       LIMIT ?
-       OFFSET ?`,
-      [like, like, limit, offset],
+       LIMIT ${Number(limit)}
+       OFFSET ${Number(offset)}`,
+      [like, like],
     );
 
     const cnt = await queryOne<{ total: number }>(
