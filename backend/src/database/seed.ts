@@ -18,12 +18,15 @@ const seed = async (): Promise<void> => {
   }
   await pool.execute("SET FOREIGN_KEY_CHECKS = 1");
 
-  const adminPassword = await bcrypt.hash("admin123", 12);
+  const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
+  const adminPlainPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+  const adminPassword = await bcrypt.hash(adminPlainPassword, 12);
   const candidatePassword = await bcrypt.hash("candidate123", 12);
 
   const [adminResult] = await pool.execute<ResultSetHeader>(
     `INSERT INTO users (email, password_hash, role, status) VALUES (?, ?, 'ADMIN', 'ACTIVE')`,
-    ["admin@example.com", adminPassword],
+    [adminEmail, adminPassword],
   );
   const adminId = adminResult.insertId;
 
@@ -240,7 +243,7 @@ const seed = async (): Promise<void> => {
   }
 
   console.log("Đã chèn dữ liệu mẫu");
-  console.log(`  Admin: admin@example.com / admin123 (ID: ${adminId})`);
+  console.log(`  Admin: ${adminEmail} / ${adminPlainPassword} (ID: ${adminId})`);
   console.log(`  Thí sinh: candidate@example.com / candidate123 (ID: ${candidateId})`);
   console.log(`  Thí sinh 2: nguyenvana@example.com / candidate123 (ID: ${candidate2Id})`);
   console.log(`  Thí sinh 3: tranthib@example.com / candidate123 (ID: ${candidate3Id})`);
