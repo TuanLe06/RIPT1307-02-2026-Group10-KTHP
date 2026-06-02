@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body, param, query } from 'express-validator';
 import {
   createApplication,
@@ -16,7 +16,7 @@ import {
 import { authenticate, authorize } from '../middleware/auth.middleware';
 import { requireCompleteProfile, getProfileCompletenessHandler } from '../middleware/requireCompleteProfile.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 // Deadline info - public
 router.get('/deadline', getDeadlineInfo);

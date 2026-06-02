@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import type { NextFunction, Request, Response } from 'express';
 import { body } from 'express-validator';
 import multer from 'multer';
@@ -16,7 +16,7 @@ import {
 } from '../controllers/candidate-profile.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },

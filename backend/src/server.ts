@@ -1,7 +1,7 @@
 import http from 'http';
 import cors from "cors";
 import dotenv from "dotenv";
-import express from "express";
+import express, { type Express } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
@@ -26,7 +26,7 @@ import { initSocket } from "./socket";
 
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 const server = http.createServer(app);
 const io = initSocket(server);
 app.set('io', io);
