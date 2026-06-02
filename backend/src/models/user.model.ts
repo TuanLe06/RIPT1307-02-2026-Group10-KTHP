@@ -23,6 +23,7 @@ export class UserModel {
         cp.full_name,
         u.role,
         u.status,
+        u.avatar_url,
         u.last_login_at,
         u.created_at,
         u.updated_at
@@ -57,6 +58,7 @@ export class UserModel {
         cp.full_name,
         u.role,
         u.status,
+        u.avatar_url,
         u.last_login_at,
         u.created_at,
         u.updated_at
@@ -142,6 +144,7 @@ export class UserModel {
         cp.full_name,
         u.role,
         u.status,
+        u.avatar_url,
         u.created_at,
         u.updated_at
        FROM users u
@@ -330,5 +333,32 @@ export class UserModel {
        WHERE token = ?`,
       [token],
     );
+  }
+
+  static async updateAvatar(
+    userId: number,
+    data: { avatar_url: string; avatar_public_id: string },
+  ): Promise<User | null> {
+    await query(
+      `UPDATE users
+       SET avatar_url = ?,
+           avatar_public_id = ?,
+           updated_at = NOW()
+       WHERE id = ?`,
+      [data.avatar_url, data.avatar_public_id, userId],
+    );
+    return this.findById(userId);
+  }
+
+  static async clearAvatar(userId: number): Promise<User | null> {
+    await query(
+      `UPDATE users
+       SET avatar_url = NULL,
+           avatar_public_id = NULL,
+           updated_at = NOW()
+       WHERE id = ?`,
+      [userId],
+    );
+    return this.findById(userId);
   }
 }
