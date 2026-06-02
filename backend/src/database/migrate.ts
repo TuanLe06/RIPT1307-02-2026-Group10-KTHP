@@ -4,6 +4,27 @@ const migrate = async (): Promise<void> => {
   await testConnection();
 
   const queries = [
+    // Idempotent ALTERs cho các cột thêm sau (an toàn cho cả fresh DB và prod)
+    `SET @sql = IF(
+      (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_url') = 0,
+      'ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) NULL COMMENT ''Cloudinary secure URL của avatar''',
+      'SELECT 1'
+    )`,
+    `PREPARE stmt FROM @sql`,
+    `EXECUTE stmt`,
+    `DEALLOCATE PREPARE stmt`,
+
+    `SET @sql = IF(
+      (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_public_id') = 0,
+      'ALTER TABLE users ADD COLUMN avatar_public_id VARCHAR(255) NULL COMMENT ''Cloudinary public_id để xoá asset''',
+      'SELECT 1'
+    )`,
+    `PREPARE stmt FROM @sql`,
+    `EXECUTE stmt`,
+    `DEALLOCATE PREPARE stmt`,
+
     `SET FOREIGN_KEY_CHECKS = 0`,
     `DROP TABLE IF EXISTS audit_logs`,
     `DROP TABLE IF EXISTS email_notifications`,
