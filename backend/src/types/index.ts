@@ -5,6 +5,8 @@ export interface User {
   password_hash: string;
   role: 'CANDIDATE' | 'ADMIN';
   status: 'ACTIVE' | 'LOCKED' | 'PENDING';
+  avatar_url: string | null;
+  avatar_public_id: string | null;
   last_login_at: Date | null;
   created_at: Date;
   updated_at: Date;

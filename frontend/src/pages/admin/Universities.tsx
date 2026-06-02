@@ -136,7 +136,7 @@ const Universities = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Trường học
         </h3>
@@ -193,7 +193,7 @@ const Universities = () => {
           <Form.Item name="address" label="Địa chỉ">
             <Input placeholder="Địa chỉ trường" />
           </Form.Item>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Form.Item name="phone" label="Điện thoại" className="flex-1">
               <Input placeholder="Số điện thoại" />
             </Form.Item>

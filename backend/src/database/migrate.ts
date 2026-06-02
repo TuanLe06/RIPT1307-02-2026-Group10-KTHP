@@ -4,6 +4,27 @@ const migrate = async (): Promise<void> => {
   await testConnection();
 
   const queries = [
+    // Idempotent ALTERs cho các cột thêm sau (an toàn cho cả fresh DB và prod)
+    `SET @sql = IF(
+      (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_url') = 0,
+      'ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) NULL COMMENT ''Cloudinary secure URL của avatar''',
+      'SELECT 1'
+    )`,
+    `PREPARE stmt FROM @sql`,
+    `EXECUTE stmt`,
+    `DEALLOCATE PREPARE stmt`,
+
+    `SET @sql = IF(
+      (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_public_id') = 0,
+      'ALTER TABLE users ADD COLUMN avatar_public_id VARCHAR(255) NULL COMMENT ''Cloudinary public_id để xoá asset''',
+      'SELECT 1'
+    )`,
+    `PREPARE stmt FROM @sql`,
+    `EXECUTE stmt`,
+    `DEALLOCATE PREPARE stmt`,
+
     `SET FOREIGN_KEY_CHECKS = 0`,
     `DROP TABLE IF EXISTS audit_logs`,
     `DROP TABLE IF EXISTS email_notifications`,
@@ -29,6 +50,8 @@ const migrate = async (): Promise<void> => {
       password_hash VARCHAR(255) NOT NULL,
       role ENUM('CANDIDATE','ADMIN') NOT NULL,
       status ENUM('ACTIVE','LOCKED','PENDING') NOT NULL DEFAULT 'ACTIVE',
+      avatar_url VARCHAR(500) NULL COMMENT 'Cloudinary secure URL của avatar',
+      avatar_public_id VARCHAR(255) NULL COMMENT 'Cloudinary public_id để xoá asset',
       last_login_at DATETIME NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

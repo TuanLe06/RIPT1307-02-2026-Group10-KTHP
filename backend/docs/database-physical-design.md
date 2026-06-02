@@ -14,6 +14,8 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,
   role ENUM('CANDIDATE','ADMIN') NOT NULL,
   status ENUM('ACTIVE','LOCKED','PENDING') NOT NULL DEFAULT 'ACTIVE',
+  avatar_url VARCHAR(500) NULL COMMENT 'Cloudinary secure URL của avatar',
+  avatar_public_id VARCHAR(255) NULL COMMENT 'Cloudinary public_id để xoá asset',
   last_login_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
