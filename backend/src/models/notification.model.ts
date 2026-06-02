@@ -64,8 +64,8 @@ export class EmailNotificationModel {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT id, receiver_id, receiver_email, subject, content, type, status, sent_by, sent_at, error_message, created_at
        FROM email_notifications WHERE status = 'PENDING'
-       ORDER BY created_at ASC LIMIT ?`,
-      [limit]
+       ORDER BY created_at ASC LIMIT ${Number(limit)}`,
+      []
     );
     return rows as EmailNotification[];
   }
@@ -104,8 +104,8 @@ export class EmailNotificationModel {
     const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT id, receiver_id, receiver_email, subject, content, type, status, sent_by, sent_at, error_message, created_at
        FROM email_notifications WHERE receiver_id = ?
-       ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [rid, l, offset]
+       ORDER BY created_at DESC LIMIT ${Number(l)} OFFSET ${Number(offset)}`,
+      [rid]
     );
 
     const [countRows] = await pool.query<RowDataPacket[]>(
@@ -181,8 +181,8 @@ export class ApplicationStatusLogModel {
        LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.user_id
        WHERE asl.changed_by = ?
        ORDER BY asl.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [changedBy, limit, offset]
+       LIMIT ${Number(limit)} OFFSET ${Number(offset)}`,
+      [changedBy]
     );
 
     const [countRows] = await pool.execute<RowDataPacket[]>(
