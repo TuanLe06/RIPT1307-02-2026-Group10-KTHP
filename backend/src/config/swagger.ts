@@ -1061,6 +1061,57 @@ const swaggerSpec = {
         },
       },
     // ─── Users ────────────────────────────────────────────────────
+    "/api/users/me": {
+      get: {
+        tags: ["Users"],
+        summary: "Lấy thông tin người dùng hiện tại (đã đăng nhập)",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: "Lấy thông tin thành công" },
+          401: { description: "Chưa xác thực" },
+          404: { description: "Không tìm thấy người dùng" },
+        },
+      },
+    },
+    "/api/users/me/avatar": {
+      post: {
+        tags: ["Users"],
+        summary: "Upload avatar cho người dùng hiện tại (Cloudinary)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "multipart/form-data": {
+              schema: {
+                type: "object",
+                properties: {
+                  avatar: {
+                    type: "string",
+                    format: "binary",
+                    description: "File ảnh (JPEG/PNG/WebP/GIF, tối đa 5MB)",
+                  },
+                },
+                required: ["avatar"],
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: "Cập nhật avatar thành công" },
+          400: { description: "File không hợp lệ" },
+          401: { description: "Chưa xác thực" },
+        },
+      },
+      delete: {
+        tags: ["Users"],
+        summary: "Xoá avatar của người dùng hiện tại (Cloudinary + DB)",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: "Đã xoá avatar" },
+          401: { description: "Chưa xác thực" },
+        },
+      },
+    },
     "/api/users": {
       get: {
         tags: ["Users"],
