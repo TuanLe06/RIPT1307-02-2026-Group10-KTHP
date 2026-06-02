@@ -1,5 +1,5 @@
 
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import multer from 'multer';
 import type { NextFunction, Request, Response } from 'express';
 import {
