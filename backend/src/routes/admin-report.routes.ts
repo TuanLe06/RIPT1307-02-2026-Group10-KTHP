@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { query } from 'express-validator';
 import {
   getOverallStatistics,
@@ -10,7 +10,7 @@ import {
 } from '../controllers/report.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 router.use(authenticate, authorize('ADMIN'));
 

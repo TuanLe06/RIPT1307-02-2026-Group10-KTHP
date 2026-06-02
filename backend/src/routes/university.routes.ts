@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body, param, query } from 'express-validator';
 import {
   createUniversity,
@@ -14,7 +14,7 @@ import {
 } from '../controllers/university.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 // ── Universities ──────────────────────────────────────────────
 router.post(

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body } from 'express-validator';
 import {
   register,
@@ -13,7 +13,7 @@ import {
 } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 const PASSWORD_RULES_MSG =
   'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.';

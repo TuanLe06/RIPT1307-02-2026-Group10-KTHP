@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body, param } from 'express-validator';
 import {
   listApplications,
@@ -7,7 +7,7 @@ import {
 } from '../controllers/admin-application.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 router.use(authenticate, authorize('ADMIN'));
 
