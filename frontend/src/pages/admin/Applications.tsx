@@ -595,7 +595,7 @@ const Applications = () => {
                 <span className="material-symbols-outlined text-lg">description</span>
                 Hồ sơ đăng ký
               </h4>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3 bg-surface-container-low rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 bg-surface-container-low rounded-lg p-4">
                 <div>
                   <p className="text-xs font-bold text-text-secondary uppercase">Mã hồ sơ</p>
                   <p className="text-sm font-bold text-primary mt-0.5">{selectedApp.application_code}</p>
@@ -655,7 +655,7 @@ const Applications = () => {
                   <span className="material-symbols-outlined text-lg">person</span>
                   Thông tin cá nhân
                 </h4>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3 bg-surface-container-low rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 bg-surface-container-low rounded-lg p-4">
                   <div className="col-span-2 md:col-span-1">
                     <p className="text-xs font-bold text-text-secondary uppercase">Họ và tên</p>
                     <p className="text-sm text-on-surface mt-0.5">{selectedApp.candidate_profile.candidate_profile.full_name}</p>
@@ -723,7 +723,7 @@ const Applications = () => {
                   Điểm thi
                 </h4>
                 <div className="bg-surface-container-low rounded-lg p-4">
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                     {selectedApp.academic_record.academic_record.exam_scores.map((s) => (
                       <div key={s.subject_code}>
                         <p className="text-xs font-bold text-text-secondary uppercase">{s.subject_name}</p>
@@ -765,7 +765,7 @@ const Applications = () => {
                   Học tập THPT
                 </h4>
                 <div className="bg-surface-container-low rounded-lg p-4">
-                  <div className="grid grid-cols-12 gap-x-4 gap-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-x-4 gap-y-3">
                     <p className="col-span-2 text-xs font-bold text-text-secondary uppercase">Lớp</p>
                     <p className="col-span-7 text-xs font-bold text-text-secondary uppercase">Trường</p>
                     <p className="col-span-3 text-xs font-bold text-text-secondary uppercase">Điểm TB</p>
