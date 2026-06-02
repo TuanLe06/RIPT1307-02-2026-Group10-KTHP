@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { param, body } from 'express-validator';
 import {
   getAssignedCombinations,
@@ -6,7 +6,7 @@ import {
 } from '../controllers/combinationAssignment.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router({ mergeParams: true });
+const router: ExpressRouter = Router({ mergeParams: true });
 
 router.get(
   '/',
