@@ -1,3 +1,4 @@
+
 import { Router } from 'express';
 import multer from 'multer';
 import type { NextFunction, Request, Response } from 'express';
@@ -10,9 +11,10 @@ import {
   updateUser,
   uploadMyAvatar,
 } from '../controllers/user.controller';
+
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 const avatarUpload = multer({
   storage: multer.memoryStorage(),

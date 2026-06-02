@@ -1,5 +1,6 @@
-import { Router } from 'express';
+
 import { body, param, query } from 'express-validator';
+import { Router, type Router as ExpressRouter } from 'express';
 import {
   sendManualNotification,
   sendNotificationToMultipleCandidates,
@@ -10,7 +11,7 @@ import {
 } from '../controllers/notification.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 router.use(authenticate, authorize('ADMIN'));
 
