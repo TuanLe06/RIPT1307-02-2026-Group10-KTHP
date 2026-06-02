@@ -119,8 +119,8 @@ export class ApplicationModel {
         LEFT JOIN users reviewer ON a.reviewed_by = reviewer.id
         WHERE a.candidate_id = ?
         ORDER BY a.created_at DESC
-        LIMIT ? OFFSET ?`,
-      [candidateId, limit, offset]
+        LIMIT ${Number(limit)} OFFSET ${Number(offset)}`,
+      [candidateId]
     );
 
     const [countRows] = await pool.execute<RowDataPacket[]>(
