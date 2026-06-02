@@ -200,11 +200,11 @@ const Majors = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Ngành học
         </h3>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
           <Select
             value={selectedUniCode}
             onChange={selectUniversity}
@@ -296,7 +296,7 @@ const Majors = () => {
         confirmLoading={comboSubmitting}
         width={800}
       >
-        <div className="flex gap-4" style={{ minHeight: 400 }}>
+        <div className="flex flex-col lg:flex-row gap-4" style={{ minHeight: 400 }}>
           <div className="flex-1 border border-hairline-soft rounded-xl p-3">
             <div className="font-medium mb-2 text-text-secondary">Tất cả tổ hợp</div>
             <Checkbox.Group
