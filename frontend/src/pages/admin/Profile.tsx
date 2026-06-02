@@ -1,8 +1,15 @@
-import { Tag, Spin } from 'antd';
+import { Tag, Spin, App } from 'antd';
+import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useRef, useState } from 'react';
 import { useAuthStore } from '../../store/auth';
+import { authApi } from '../../api/auth';
 
 const Profile = () => {
+  const { message } = App.useApp();
   const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   if (!user) return <Spin />;
 
@@ -23,6 +30,49 @@ const Profile = () => {
     ? new Date(user.last_login_at).toLocaleString('vi-VN')
     : 'Chưa có';
   const updatedDate = new Date(user.updated_at).toLocaleString('vi-VN');
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      message.error('Vui lòng chọn file ảnh');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('Ảnh tối đa 5MB');
+      return;
+    }
+    setUploading(true);
+    try {
+      const res = await authApi.uploadAvatar(file);
+      if (res.success && res.data) {
+        setUser(res.data);
+        message.success('Cập nhật avatar thành công');
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Upload thất bại';
+      message.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setUploading(true);
+    try {
+      const res = await authApi.deleteAvatar();
+      if (res.success && res.data) {
+        setUser(res.data);
+        message.success('Đã xoá avatar');
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Xoá thất bại';
+      message.error(msg);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -49,8 +99,43 @@ const Profile = () => {
             <div className="p-5">
               <div className="flex flex-col md:flex-row gap-5 items-start">
                 <div className="flex flex-col items-center gap-3 w-full md:w-auto">
-                  <div className="w-32 h-32 rounded-full bg-primary text-on-primary flex items-center justify-center text-4xl font-bold shadow-md">
-                    A
+                  {user.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user.email}
+                      className="w-32 h-32 rounded-full object-cover shadow-md border border-hairline-soft"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-primary text-on-primary flex items-center justify-center text-4xl font-bold shadow-md">
+                      {user.email?.charAt(0).toUpperCase() || 'A'}
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <div className="flex flex-col gap-2 w-full">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
+                    >
+                      <UploadOutlined />
+                      {uploading ? 'Đang tải...' : user.avatar_url ? 'Đổi avatar' : 'Tải avatar'}
+                    </button>
+                    {user.avatar_url && (
+                      <button
+                        onClick={handleDelete}
+                        disabled={uploading}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-surface-container-high text-text-primary rounded-lg text-sm font-medium hover:bg-error-container/20 transition-colors disabled:opacity-50"
+                      >
+                        <DeleteOutlined />
+                        Xoá avatar
+                      </button>
+                    )}
                   </div>
                 </div>
 

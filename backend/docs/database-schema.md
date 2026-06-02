@@ -8,6 +8,8 @@ erDiagram
         VARCHAR_255 password_hash
         VARCHAR_20 role
         VARCHAR_20 status
+        VARCHAR_500 avatar_url "Cloudinary URL"
+        VARCHAR_255 avatar_public_id "Cloudinary public_id"
         DATETIME last_login_at
         DATETIME created_at
         DATETIME updated_at
