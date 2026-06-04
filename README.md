@@ -153,9 +153,6 @@ QL_DangKyTuyenSinh/
 │
 ├── IMPLEMENTATION_GUIDE.md        # Tài liệu triển khai chi tiết
 ├── openspec/                      # OpenSpec change proposals
-├── .kilo/                         # Kilo Code rules & plans
-├── .codex/                        # Codex agent config
-├── .qodo/                         # Qodo agent config
 └── README.md
 ```
 
@@ -176,11 +173,6 @@ QL_DangKyTuyenSinh/
 | ![Socket.io](https://img.shields.io/badge/Socket.io-4-010101?logo=socket.io&logoColor=white) | Realtime | 4.x |
 | ![Swagger](https://img.shields.io/badge/Swagger-5-85EA2D?logo=swagger&logoColor=black) | API docs | 5.x |
 | ![Cloudinary](https://img.shields.io/badge/Cloudinary-Media-3448C5?logo=cloudinary&logoColor=white) | Upload ảnh/PDF | 2.x |
-| ![Multer](https://img.shields.io/badge/Multer-Upload-FFCA28?logo=files&logoColor=black) | Multipart parser | 2.x |
-| ![Nodemailer](https://img.shields.io/badge/Nodemailer-Email-0F9FFF?logo=gmail&logoColor=white) | Gửi email / OTP | 8.x |
-| ![Resend](https://img.shields.io/badge/Resend-Email-000000?logo=resend&logoColor=white) | Email API (fallback) | 6.x |
-| ![Helmet](https://img.shields.io/badge/Helmet-Security-2C3E50?logo=helmet&logoColor=white) | HTTP security | 8.x |
-| ![Morgan](https://img.shields.io/badge/Morgan-Logging-2C3E50?logo=serverless&logoColor=white) | HTTP log | 1.x |
 
 ### 🎨 Frontend
 
@@ -223,8 +215,8 @@ QL_DangKyTuyenSinh/
 ### 1️⃣ Clone & cài đặt
 
 ```bash
-git clone https://github.com/TuanLe06/QL_DangKyTuyenSinh.git
-cd QL_DangKyTuyenSinh
+git clone https://github.com/TuanLe06/RIPT1307-02-2026-Group10-KTHP.git
+cd RIPT1307-02-2026-Group10-KTHP
 
 # Backend
 cd backend
@@ -418,7 +410,7 @@ CLOUDINARY_API_SECRET=...
 ### `frontend/.env`
 ```env
 VITE_API_URL=http://localhost:5000/api
-VITE_CANDIDATE_URL=https://admisx-candidate.vercel.app
+VITE_CANDIDATE_URL=
 ```
 
 ---
@@ -437,9 +429,10 @@ VITE_CANDIDATE_URL=https://admisx-candidate.vercel.app
 
 | Thành viên | Vai trò | GitHub |
 |---|---|---|
-| **Tuan Le** | Backend Lead / DevOps | [@TuanLe06](https://github.com/TuanLe06) |
+| **Tuan Le** | Backend | [@TuanLe06](https://github.com/TuanLe06) |
 | **Khanh Do** | Frontend Lead | — |
-| **Tống Việt** | Backend API | — |
+| **Tống Việt** | Backend Lead| — |
+| **Dương Phùng** | Frontend | — |
 
 ---
 
