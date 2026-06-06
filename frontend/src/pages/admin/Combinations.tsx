@@ -12,6 +12,17 @@ import {
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { combinationApi } from '../../api/combinations';
 import type { AdmissionCombination } from '../../types/university';
+import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from '../../components/common/ColumnConfig';
+
+const COLUMN_CONFIG_STORAGE_KEY = 'admin_combinations_visible_columns';
+const DEFAULT_COLUMN_KEYS = ['code', 'subject_1', 'subject_2', 'subject_3', 'actions'];
+const COLUMN_CONFIG_OPTIONS = [
+  { key: 'code', label: 'Mã tổ hợp' },
+  { key: 'subject_1', label: 'Môn 1' },
+  { key: 'subject_2', label: 'Môn 2' },
+  { key: 'subject_3', label: 'Môn 3' },
+  { key: 'actions', label: 'Thao tác' },
+];
 
 const Combinations = () => {
   const [data, setData] = useState<AdmissionCombination[]>([]);
@@ -22,6 +33,9 @@ const Combinations = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<AdmissionCombination | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState<string[]>(() =>
+    loadColumnConfig(COLUMN_CONFIG_STORAGE_KEY, DEFAULT_COLUMN_KEYS),
+  );
   const [form] = Form.useForm();
   const { message } = App.useApp();
 
@@ -146,19 +160,35 @@ const Combinations = () => {
     },
   ];
 
+  const visibleColumns = orderColumnsByKeys(columns, visibleColumnKeys);
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Tổ hợp xét tuyển
         </h3>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Thêm tổ hợp
-        </Button>
+        <div className="flex items-center gap-sm">
+          <ColumnConfig
+            storageKey={COLUMN_CONFIG_STORAGE_KEY}
+            options={COLUMN_CONFIG_OPTIONS}
+            defaultKeys={DEFAULT_COLUMN_KEYS}
+            visibleKeys={visibleColumnKeys}
+            onChange={setVisibleColumnKeys}
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            className="!h-10 !rounded-lg !px-md"
+          >
+            Thêm tổ hợp
+          </Button>
+        </div>
       </div>
 
       <Table
-        columns={columns}
+        columns={visibleColumns}
         dataSource={data}
         rowKey="id"
         loading={loading}

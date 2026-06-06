@@ -6,6 +6,7 @@ import { applicationApi } from "../../api/applications";
 import { universityApi } from "../../api/universities";
 import { majorApi } from "../../api/majors";
 import { useSocket } from "../../hooks/useSocket";
+import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from "../../components/common/ColumnConfig";
 import type {
   ApplicationWithDetails, ApplicationStatus, StatusLog,
   University, Major, ApplicationDetailData,
@@ -32,6 +33,18 @@ const STATUS_STYLES: Record<string, { bg: string; dot: string; text: string; bor
   DRAFT: { bg: "bg-surface-container-high", dot: "bg-outline", text: "text-on-surface-variant", border: "border-outline-variant" },
 };
 
+const COLUMN_CONFIG_STORAGE_KEY = "admin_applications_visible_columns";
+const DEFAULT_COLUMN_KEYS = ["code", "candidate", "university", "major", "date", "status", "actions"];
+const COLUMN_CONFIG_OPTIONS = [
+  { key: "code", label: "Mã HS" },
+  { key: "candidate", label: "Thí sinh" },
+  { key: "university", label: "Trường ứng tuyển" },
+  { key: "major", label: "Ngành học" },
+  { key: "date", label: "Ngày nộp" },
+  { key: "status", label: "Trạng thái" },
+  { key: "actions", label: "Thao tác" },
+];
+
 const Applications = () => {
   const [applications, setApplications] = useState<ApplicationWithDetails[]>([]);
   const [total, setTotal] = useState(0);
@@ -43,6 +56,9 @@ const Applications = () => {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [uniFilter, setUniFilter] = useState<string>("");
   const [majorFilter, setMajorFilter] = useState<string>("");
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState<string[]>(() =>
+    loadColumnConfig(COLUMN_CONFIG_STORAGE_KEY, DEFAULT_COLUMN_KEYS),
+  );
 
   const [universities, setUniversities] = useState<University[]>([]);
   const [majors, setMajors] = useState<Major[]>([]);
@@ -374,6 +390,8 @@ const Applications = () => {
     },
   ];
 
+  const visibleTableColumns = orderColumnsByKeys(tableColumns, visibleColumnKeys);
+
   return (
     <div className="space-y-lg w-full max-w-full">
       {/* Page Title */}
@@ -455,48 +473,55 @@ const Applications = () => {
           </div>
           <div className="w-48">
             <label className="block text-xs font-bold text-text-primary mb-1">Trường</label>
-            <select
-              className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary"
+            <Select
+              className="admin-filter-select w-full"
+              popupClassName="admin-filter-dropdown"
               value={uniFilter}
-               onChange={(e) => { setUniFilter(e.target.value); setMajorFilter(""); if (!e.target.value) setMajors([]); setPage(1); }}
-            >
-              <option value="">Tất cả các trường</option>
-              {universities.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
+              onChange={(value) => { setUniFilter(value); setMajorFilter(""); if (!value) setMajors([]); setPage(1); }}
+              optionFilterProp="label"
+              showSearch
+              suffixIcon={<span className="material-symbols-outlined text-[18px] text-outline">keyboard_arrow_down</span>}
+              options={[
+                { value: "", label: "Tất cả các trường" },
+                ...universities.map((u) => ({ value: String(u.id), label: u.name })),
+              ]}
+            />
           </div>
           <div className="w-48">
             <label className="block text-xs font-bold text-text-primary mb-1">Ngành</label>
-            <select
-              className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary"
+            <Select
+              className="admin-filter-select w-full"
+              popupClassName="admin-filter-dropdown"
               value={majorFilter}
-              onChange={(e) => { setMajorFilter(e.target.value); setPage(1); }}
+              onChange={(value) => { setMajorFilter(value); setPage(1); }}
               disabled={!uniFilter}
-            >
-              <option value="">Tất cả các ngành</option>
-              {majors.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
+              optionFilterProp="label"
+              showSearch
+              suffixIcon={<span className="material-symbols-outlined text-[18px] text-outline">keyboard_arrow_down</span>}
+              options={[
+                { value: "", label: "Tất cả các ngành" },
+                ...majors.map((m) => ({ value: String(m.id), label: m.name })),
+              ]}
+            />
           </div>
           <div className="w-48">
             <label className="block text-xs font-bold text-text-primary mb-1">Trạng thái</label>
-            <select
-              className="w-full border-hairline rounded-lg px-md py-sm focus:ring-primary-soft focus:border-primary"
+            <Select
+              className="admin-filter-select w-full"
+              popupClassName="admin-filter-dropdown"
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            >
-              <option value="">Tất cả trạng thái</option>
-              {Object.entries(STATUS_DISPLAY).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </select>
+              onChange={(value) => { setStatusFilter(value); setPage(1); }}
+              suffixIcon={<span className="material-symbols-outlined text-[18px] text-outline">keyboard_arrow_down</span>}
+              options={[
+                { value: "", label: "Tất cả trạng thái" },
+                ...Object.entries(STATUS_DISPLAY).map(([value, label]) => ({ value, label })),
+              ]}
+            />
           </div>
           <div className="flex items-end gap-sm pb-[2px]">
             <button
               onClick={exportCSV}
-              className="bg-surface-container-low text-on-surface-variant px-lg py-[9px] rounded-full font-label hover:bg-surface-container-high transition-colors flex items-center gap-sm border border-hairline"
+              className="h-11 rounded-lg border border-hairline bg-surface-container-low px-lg text-on-surface-variant font-label transition-colors flex items-center gap-sm hover:border-primary hover:bg-surface-container-high hover:text-primary"
             >
               <span className="material-symbols-outlined text-[18px]">download</span>
               Xuất CSV
@@ -542,8 +567,32 @@ const Applications = () => {
 
       {/* Application Data Table */}
       <div className="bg-surface-container-lowest border border-hairline-soft rounded-xxl overflow-hidden">
+        <div className="flex items-center justify-between gap-md border-b border-hairline-soft bg-surface-container-lowest px-md py-sm">
+          <div>
+            <p className="text-sm font-bold text-text-primary">Danh sách hồ sơ</p>
+            <p className="text-xs text-text-secondary">{visibleColumnKeys.length}/{DEFAULT_COLUMN_KEYS.length} cột đang hiển thị</p>
+          </div>
+          <div className="relative flex items-center gap-sm">
+            <ColumnConfig
+              storageKey={COLUMN_CONFIG_STORAGE_KEY}
+              options={COLUMN_CONFIG_OPTIONS}
+              defaultKeys={DEFAULT_COLUMN_KEYS}
+              visibleKeys={visibleColumnKeys}
+              onChange={setVisibleColumnKeys}
+            />
+            <button
+              type="button"
+              aria-label="Bộ lọc"
+              onClick={() => filterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="h-10 w-10 rounded-lg border border-hairline bg-surface-container-lowest text-text-primary shadow-sm transition-all hover:border-primary hover:bg-surface-container-high hover:text-primary"
+            >
+              <span className="material-symbols-outlined text-[21px] leading-10">filter_alt</span>
+            </button>
+
+          </div>
+        </div>
         <Table
-          columns={tableColumns}
+          columns={visibleTableColumns}
           dataSource={applications}
           rowKey="id"
           loading={loading}

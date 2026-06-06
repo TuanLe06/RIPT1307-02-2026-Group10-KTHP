@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "db:migrate": "ts-node src/database/migrate.ts",
+    "migrate:db": "npm run db:migrate",
     "db:seed": "ts-node src/database/seed.ts",
+    "test:migrate": "ts-node --transpile-only src/tests/migrate.test.ts",
     "test:auth": "ts-node --transpile-only src/tests/auth.test.ts",
     "test:candidate-profile": "ts-node --transpile-only src/tests/candidate-profile.test.ts",
     "test": "npm run test:auth && npm run test:candidate-profile"

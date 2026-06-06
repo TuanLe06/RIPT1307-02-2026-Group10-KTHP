@@ -17,6 +17,17 @@ import { majorApi } from '../../api/majors';
 import { combinationApi } from '../../api/combinations';
 import { useMajorStore } from '../../store/majors';
 import type { Major, AdmissionCombination } from '../../types/university';
+import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from '../../components/common/ColumnConfig';
+
+const COLUMN_CONFIG_STORAGE_KEY = 'admin_majors_visible_columns';
+const DEFAULT_COLUMN_KEYS = ['code', 'name', 'min_score', 'status', 'actions'];
+const COLUMN_CONFIG_OPTIONS = [
+  { key: 'code', label: 'Mã ngành' },
+  { key: 'name', label: 'Tên ngành' },
+  { key: 'min_score', label: 'Điểm chuẩn' },
+  { key: 'status', label: 'Trạng thái' },
+  { key: 'actions', label: 'Thao tác' },
+];
 
 const Majors = () => {
   const {
@@ -38,6 +49,9 @@ const Majors = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Major | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState<string[]>(() =>
+    loadColumnConfig(COLUMN_CONFIG_STORAGE_KEY, DEFAULT_COLUMN_KEYS),
+  );
   const [form] = Form.useForm();
   const { message } = App.useApp();
 
@@ -197,6 +211,7 @@ const Majors = () => {
       ),
     },
   ];
+  const visibleColumns = orderColumnsByKeys(columns, visibleColumnKeys);
 
   return (
     <div>
@@ -215,14 +230,26 @@ const Majors = () => {
               label: u.name,
             }))}
           />
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+          <ColumnConfig
+            storageKey={COLUMN_CONFIG_STORAGE_KEY}
+            options={COLUMN_CONFIG_OPTIONS}
+            defaultKeys={DEFAULT_COLUMN_KEYS}
+            visibleKeys={visibleColumnKeys}
+            onChange={setVisibleColumnKeys}
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            className="!h-10 !rounded-lg !px-md"
+          >
             Thêm ngành
           </Button>
         </div>
       </div>
 
       <Table
-        columns={columns}
+        columns={visibleColumns}
         dataSource={data}
         rowKey="id"
         loading={loading}
