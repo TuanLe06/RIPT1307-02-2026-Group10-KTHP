@@ -128,7 +128,7 @@ const Login = () => {
                       Mật khẩu
                     </span>
                     <Link
-                      className="text-[15px] text-primary hover:underline whitespace-nowrap"
+                      className="text-[15px] text-primary hover:underline"
                       to="/forgot-password"
                     >
                       Quên mật khẩu?
