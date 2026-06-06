@@ -202,15 +202,15 @@ const Majors = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Ngành học
         </h3>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3">
           <Select
             value={selectedUniCode}
             onChange={selectUniversity}
-            style={{ width: 300 }}
+            className="w-full xs:w-[300px]"
             placeholder="Chọn trường"
             options={universities.map((u) => ({
               value: u.code,
@@ -298,7 +298,7 @@ const Majors = () => {
         confirmLoading={comboSubmitting}
         width={800}
       >
-        <div className="flex gap-4" style={{ minHeight: 400 }}>
+        <div className="flex flex-col md:flex-row gap-4" style={{ minHeight: 400 }}>
           <div className="flex-1 border rounded-lg p-3">
             <div className="font-medium mb-2 text-text-secondary">Tất cả tổ hợp</div>
             <Checkbox.Group
@@ -336,7 +336,7 @@ const Majors = () => {
             </Checkbox.Group>
           </div>
 
-          <div className="w-72 border rounded-lg p-3">
+          <div className="w-full md:w-72 border rounded-lg p-3">
             <div className="font-medium mb-2 text-text-secondary">
               Đã chọn (<span className="text-primary">{selectedIds.length}</span>)
             </div>
