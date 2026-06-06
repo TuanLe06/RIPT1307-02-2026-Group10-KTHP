@@ -123,8 +123,8 @@ const Login = () => {
               <Form.Item
                 name="mat_khau"
                 label={
-                  <div className="flex justify-between items-center w-full gap-4">
-                    <span className="text-[17px] md:text-[18px] leading-[1.5] font-semibold text-text-primary whitespace-nowrap">
+                  <div className="flex flex-col xs:flex-row xs:justify-between xs:items-center w-full gap-1 xs:gap-4">
+                    <span className="text-[17px] md:text-[18px] leading-[1.5] font-semibold text-text-primary">
                       Mật khẩu
                     </span>
                     <Link
