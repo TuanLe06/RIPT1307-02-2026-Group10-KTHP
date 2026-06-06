@@ -360,11 +360,13 @@ const AdminLayout = () => {
                   <p className="font-metadata text-metadata text-text-secondary">Quản trị viên</p>
                 </div>
                 {user?.avatar_url ? (
-                  <img
-                    src={user.avatar_url}
-                    alt={user.email}
-                    className="w-8 h-8 rounded-full object-cover border border-outline-variant"
-                  />
+                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-outline-variant">
+                    <img
+                      src={user.avatar_url}
+                      alt={user.email}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
                     {user?.email?.charAt(0).toUpperCase() || 'A'}
