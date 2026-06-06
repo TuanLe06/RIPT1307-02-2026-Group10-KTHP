@@ -12,6 +12,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const inputClassName =
+    "auth-login-input h-[60px] rounded-2xl border-hairline bg-surface-container-lowest px-5 text-[17px] shadow-sm transition-all hover:border-primary focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(1,67,181,0.12)] [&_.ant-input]:text-[17px] [&_.ant-input]:font-medium [&_.material-symbols-outlined]:mr-2 [&_.material-symbols-outlined]:text-[24px]";
 
   const onFinish = async (values: Record<string, string>) => {
     setLoading(true);
@@ -99,6 +101,7 @@ const Login = () => {
               onFinish={onFinish}
               autoComplete="off"
               requiredMark={false}
+              className="[&_.ant-form-item]:mb-7 [&_.ant-form-item-explain-error]:pt-1 [&_.ant-form-item-label]:pb-2"
             >
               <Form.Item
                 name="identifier"
@@ -117,6 +120,7 @@ const Login = () => {
                     </span>
                   }
                   size="large"
+                  className={inputClassName}
                 />
               </Form.Item>
 
@@ -137,7 +141,7 @@ const Login = () => {
                 }
                 rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
               >
-                <PasswordInput />
+                <PasswordInput className={inputClassName} />
               </Form.Item>
 
               <Form.Item className="pt-2">

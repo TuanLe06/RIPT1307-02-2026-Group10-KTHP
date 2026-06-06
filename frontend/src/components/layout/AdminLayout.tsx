@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Dropdown, Badge } from 'antd';
+import { Button, Dropdown, Badge, Modal } from 'antd';
 import {
   LogoutOutlined,
   UserOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   BellOutlined,
-  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/auth';
 import { authApi } from '../../api/auth';
@@ -50,6 +49,7 @@ const AdminLayout = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -126,7 +126,7 @@ const AdminLayout = () => {
   };
 
   const renderNav = (full: boolean) => (
-    <nav className="flex-1 flex flex-col gap-0.5 px-2 py-3 overflow-y-auto">
+    <nav className={`flex-1 flex flex-col gap-2 py-4 overflow-y-auto ${full ? 'px-3' : 'px-2'}`}>
       {navItems.map((item) => {
         const isActive = activePath === item.path;
         return (
@@ -134,17 +134,21 @@ const AdminLayout = () => {
             key={item.path}
             to={item.path}
             onClick={() => setMobileOpen(false)}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
+            className={`group flex items-center gap-3 rounded-xl border px-3 py-3 transition-all duration-200 ${
               isActive
-                ? 'bg-secondary-container text-on-secondary-container font-extrabold underline decoration-2 underline-offset-4'
-                : 'text-on-surface-variant hover:bg-surface-container-high'
+                ? 'border-primary bg-primary text-on-primary font-extrabold shadow-[0_10px_26px_rgba(1,67,181,0.28)]'
+                : 'border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-primary hover:bg-surface-container-high hover:text-primary hover:shadow-[0_8px_20px_rgba(1,67,181,0.12)]'
             } ${full ? '' : 'justify-center'}`}
           >
-            <span className="material-symbols-outlined text-xl shrink-0">
+            <span
+              className={`material-symbols-outlined text-xl shrink-0 transition-colors ${
+                isActive ? 'text-on-primary' : 'text-primary group-hover:text-primary'
+              }`}
+            >
               {item.icon}
             </span>
             {full && (
-              <span className={`font-label truncate ${isActive ? 'text-[15px]' : 'text-label'}`}>{item.label}</span>
+              <span className="font-label text-[15px] truncate">{item.label}</span>
             )}
           </Link>
         );
@@ -181,19 +185,23 @@ const AdminLayout = () => {
 
       {renderNav(full)}
 
-      <div className="border-t border-outline-variant pt-2 pb-3 px-2">
-        <Link
-          to="#"
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${full ? '' : 'justify-center'}`}
+      <div className={`border-t border-outline-variant pt-3 pb-4 ${full ? 'px-3' : 'px-2'}`}>
+        <button
+          type="button"
+          onClick={() => {
+            setSupportOpen(true);
+            setMobileOpen(false);
+          }}
+          className={`group w-full flex items-center gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-3 text-on-surface-variant transition-all duration-200 hover:border-primary hover:bg-surface-container-high hover:text-primary hover:shadow-[0_8px_20px_rgba(1,67,181,0.12)] ${full ? '' : 'justify-center'}`}
         >
-          <span className="material-symbols-outlined text-xl shrink-0">contact_support</span>
+          <span className="material-symbols-outlined text-xl shrink-0 text-primary group-hover:text-primary">contact_support</span>
           {full && <span className="font-label text-label">Hỗ trợ</span>}
-        </Link>
+        </button>
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${full ? '' : 'justify-center'}`}
+          className={`group mt-2 w-full flex items-center gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-3 text-on-surface-variant transition-all duration-200 hover:border-primary hover:bg-surface-container-high hover:text-primary hover:shadow-[0_8px_20px_rgba(1,67,181,0.12)] ${full ? '' : 'justify-center'}`}
         >
-          <span className="material-symbols-outlined text-xl shrink-0">logout</span>
+          <span className="material-symbols-outlined text-xl shrink-0 text-primary group-hover:text-primary">logout</span>
           {full && <span className="font-label text-label">Đăng xuất</span>}
         </button>
       </div>
@@ -329,9 +337,6 @@ const AdminLayout = () => {
                 {theme === 'light' ? 'dark_mode' : 'light_mode'}
               </span>
             </button>
-            <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant">
-              <QuestionCircleOutlined className="text-lg" />
-            </button>
             <div className="h-7 w-px bg-outline-variant mx-1" />
             <Dropdown
               menu={{
@@ -394,6 +399,90 @@ const AdminLayout = () => {
           </div>
         </footer>
       </main>
+
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-text-primary">
+            <span className="material-symbols-outlined text-primary">contact_support</span>
+            <span className="font-bold">Trung tâm hỗ trợ Admin</span>
+          </div>
+        }
+        open={supportOpen}
+        onCancel={() => setSupportOpen(false)}
+        footer={null}
+        width={760}
+      >
+        <div className="space-y-5 text-text-primary">
+          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+            <p className="text-sm font-semibold text-text-secondary">
+              Kênh hỗ trợ vận hành hệ thống tuyển sinh AdmisX dành cho quản trị viên.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <a
+                href="tel:19001009"
+                className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3 transition-colors hover:border-primary hover:text-primary"
+              >
+                <span className="material-symbols-outlined text-[20px] text-primary">call</span>
+                <p className="mt-1 text-xs font-bold uppercase text-text-secondary">Hotline</p>
+                <p className="text-sm font-extrabold">1900 1009</p>
+              </a>
+              <a
+                href="mailto:support@admisx.vn"
+                className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3 transition-colors hover:border-primary hover:text-primary"
+              >
+                <span className="material-symbols-outlined text-[20px] text-primary">mail</span>
+                <p className="mt-1 text-xs font-bold uppercase text-text-secondary">Email</p>
+                <p className="text-sm font-extrabold">support@admisx.vn</p>
+              </a>
+              <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3">
+                <span className="material-symbols-outlined text-[20px] text-primary">schedule</span>
+                <p className="mt-1 text-xs font-bold uppercase text-text-secondary">Thời gian</p>
+                <p className="text-sm font-extrabold">08:00 - 17:30</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+              <h3 className="flex items-center gap-2 text-sm font-extrabold">
+                <span className="material-symbols-outlined text-primary">checklist</span>
+                Xử lý hồ sơ nhanh
+              </h3>
+              <ul className="mt-3 space-y-2 text-sm text-text-secondary">
+                <li>1. Vào Hồ sơ, lọc trạng thái Chờ duyệt.</li>
+                <li>2. Tick một hoặc nhiều hồ sơ cần xử lý.</li>
+                <li>3. Chọn Duyệt tất cả hoặc mở chi tiết để kiểm tra từng hồ sơ.</li>
+                <li>4. Nhập lý do khi từ chối hoặc đánh dấu không đỗ.</li>
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+              <h3 className="flex items-center gap-2 text-sm font-extrabold">
+                <span className="material-symbols-outlined text-primary">manage_search</span>
+                Khi gặp sự cố
+              </h3>
+              <ul className="mt-3 space-y-2 text-sm text-text-secondary">
+                <li>Kiểm tra lại bộ lọc và từ khóa tìm kiếm nếu không thấy dữ liệu.</li>
+                <li>Làm mới trang nếu trạng thái hồ sơ vừa được cập nhật.</li>
+                <li>Gửi mã hồ sơ, email thí sinh và ảnh lỗi cho bộ phận hỗ trợ.</li>
+                <li>Không tự sửa dữ liệu trực tiếp trong cơ sở dữ liệu khi chưa xác minh.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-primary/20 bg-primary-fixed p-4 text-on-primary-fixed-variant">
+            <div className="flex items-start gap-3">
+              <span className="material-symbols-outlined text-primary">tips_and_updates</span>
+              <div>
+                <p className="text-sm font-extrabold">Gợi ý vận hành</p>
+                <p className="mt-1 text-sm">
+                  Khi cần xử lý số lượng lớn, hãy dùng bộ lọc theo trường, ngành và trạng thái trước rồi mới tick chọn hàng loạt để tránh duyệt nhầm hồ sơ.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

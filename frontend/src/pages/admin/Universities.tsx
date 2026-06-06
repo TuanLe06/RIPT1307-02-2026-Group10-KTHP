@@ -15,11 +15,26 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { universityApi } from '../../api/universities';
 import { useUniversityStore } from '../../store/universities';
 import type { University } from '../../types/university';
+import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from '../../components/common/ColumnConfig';
+
+const COLUMN_CONFIG_STORAGE_KEY = 'admin_universities_visible_columns';
+const DEFAULT_COLUMN_KEYS = ['code', 'name', 'phone', 'email', 'status', 'actions'];
+const COLUMN_CONFIG_OPTIONS = [
+  { key: 'code', label: 'Mã trường' },
+  { key: 'name', label: 'Tên trường' },
+  { key: 'phone', label: 'Điện thoại' },
+  { key: 'email', label: 'Email' },
+  { key: 'status', label: 'Trạng thái' },
+  { key: 'actions', label: 'Thao tác' },
+];
 
 const Universities = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<University | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState<string[]>(() =>
+    loadColumnConfig(COLUMN_CONFIG_STORAGE_KEY, DEFAULT_COLUMN_KEYS),
+  );
   const [form] = Form.useForm();
   const { message } = App.useApp();
   const { data, total, page, pageSize, loading, loadPage, setPageSize, deleteUniversity } =
@@ -134,19 +149,35 @@ const Universities = () => {
     },
   ];
 
+  const visibleColumns = orderColumnsByKeys(columns, visibleColumnKeys);
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Trường học
         </h3>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-          Thêm trường
-        </Button>
+        <div className="flex items-center gap-sm">
+          <ColumnConfig
+            storageKey={COLUMN_CONFIG_STORAGE_KEY}
+            options={COLUMN_CONFIG_OPTIONS}
+            defaultKeys={DEFAULT_COLUMN_KEYS}
+            visibleKeys={visibleColumnKeys}
+            onChange={setVisibleColumnKeys}
+          />
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            className="!h-10 !rounded-lg !px-md"
+          >
+            Thêm trường
+          </Button>
+        </div>
       </div>
 
       <Table
-        columns={columns}
+        columns={visibleColumns}
         dataSource={data}
         rowKey="id"
         loading={loading}
