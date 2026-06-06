@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Table,
   Button,
@@ -16,6 +16,7 @@ import { universityApi } from '../../api/universities';
 import { useUniversityStore } from '../../store/universities';
 import type { University } from '../../types/university';
 import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from '../../components/common/ColumnConfig';
+import SearchBar from '../../components/common/SearchBar';
 
 const COLUMN_CONFIG_STORAGE_KEY = 'admin_universities_visible_columns';
 const DEFAULT_COLUMN_KEYS = ['code', 'name', 'phone', 'email', 'status', 'actions'];
@@ -35,10 +36,30 @@ const Universities = () => {
   const [visibleColumnKeys, setVisibleColumnKeys] = useState<string[]>(() =>
     loadColumnConfig(COLUMN_CONFIG_STORAGE_KEY, DEFAULT_COLUMN_KEYS),
   );
-  const [form] = Form.useForm();
+  const [search, setSearch] = useState('');
   const { message } = App.useApp();
   const { data, total, page, pageSize, loading, loadPage, setPageSize, deleteUniversity } =
     useUniversityStore();
+
+  const stripDiacritics = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const filteredData = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = stripDiacritics(search.trim()).toLowerCase();
+    return data.filter(
+      (u) => {
+        const haystack = stripDiacritics(
+          `${u.code} ${u.name} ${u.phone ?? ''} ${u.email ?? ''}`,
+        ).toLowerCase();
+        return haystack.includes(q);
+      },
+    );
+  }, [data, search]);
+
+  const [form] = Form.useForm();
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend' | null>(null);
 
   const handleAdd = () => {
     setEditing(null);
@@ -94,23 +115,31 @@ const Universities = () => {
       dataIndex: 'code',
       key: 'code',
       width: 120,
+      sorter: (a: University, b: University) => a.code.localeCompare(b.code),
+      sortOrder: sortField === 'code' ? sortOrder : null,
     },
     {
       title: 'Tên trường',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a: University, b: University) => a.name.localeCompare(b.name),
+      sortOrder: sortField === 'name' ? sortOrder : null,
     },
     {
       title: 'Điện thoại',
       dataIndex: 'phone',
       key: 'phone',
       width: 140,
+      sorter: (a: University, b: University) => (a.phone ?? '').localeCompare(b.phone ?? ''),
+      sortOrder: sortField === 'phone' ? sortOrder : null,
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
       width: 200,
+      sorter: (a: University, b: University) => (a.email ?? '').localeCompare(b.email ?? ''),
+      sortOrder: sortField === 'email' ? sortOrder : null,
     },
     {
       title: 'Trạng thái',
@@ -157,7 +186,13 @@ const Universities = () => {
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Trường học
         </h3>
-        <div className="flex items-center gap-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+          <SearchBar
+            value={search}
+            onChange={(v) => setSearch(v)}
+            onSearch={() => {}}
+            placeholder="Tìm kiếm trường..."
+          />
           <ColumnConfig
             storageKey={COLUMN_CONFIG_STORAGE_KEY}
             options={COLUMN_CONFIG_OPTIONS}
@@ -178,9 +213,14 @@ const Universities = () => {
 
       <Table
         columns={visibleColumns}
-        dataSource={data}
+        dataSource={filteredData}
         rowKey="id"
         loading={loading}
+        onChange={(_pagination, _filters, sorter) => {
+          const s = sorter as { field?: string; order?: 'ascend' | 'descend' };
+          setSortField(s.field ?? null);
+          setSortOrder(s.order ?? null);
+        }}
         pagination={{
           current: page,
           total,
