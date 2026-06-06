@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Table,
   Button,
@@ -18,6 +18,7 @@ import { combinationApi } from '../../api/combinations';
 import { useMajorStore } from '../../store/majors';
 import type { Major, AdmissionCombination } from '../../types/university';
 import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from '../../components/common/ColumnConfig';
+import SearchBar from '../../components/common/SearchBar';
 
 const COLUMN_CONFIG_STORAGE_KEY = 'admin_majors_visible_columns';
 const DEFAULT_COLUMN_KEYS = ['code', 'name', 'min_score', 'status', 'actions'];
@@ -61,6 +62,9 @@ const Majors = () => {
   const [comboSubmitting, setComboSubmitting] = useState(false);
   const [comboLoading, setComboLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend' | null>(null);
 
   useEffect(() => {
     init();
@@ -149,17 +153,37 @@ const Majors = () => {
     }
   };
 
+  const stripDiacritics = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const filteredData = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = stripDiacritics(search.trim()).toLowerCase();
+    return data.filter(
+      (m) => {
+        const haystack = stripDiacritics(
+          `${m.code} ${m.name} ${String(m.min_score ?? '')}`,
+        ).toLowerCase();
+        return haystack.includes(q);
+      },
+    );
+  }, [data, search]);
+
   const columns = [
     {
       title: 'Mã ngành',
       dataIndex: 'code',
       key: 'code',
       width: 120,
+      sorter: (a: Major, b: Major) => a.code.localeCompare(b.code),
+      sortOrder: sortField === 'code' ? sortOrder : null,
     },
     {
       title: 'Tên ngành',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a: Major, b: Major) => a.name.localeCompare(b.name),
+      sortOrder: sortField === 'name' ? sortOrder : null,
     },
     {
       title: 'Điểm chuẩn',
@@ -167,6 +191,8 @@ const Majors = () => {
       key: 'min_score',
       width: 100,
       render: (v: number | null) => (v != null ? v : '--'),
+      sorter: (a: Major, b: Major) => (a.min_score ?? -1) - (b.min_score ?? -1),
+      sortOrder: sortField === 'min_score' ? sortOrder : null,
     },
     {
       title: 'Trạng thái',
@@ -220,6 +246,12 @@ const Majors = () => {
           Quản lý Ngành học
         </h3>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+          <SearchBar
+            value={search}
+            onChange={(v) => setSearch(v)}
+            onSearch={() => {}}
+            placeholder="Tìm kiếm ngành..."
+          />
           <Select
             value={selectedUniCode}
             onChange={selectUniversity}
@@ -250,9 +282,14 @@ const Majors = () => {
 
       <Table
         columns={visibleColumns}
-        dataSource={data}
+        dataSource={filteredData}
         rowKey="id"
         loading={loading}
+        onChange={(_pagination, _filters, sorter) => {
+          const s = sorter as { field?: string; order?: 'ascend' | 'descend' };
+          setSortField(s.field ?? null);
+          setSortOrder(s.order ?? null);
+        }}
         pagination={{
           current: page,
           total,

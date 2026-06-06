@@ -1,16 +1,22 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { message, Modal, Select, Table } from "antd";
-import { reportsApi } from "../../api/reports";
-import SearchBar from "../../components/common/SearchBar";
-import { applicationApi } from "../../api/applications";
-import { universityApi } from "../../api/universities";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { applicationApi} from "../../api/applications";
 import { majorApi } from "../../api/majors";
+import { reportsApi } from "../../api/reports";
+import { universityApi } from "../../api/universities";
+import ColumnConfig, {
+  loadColumnConfig,
+  orderColumnsByKeys,
+} from "../../components/common/ColumnConfig";
+import SearchBar from "../../components/common/SearchBar";
 import { useSocket } from "../../hooks/useSocket";
-import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from "../../components/common/ColumnConfig";
 import type {
-  ApplicationWithDetails, ApplicationStatus, StatusLog,
-  University, Major, ApplicationDetailData,
-  CandidateProfileFull, AcademicRecordFull, CandidateDocumentItem, CombinationDetail,
+  ApplicationDetailData,
+  ApplicationStatus,
+  ApplicationWithDetails,
+  Major,
+  StatusLog,
+  University,
 } from "../../types/university";
 
 const STATUS_DISPLAY: Record<string, string> = {
@@ -23,18 +29,64 @@ const STATUS_DISPLAY: Record<string, string> = {
   FAILED: "Không đỗ",
 };
 
-const STATUS_STYLES: Record<string, { bg: string; dot: string; text: string; border: string }> = {
-  PASSED: { bg: "bg-success/10", dot: "bg-success", text: "text-success", border: "border-success/20" },
-  PENDING_REVIEW: { bg: "bg-warning/10", dot: "bg-warning", text: "text-on-tertiary-fixed-variant", border: "border-warning/20" },
-  REJECTED: { bg: "bg-error-container", dot: "bg-error", text: "text-error", border: "border-error/20" },
-  APPROVED: { bg: "bg-success/10", dot: "bg-success", text: "text-success", border: "border-success/20" },
-  SUBMITTED: { bg: "bg-blue-50", dot: "bg-blue-500", text: "text-blue-700", border: "border-blue-200" },
-  FAILED: { bg: "bg-error-container", dot: "bg-error", text: "text-error", border: "border-error/20" },
-  DRAFT: { bg: "bg-surface-container-high", dot: "bg-outline", text: "text-on-surface-variant", border: "border-outline-variant" },
+const STATUS_STYLES: Record<
+  string,
+  { bg: string; dot: string; text: string; border: string }
+> = {
+  PASSED: {
+    bg: "bg-success/10",
+    dot: "bg-success",
+    text: "text-success",
+    border: "border-success/20",
+  },
+  PENDING_REVIEW: {
+    bg: "bg-warning/10",
+    dot: "bg-warning",
+    text: "text-on-tertiary-fixed-variant",
+    border: "border-warning/20",
+  },
+  REJECTED: {
+    bg: "bg-error-container",
+    dot: "bg-error",
+    text: "text-error",
+    border: "border-error/20",
+  },
+  APPROVED: {
+    bg: "bg-success/10",
+    dot: "bg-success",
+    text: "text-success",
+    border: "border-success/20",
+  },
+  SUBMITTED: {
+    bg: "bg-blue-50",
+    dot: "bg-blue-500",
+    text: "text-blue-700",
+    border: "border-blue-200",
+  },
+  FAILED: {
+    bg: "bg-error-container",
+    dot: "bg-error",
+    text: "text-error",
+    border: "border-error/20",
+  },
+  DRAFT: {
+    bg: "bg-surface-container-high",
+    dot: "bg-outline",
+    text: "text-on-surface-variant",
+    border: "border-outline-variant",
+  },
 };
 
 const COLUMN_CONFIG_STORAGE_KEY = "admin_applications_visible_columns";
-const DEFAULT_COLUMN_KEYS = ["code", "candidate", "university", "major", "date", "status", "actions"];
+const DEFAULT_COLUMN_KEYS = [
+  "code",
+  "candidate",
+  "university",
+  "major",
+  "date",
+  "status",
+  "actions",
+];
 const COLUMN_CONFIG_OPTIONS = [
   { key: "code", label: "Mã HS" },
   { key: "candidate", label: "Thí sinh" },
@@ -46,7 +98,9 @@ const COLUMN_CONFIG_OPTIONS = [
 ];
 
 const Applications = () => {
-  const [applications, setApplications] = useState<ApplicationWithDetails[]>([]);
+  const [applications, setApplications] = useState<ApplicationWithDetails[]>(
+    [],
+  );
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -71,7 +125,9 @@ const Applications = () => {
 
   // Detail drawer state (modal-based)
   const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedApp, setSelectedApp] = useState<ApplicationDetailData | null>(null);
+  const [selectedApp, setSelectedApp] = useState<ApplicationDetailData | null>(
+    null,
+  );
   const [statusLogs, setStatusLogs] = useState<StatusLog[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
 
@@ -84,7 +140,8 @@ const Applications = () => {
 
   // Status update modal
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [newStatus, setNewStatus] = useState<ApplicationStatus>("PENDING_REVIEW");
+  const [newStatus, setNewStatus] =
+    useState<ApplicationStatus>("PENDING_REVIEW");
   const [rejectReason, setRejectReason] = useState("");
   const [updating, setUpdating] = useState(false);
 
@@ -96,7 +153,10 @@ const Applications = () => {
 
   // Load universities
   useEffect(() => {
-    universityApi.getAll(1, 100).then((res) => setUniversities(res.data)).catch(() => {});
+    universityApi
+      .getAll(1, 100)
+      .then((res) => setUniversities(res.data))
+      .catch(() => {});
   }, []);
 
   // Load majors when uni changes
@@ -104,26 +164,30 @@ const Applications = () => {
     if (!uniFilter) return;
     const uni = universities.find((u) => String(u.id) === uniFilter);
     if (!uni) return;
-    majorApi.getByUniversity(uni.code, 1, 200)
+    majorApi
+      .getByUniversity(uni.code, 1, 200)
       .then((res) => setMajors(res.data))
       .catch(() => setMajors([]));
   }, [uniFilter, universities]);
 
   // Load stats
   useEffect(() => {
-    reportsApi.getByStatus().then((res) => {
-      if (res.success) {
-        const data = res.data;
-        let total = 0;
-        for (const s of data) {
-          total += s.count;
-          if (s.status === "PENDING_REVIEW") setPendingCount(s.count);
-          if (s.status === "PASSED") setPassedCount(s.count);
-          if (s.status === "REJECTED") setRejectedCount(s.count);
+    reportsApi
+      .getByStatus()
+      .then((res) => {
+        if (res.success) {
+          const data = res.data;
+          let total = 0;
+          for (const s of data) {
+            total += s.count;
+            if (s.status === "PENDING_REVIEW") setPendingCount(s.count);
+            if (s.status === "PASSED") setPassedCount(s.count);
+            if (s.status === "REJECTED") setRejectedCount(s.count);
+          }
+          setTotalApps(total);
         }
-        setTotalApps(total);
-      }
-    }).catch(() => {});
+      })
+      .catch(() => {});
   }, []);
 
   const filterRef = useRef<HTMLDivElement>(null);
@@ -131,8 +195,8 @@ const Applications = () => {
   const reload = useCallback(() => setReloadKey((k) => k + 1), []);
 
   useSocket({
-    'new-submission': reload,
-    'application-updated': reload,
+    "new-submission": reload,
+    "application-updated": reload,
   });
 
   useEffect(() => {
@@ -183,7 +247,10 @@ const Applications = () => {
 
   const handleBatchUpdate = async () => {
     if (selectedIds.size === 0) return;
-    if ((batchStatus === "REJECTED" || batchStatus === "FAILED") && !batchRejectReason.trim()) {
+    if (
+      (batchStatus === "REJECTED" || batchStatus === "FAILED") &&
+      !batchRejectReason.trim()
+    ) {
       message.warning("Vui lòng nhập lý do");
       return;
     }
@@ -192,7 +259,6 @@ const Applications = () => {
       let success = 0;
       for (const id of selectedIds) {
         try {
-          const app = applications.find((a) => a.id === id);
           await applicationApi.updateStatus(id, {
             status: batchStatus,
             reject_reason:
@@ -201,7 +267,9 @@ const Applications = () => {
                 : undefined,
           });
           success++;
-        } catch { /* skip individual failure */ }
+        } catch {
+          /* skip individual failure */
+        }
       }
       message.success(`Đã xử lý ${success}/${selectedIds.size} hồ sơ`);
       setBatchUpdateOpen(false);
@@ -216,8 +284,16 @@ const Applications = () => {
 
   const exportCSV = () => {
     const headers = [
-      "Mã hồ sơ", "Thí sinh", "Email", "Trường", "Ngành",
-      "Tổ hợp", "Ngày nộp", "Trạng thái", "Người duyệt", "Ngày duyệt",
+      "Mã hồ sơ",
+      "Thí sinh",
+      "Email",
+      "Trường",
+      "Ngành",
+      "Tổ hợp",
+      "Ngày nộp",
+      "Trạng thái",
+      "Người duyệt",
+      "Ngày duyệt",
     ];
     const rows = applications.map((a) => [
       a.application_code,
@@ -231,14 +307,12 @@ const Applications = () => {
         : "",
       STATUS_DISPLAY[a.status as ApplicationStatus] || a.status,
       a.reviewer_name ?? "",
-      a.reviewed_at
-        ? new Date(a.reviewed_at).toLocaleDateString("vi-VN")
-        : "",
+      a.reviewed_at ? new Date(a.reviewed_at).toLocaleDateString("vi-VN") : "",
     ]);
     const csvContent = [
       headers.join(","),
       ...rows.map((r) =>
-        r.map((c) => `"${(c ?? "").replace(/"/g, '""')}"`).join(",")
+        r.map((c) => `"${(c ?? "").replace(/"/g, '""')}"`).join(","),
       ),
     ].join("\n");
     const BOM = "\uFEFF";
@@ -255,7 +329,6 @@ const Applications = () => {
 
   const openDetail = async (app: ApplicationWithDetails) => {
     setDetailOpen(true);
-    setSelectedApp(app);
     setDetailLoading(true);
     try {
       const res = await applicationApi.getById(app.id);
@@ -268,7 +341,10 @@ const Applications = () => {
     }
   };
 
-  const openUpdate = (app: ApplicationDetailData, defaultStatus?: ApplicationStatus) => {
+  const openUpdate = (
+    app: ApplicationDetailData,
+    defaultStatus?: ApplicationStatus,
+  ) => {
     setSelectedApp(app);
     setNewStatus(defaultStatus || "PENDING_REVIEW");
     setRejectReason("");
@@ -277,7 +353,10 @@ const Applications = () => {
 
   const handleUpdate = async () => {
     if (!selectedApp) return;
-    if ((newStatus === "REJECTED" || newStatus === "FAILED") && !rejectReason.trim()) {
+    if (
+      (newStatus === "REJECTED" || newStatus === "FAILED") &&
+      !rejectReason.trim()
+    ) {
       message.warning("Vui lòng nhập lý do");
       return;
     }
@@ -285,7 +364,10 @@ const Applications = () => {
     try {
       const res = await applicationApi.updateStatus(selectedApp.id, {
         status: newStatus,
-        reject_reason: (newStatus === "REJECTED" || newStatus === "FAILED") ? rejectReason.trim() : undefined,
+        reject_reason:
+          newStatus === "REJECTED" || newStatus === "FAILED"
+            ? rejectReason.trim()
+            : undefined,
       });
       if (res.success) {
         message.success("Cập nhật trạng thái thành công");
@@ -300,22 +382,31 @@ const Applications = () => {
     }
   };
 
-  const getStatusStyle = (status: string) => STATUS_STYLES[status] || STATUS_STYLES.DRAFT;
+  const getStatusStyle = (status: string) =>
+    STATUS_STYLES[status] || STATUS_STYLES.DRAFT;
 
   const tableColumns = [
     {
       title: "Mã HS",
       dataIndex: "application_code",
       key: "code",
-      render: (v: string) => <span className="font-bold text-primary">{v}</span>,
+      render: (v: string) => (
+        <span className="font-bold text-primary">{v}</span>
+      ),
     },
     {
       title: "Thí sinh",
       key: "candidate",
       render: (_: unknown, record: ApplicationWithDetails) => (
         <div>
-          <p className="text-sm font-semibold text-on-surface">{record.candidate_name || "--"}</p>
-          {record.candidate_id && <p className="text-xs text-text-secondary">ID: {record.candidate_id}</p>}
+          <p className="text-sm font-semibold text-on-surface">
+            {record.candidate_name || "--"}
+          </p>
+          {record.candidate_id && (
+            <p className="text-xs text-text-secondary">
+              ID: {record.candidate_id}
+            </p>
+          )}
         </div>
       ),
     },
@@ -323,13 +414,17 @@ const Applications = () => {
       title: "Trường ứng tuyển",
       dataIndex: "university_name",
       key: "university",
-      render: (v: string) => <span className="text-sm text-on-surface">{v}</span>,
+      render: (v: string) => (
+        <span className="text-sm text-on-surface">{v}</span>
+      ),
     },
     {
       title: "Ngành học",
       dataIndex: "major_name",
       key: "major",
-      render: (v: string) => <span className="text-sm text-on-surface">{v}</span>,
+      render: (v: string) => (
+        <span className="text-sm text-on-surface">{v}</span>
+      ),
     },
     {
       title: "Ngày nộp",
@@ -348,7 +443,9 @@ const Applications = () => {
       render: (v: string) => {
         const st = getStatusStyle(v);
         return (
-          <span className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold ${st.bg} ${st.text} ${st.border} border`}>
+          <span
+            className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold ${st.bg} ${st.text} ${st.border} border`}
+          >
             <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
             {STATUS_DISPLAY[v] || v}
           </span>
@@ -359,29 +456,39 @@ const Applications = () => {
       title: "Thao tác",
       key: "actions",
       render: (_: unknown, record: ApplicationWithDetails) => (
-        <div className="flex items-center justify-end gap-sm" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center justify-end gap-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             className="w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:bg-surface-container hover:text-primary transition-all"
             title="Xem chi tiết"
             onClick={() => openDetail(record)}
           >
-            <span className="material-symbols-outlined text-[20px]">visibility</span>
+            <span className="material-symbols-outlined text-[20px]">
+              visibility
+            </span>
           </button>
-          {(record.status === "SUBMITTED" || record.status === "PENDING_REVIEW") && (
+          {(record.status === "SUBMITTED" ||
+            record.status === "PENDING_REVIEW") && (
             <>
               <button
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:bg-success/10 hover:text-success transition-all"
                 title="Duyệt"
                 onClick={() => openUpdate(record, "APPROVED")}
               >
-                <span className="material-symbols-outlined text-[20px]">check</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  check
+                </span>
               </button>
               <button
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:bg-error-container hover:text-error transition-all"
                 title="Từ chối"
                 onClick={() => openUpdate(record, "REJECTED")}
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  close
+                </span>
               </button>
             </>
           )}
@@ -390,68 +497,98 @@ const Applications = () => {
     },
   ];
 
-  const visibleTableColumns = orderColumnsByKeys(tableColumns, visibleColumnKeys);
+  const visibleTableColumns = orderColumnsByKeys(
+    tableColumns,
+    visibleColumnKeys,
+  );
 
   return (
     <div className="space-y-lg w-full max-w-full">
       {/* Page Title */}
       <div>
-        <h2 className="text-[28px] font-extrabold text-text-primary">Quản lý Hồ sơ nộp</h2>
-        <p className="text-text-secondary mt-1">Theo dõi và phê duyệt hồ sơ ứng tuyển từ các thí sinh.</p>
+        <h2 className="font-h3-section-title text-h3-section-title text-text-primary">
+          Quản lý Hồ sơ nộp
+        </h2>
+        <p className="text-text-secondary mt-1">
+          Theo dõi và phê duyệt hồ sơ ứng tuyển từ các thí sinh.
+        </p>
       </div>
 
       {/* Stats Bar */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
         <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl group">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Tổng hồ sơ</span>
+            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+              Tổng hồ sơ
+            </span>
             <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
               <span className="material-symbols-outlined">description</span>
             </div>
           </div>
-          <p className="text-[28px] font-extrabold text-text-primary">{totalApps.toLocaleString()}</p>
+          <p className="text-[28px] font-extrabold text-text-primary">
+            {totalApps.toLocaleString()}
+          </p>
           <p className="text-xs text-success flex items-center gap-xs mt-xs">
-            <span className="material-symbols-outlined text-[14px]">trending_up</span>
+            <span className="material-symbols-outlined text-[14px]">
+              trending_up
+            </span>
             Hồ sơ đã nộp
           </p>
         </div>
 
         <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Chờ duyệt</span>
+            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+              Chờ duyệt
+            </span>
             <div className="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
               <span className="material-symbols-outlined">pending_actions</span>
             </div>
           </div>
-          <p className="text-[28px] font-extrabold text-text-primary">{pendingCount.toLocaleString()}</p>
+          <p className="text-[28px] font-extrabold text-text-primary">
+            {pendingCount.toLocaleString()}
+          </p>
           <p className="text-xs text-tertiary flex items-center gap-xs mt-xs">
-            <span className="material-symbols-outlined text-[14px]">schedule</span>
+            <span className="material-symbols-outlined text-[14px]">
+              schedule
+            </span>
             Cần xử lý ngay
           </p>
         </div>
 
         <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Đã trúng tuyển</span>
+            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+              Đã trúng tuyển
+            </span>
             <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success">
               <span className="material-symbols-outlined">check_circle</span>
             </div>
           </div>
-          <p className="text-[28px] font-extrabold text-text-primary">{passedCount.toLocaleString()}</p>
+          <p className="text-[28px] font-extrabold text-text-primary">
+            {passedCount.toLocaleString()}
+          </p>
           <p className="text-xs text-success flex items-center gap-xs mt-xs">
-            <span className="material-symbols-outlined text-[14px]">verified</span>
-            Tỉ lệ {totalApps > 0 ? ((passedCount / totalApps) * 100).toFixed(1) : 0}%
+            <span className="material-symbols-outlined text-[14px]">
+              verified
+            </span>
+            Tỉ lệ{" "}
+            {totalApps > 0 ? ((passedCount / totalApps) * 100).toFixed(1) : 0}%
           </p>
         </div>
 
         <div className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">Từ chối</span>
+            <span className="text-xs font-bold text-text-secondary uppercase tracking-wider">
+              Từ chối
+            </span>
             <div className="w-10 h-10 rounded-full bg-error-container flex items-center justify-center text-error">
               <span className="material-symbols-outlined">cancel</span>
             </div>
           </div>
-          <p className="text-[28px] font-extrabold text-text-primary">{rejectedCount.toLocaleString()}</p>
+          <p className="text-[28px] font-extrabold text-text-primary">
+            {rejectedCount.toLocaleString()}
+          </p>
           <p className="text-xs text-outline flex items-center gap-xs mt-xs">
             <span className="material-symbols-outlined text-[14px]">info</span>
             Đã thông báo thí sinh
@@ -460,10 +597,15 @@ const Applications = () => {
       </div>
 
       {/* Search & Filter Row */}
-      <div ref={filterRef} className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl space-y-md">
+      <div
+        ref={filterRef}
+        className="bg-surface-container-lowest border border-hairline-soft p-md rounded-xxl space-y-md"
+      >
         <div className="flex flex-wrap items-end gap-md">
           <div className="flex-1 min-w-[240px]">
-            <label className="block text-xs font-bold text-text-primary mb-1">Tìm theo họ tên / mã HS</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">
+              Tìm theo họ tên / mã HS
+            </label>
             <SearchBar
               value={search}
               onChange={setSearch}
@@ -472,32 +614,55 @@ const Applications = () => {
             />
           </div>
           <div className="w-48">
-            <label className="block text-xs font-bold text-text-primary mb-1">Trường</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">
+              Trường
+            </label>
             <Select
               className="admin-filter-select w-full"
               popupClassName="admin-filter-dropdown"
               value={uniFilter}
-              onChange={(value) => { setUniFilter(value); setMajorFilter(""); if (!value) setMajors([]); setPage(1); }}
+              onChange={(value) => {
+                setUniFilter(value);
+                setMajorFilter("");
+                if (!value) setMajors([]);
+                setPage(1);
+              }}
               optionFilterProp="label"
               showSearch
-              suffixIcon={<span className="material-symbols-outlined text-[18px] text-outline">keyboard_arrow_down</span>}
+              suffixIcon={
+                <span className="material-symbols-outlined text-[18px] text-outline">
+                  keyboard_arrow_down
+                </span>
+              }
               options={[
                 { value: "", label: "Tất cả các trường" },
-                ...universities.map((u) => ({ value: String(u.id), label: u.name })),
+                ...universities.map((u) => ({
+                  value: String(u.id),
+                  label: u.name,
+                })),
               ]}
             />
           </div>
           <div className="w-48">
-            <label className="block text-xs font-bold text-text-primary mb-1">Ngành</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">
+              Ngành
+            </label>
             <Select
               className="admin-filter-select w-full"
               popupClassName="admin-filter-dropdown"
               value={majorFilter}
-              onChange={(value) => { setMajorFilter(value); setPage(1); }}
+              onChange={(value) => {
+                setMajorFilter(value);
+                setPage(1);
+              }}
               disabled={!uniFilter}
               optionFilterProp="label"
               showSearch
-              suffixIcon={<span className="material-symbols-outlined text-[18px] text-outline">keyboard_arrow_down</span>}
+              suffixIcon={
+                <span className="material-symbols-outlined text-[18px] text-outline">
+                  keyboard_arrow_down
+                </span>
+              }
               options={[
                 { value: "", label: "Tất cả các ngành" },
                 ...majors.map((m) => ({ value: String(m.id), label: m.name })),
@@ -505,16 +670,28 @@ const Applications = () => {
             />
           </div>
           <div className="w-48">
-            <label className="block text-xs font-bold text-text-primary mb-1">Trạng thái</label>
+            <label className="block text-xs font-bold text-text-primary mb-1">
+              Trạng thái
+            </label>
             <Select
               className="admin-filter-select w-full"
               popupClassName="admin-filter-dropdown"
               value={statusFilter}
-              onChange={(value) => { setStatusFilter(value); setPage(1); }}
-              suffixIcon={<span className="material-symbols-outlined text-[18px] text-outline">keyboard_arrow_down</span>}
+              onChange={(value) => {
+                setStatusFilter(value);
+                setPage(1);
+              }}
+              suffixIcon={
+                <span className="material-symbols-outlined text-[18px] text-outline">
+                  keyboard_arrow_down
+                </span>
+              }
               options={[
                 { value: "", label: "Tất cả trạng thái" },
-                ...Object.entries(STATUS_DISPLAY).map(([value, label]) => ({ value, label })),
+                ...Object.entries(STATUS_DISPLAY).map(([value, label]) => ({
+                  value,
+                  label,
+                })),
               ]}
             />
           </div>
@@ -523,7 +700,9 @@ const Applications = () => {
               onClick={exportCSV}
               className="h-11 rounded-lg border border-hairline bg-surface-container-low px-lg text-on-surface-variant font-label transition-colors flex items-center gap-sm hover:border-primary hover:bg-surface-container-high hover:text-primary"
             >
-              <span className="material-symbols-outlined text-[18px]">download</span>
+              <span className="material-symbols-outlined text-[18px]">
+                download
+              </span>
               Xuất CSV
             </button>
           </div>
@@ -534,9 +713,12 @@ const Applications = () => {
       {selectedIds.size > 0 && (
         <div className="bg-primary-fixed border border-primary/20 rounded-xl px-lg py-md flex items-center justify-between animate-fadeIn">
           <div className="flex items-center gap-md">
-            <span className="material-symbols-outlined text-primary">checklist</span>
+            <span className="material-symbols-outlined text-primary">
+              checklist
+            </span>
             <p className="text-sm font-bold text-on-primary-fixed-variant">
-              Đã chọn <span className="text-primary">{selectedIds.size}</span> hồ sơ
+              Đã chọn <span className="text-primary">{selectedIds.size}</span>{" "}
+              hồ sơ
             </p>
           </div>
           <div className="flex items-center gap-sm">
@@ -544,21 +726,27 @@ const Applications = () => {
               className="bg-success text-on-primary px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
               onClick={() => openBatchUpdate("APPROVED")}
             >
-              <span className="material-symbols-outlined text-[18px]">check</span>
+              <span className="material-symbols-outlined text-[18px]">
+                check
+              </span>
               Duyệt tất cả
             </button>
             <button
               className="bg-critical text-on-critical px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
               onClick={() => openBatchUpdate("REJECTED")}
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <span className="material-symbols-outlined text-[18px]">
+                close
+              </span>
               Từ chối tất cả
             </button>
             <button
               className="bg-surface-container-low text-on-surface-variant px-lg py-sm rounded-full text-sm font-bold hover:bg-surface-container-high transition-all flex items-center gap-sm border border-hairline"
               onClick={() => setSelectedIds(new Set())}
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <span className="material-symbols-outlined text-[18px]">
+                close
+              </span>
               Bỏ chọn
             </button>
           </div>
@@ -569,8 +757,13 @@ const Applications = () => {
       <div className="bg-surface-container-lowest border border-hairline-soft rounded-xxl overflow-hidden">
         <div className="flex items-center justify-between gap-md border-b border-hairline-soft bg-surface-container-lowest px-md py-sm">
           <div>
-            <p className="text-sm font-bold text-text-primary">Danh sách hồ sơ</p>
-            <p className="text-xs text-text-secondary">{visibleColumnKeys.length}/{DEFAULT_COLUMN_KEYS.length} cột đang hiển thị</p>
+            <p className="text-sm font-bold text-text-primary">
+              Danh sách hồ sơ
+            </p>
+            <p className="text-xs text-text-secondary">
+              {visibleColumnKeys.length}/{DEFAULT_COLUMN_KEYS.length} cột đang
+              hiển thị
+            </p>
           </div>
           <div className="relative flex items-center gap-sm">
             <ColumnConfig
@@ -583,12 +776,18 @@ const Applications = () => {
             <button
               type="button"
               aria-label="Bộ lọc"
-              onClick={() => filterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              onClick={() =>
+                filterRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                })
+              }
               className="h-10 w-10 rounded-lg border border-hairline bg-surface-container-lowest text-text-primary shadow-sm transition-all hover:border-primary hover:bg-surface-container-high hover:text-primary"
             >
-              <span className="material-symbols-outlined text-[21px] leading-10">filter_alt</span>
+              <span className="material-symbols-outlined text-[21px] leading-10">
+                filter_alt
+              </span>
             </button>
-
           </div>
         </div>
         <Table
@@ -606,7 +805,7 @@ const Applications = () => {
             total,
             pageSize,
             showSizeChanger: true,
-            pageSizeOptions: ['5', '10', '15', '25'],
+            pageSizeOptions: ["5", "10", "15", "25"],
             onChange: (p: number, size: number) => {
               if (size !== pageSize) {
                 setPageSize(size);
@@ -625,15 +824,25 @@ const Applications = () => {
 
       {/* Detail Modal */}
       <Modal
-        title={<span className="font-bold text-text-primary">Chi tiết hồ sơ: {selectedApp?.application_code}</span>}
+        title={
+          <span className="font-bold text-text-primary">
+            Chi tiết hồ sơ: {selectedApp?.application_code}
+          </span>
+        }
         open={detailOpen}
-        onCancel={() => { setDetailOpen(false); setSelectedApp(null); setStatusLogs([]); }}
+        onCancel={() => {
+          setDetailOpen(false);
+          setSelectedApp(null);
+          setStatusLogs([]);
+        }}
         footer={null}
         width={720}
       >
         {detailLoading ? (
           <div className="flex items-center justify-center py-12 text-text-secondary">
-            <span className="material-symbols-outlined animate-spin mr-2">refresh</span>
+            <span className="material-symbols-outlined animate-spin mr-2">
+              refresh
+            </span>
             Đang tải...
           </div>
         ) : selectedApp ? (
@@ -641,57 +850,99 @@ const Applications = () => {
             {/* Section 1: Hồ sơ đăng ký */}
             <div>
               <h4 className="text-sm font-bold text-primary mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">description</span>
+                <span className="material-symbols-outlined text-lg">
+                  description
+                </span>
                 Hồ sơ đăng ký
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 bg-surface-container-low rounded-lg p-4">
                 <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Mã hồ sơ</p>
-                  <p className="text-sm font-bold text-primary mt-0.5">{selectedApp.application_code}</p>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Mã hồ sơ
+                  </p>
+                  <p className="text-sm font-bold text-primary mt-0.5">
+                    {selectedApp.application_code}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Trạng thái</p>
-                  <span className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold mt-0.5 ${getStatusStyle(selectedApp.status).bg} ${getStatusStyle(selectedApp.status).text} border ${getStatusStyle(selectedApp.status).border}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${getStatusStyle(selectedApp.status).dot}`} />
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Trạng thái
+                  </p>
+                  <span
+                    className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold mt-0.5 ${getStatusStyle(selectedApp.status).bg} ${getStatusStyle(selectedApp.status).text} border ${getStatusStyle(selectedApp.status).border}`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${getStatusStyle(selectedApp.status).dot}`}
+                    />
                     {STATUS_DISPLAY[selectedApp.status] || selectedApp.status}
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Trường</p>
-                  <p className="text-sm text-on-surface mt-0.5">{selectedApp.university_name}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Ngành</p>
-                  <p className="text-sm text-on-surface mt-0.5">{selectedApp.major_name}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Tổ hợp</p>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Trường
+                  </p>
                   <p className="text-sm text-on-surface mt-0.5">
-                    {selectedApp.combination ? `${selectedApp.combination.code} (${selectedApp.combination.subject_1} - ${selectedApp.combination.subject_2} - ${selectedApp.combination.subject_3})` : "--"}
+                    {selectedApp.university_name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Ngày nộp</p>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Ngành
+                  </p>
                   <p className="text-sm text-on-surface mt-0.5">
-                    {selectedApp.submitted_at ? new Date(selectedApp.submitted_at).toLocaleString("vi-VN") : "--"}
+                    {selectedApp.major_name}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Người duyệt</p>
-                  <p className="text-sm text-on-surface mt-0.5">{selectedApp.reviewer_name || "--"}</p>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Tổ hợp
+                  </p>
+                  <p className="text-sm text-on-surface mt-0.5">
+                    {selectedApp.combination
+                      ? `${selectedApp.combination.code} (${selectedApp.combination.subject_1} - ${selectedApp.combination.subject_2} - ${selectedApp.combination.subject_3})`
+                      : "--"}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-text-secondary uppercase">Điểm xét tuyển</p>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Ngày nộp
+                  </p>
                   <p className="text-sm text-on-surface mt-0.5">
-                    {selectedApp.subject_1_score !== null || selectedApp.subject_2_score !== null || selectedApp.subject_3_score !== null
+                    {selectedApp.submitted_at
+                      ? new Date(selectedApp.submitted_at).toLocaleString(
+                          "vi-VN",
+                        )
+                      : "--"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Người duyệt
+                  </p>
+                  <p className="text-sm text-on-surface mt-0.5">
+                    {selectedApp.reviewer_name || "--"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Điểm xét tuyển
+                  </p>
+                  <p className="text-sm text-on-surface mt-0.5">
+                    {selectedApp.subject_1_score !== null ||
+                    selectedApp.subject_2_score !== null ||
+                    selectedApp.subject_3_score !== null
                       ? `${selectedApp.subject_1_score ?? "--"} - ${selectedApp.subject_2_score ?? "--"} - ${selectedApp.subject_3_score ?? "--"}`
                       : "--"}
                   </p>
                 </div>
                 {selectedApp.reject_reason && (
                   <div className="col-span-2">
-                    <p className="text-xs font-bold text-text-secondary uppercase">Lý do từ chối</p>
-                    <p className="text-sm text-error mt-0.5">{selectedApp.reject_reason}</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Lý do từ chối
+                    </p>
+                    <p className="text-sm text-error mt-0.5">
+                      {selectedApp.reject_reason}
+                    </p>
                   </div>
                 )}
               </div>
@@ -701,63 +952,122 @@ const Applications = () => {
             {selectedApp.candidate_profile && (
               <div>
                 <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">person</span>
+                  <span className="material-symbols-outlined text-lg">
+                    person
+                  </span>
                   Thông tin cá nhân
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 bg-surface-container-low rounded-lg p-4">
                   <div className="col-span-2 md:col-span-1">
-                    <p className="text-xs font-bold text-text-secondary uppercase">Họ và tên</p>
-                    <p className="text-sm text-on-surface mt-0.5">{selectedApp.candidate_profile.candidate_profile.full_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">Email</p>
-                    <p className="text-sm text-on-surface mt-0.5">{selectedApp.candidate_email || "--"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">Số điện thoại</p>
-                    <p className="text-sm text-on-surface mt-0.5">{selectedApp.candidate_profile.candidate_profile.phone || "--"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">Ngày sinh</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Họ và tên
+                    </p>
                     <p className="text-sm text-on-surface mt-0.5">
-                      {selectedApp.candidate_profile.candidate_profile.date_of_birth
-                        ? new Date(selectedApp.candidate_profile.candidate_profile.date_of_birth).toLocaleDateString("vi-VN")
+                      {
+                        selectedApp.candidate_profile.candidate_profile
+                          .full_name
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Email
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.candidate_email || "--"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Số điện thoại
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.candidate_profile.candidate_profile.phone ||
+                        "--"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Ngày sinh
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.candidate_profile.candidate_profile
+                        .date_of_birth
+                        ? new Date(
+                            selectedApp.candidate_profile.candidate_profile
+                              .date_of_birth,
+                          ).toLocaleDateString("vi-VN")
                         : "--"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">Giới tính</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Giới tính
+                    </p>
                     <p className="text-sm text-on-surface mt-0.5">
-                      {selectedApp.candidate_profile.candidate_profile.gender === "MALE" ? "Nam"
-                        : selectedApp.candidate_profile.candidate_profile.gender === "FEMALE" ? "Nữ"
-                        : selectedApp.candidate_profile.candidate_profile.gender === "OTHER" ? "Khác"
-                        : "--"}
+                      {selectedApp.candidate_profile.candidate_profile
+                        .gender === "MALE"
+                        ? "Nam"
+                        : selectedApp.candidate_profile.candidate_profile
+                              .gender === "FEMALE"
+                          ? "Nữ"
+                          : selectedApp.candidate_profile.candidate_profile
+                                .gender === "OTHER"
+                            ? "Khác"
+                            : "--"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">CCCD/CMND</p>
-                    <p className="text-sm text-on-surface mt-0.5">{String(selectedApp.candidate_profile.candidate_profile.citizen_id) || "--"}</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      CCCD/CMND
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {String(
+                        selectedApp.candidate_profile.candidate_profile
+                          .citizen_id,
+                      ) || "--"}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">Dân tộc</p>
-                    <p className="text-sm text-on-surface mt-0.5">{selectedApp.candidate_profile.candidate_profile.ethnic || "--"}</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Dân tộc
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.candidate_profile.candidate_profile.ethnic ||
+                        "--"}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">Tôn giáo</p>
-                    <p className="text-sm text-on-surface mt-0.5">{selectedApp.candidate_profile.candidate_profile.religion || "--"}</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Tôn giáo
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.candidate_profile.candidate_profile
+                        .religion || "--"}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-text-secondary uppercase">Quốc tịch</p>
-                    <p className="text-sm text-on-surface mt-0.5">{selectedApp.candidate_profile.candidate_profile.nation || "--"}</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Quốc tịch
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.candidate_profile.candidate_profile.nation ||
+                        "--"}
+                    </p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-xs font-bold text-text-secondary uppercase">Địa chỉ</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Địa chỉ
+                    </p>
                     <p className="text-sm text-on-surface mt-0.5">
                       {[
                         selectedApp.candidate_profile.candidate_profile.address,
                         selectedApp.candidate_profile.candidate_profile.ward,
-                        selectedApp.candidate_profile.candidate_profile.province,
-                      ].filter(Boolean).join(", ") || "--"}
+                        selectedApp.candidate_profile.candidate_profile
+                          .province,
+                      ]
+                        .filter(Boolean)
+                        .join(", ") || "--"}
                     </p>
                   </div>
                 </div>
@@ -765,43 +1075,72 @@ const Applications = () => {
             )}
 
             {/* Section 3: Điểm thi */}
-            {selectedApp.academic_record?.academic_record?.exam_scores && selectedApp.academic_record.academic_record.exam_scores.length > 0 && (
-              <div>
-                <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">score</span>
-                  Điểm thi
-                </h4>
-                <div className="bg-surface-container-low rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                    {selectedApp.academic_record.academic_record.exam_scores.map((s) => (
-                      <div key={s.subject_code}>
-                        <p className="text-xs font-bold text-text-secondary uppercase">{s.subject_name}</p>
-                        <p className="text-sm text-on-surface mt-0.5 font-semibold">{s.score}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {selectedApp.academic_record.academic_record.foreign_language && (
-                    <div className="mt-3 pt-3 border-t border-border">
-                      <p className="text-xs font-bold text-text-secondary uppercase">Ngoại ngữ</p>
-                      <p className="text-sm text-on-surface mt-0.5">
-                        {selectedApp.academic_record.academic_record.foreign_language.language_name} ({selectedApp.academic_record.academic_record.foreign_language.language_code})
-                      </p>
+            {selectedApp.academic_record?.academic_record?.exam_scores &&
+              selectedApp.academic_record.academic_record.exam_scores.length >
+                0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-lg">
+                      score
+                    </span>
+                    Điểm thi
+                  </h4>
+                  <div className="bg-surface-container-low rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                      {selectedApp.academic_record.academic_record.exam_scores.map(
+                        (s) => (
+                          <div key={s.subject_code}>
+                            <p className="text-xs font-bold text-text-secondary uppercase">
+                              {s.subject_name}
+                            </p>
+                            <p className="text-sm text-on-surface mt-0.5 font-semibold">
+                              {s.score}
+                            </p>
+                          </div>
+                        ),
+                      )}
                     </div>
-                  )}
+                    {selectedApp.academic_record.academic_record
+                      .foreign_language && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <p className="text-xs font-bold text-text-secondary uppercase">
+                          Ngoại ngữ
+                        </p>
+                        <p className="text-sm text-on-surface mt-0.5">
+                          {
+                            selectedApp.academic_record.academic_record
+                              .foreign_language.language_name
+                          }{" "}
+                          (
+                          {
+                            selectedApp.academic_record.academic_record
+                              .foreign_language.language_code
+                          }
+                          )
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Section 4: Học vấn */}
             {selectedApp.academic_record?.academic_record && (
               <div>
                 <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">school</span>
+                  <span className="material-symbols-outlined text-lg">
+                    school
+                  </span>
                   Học vấn
                 </h4>
                 <div className="bg-surface-container-low rounded-lg p-4">
-                  <p className="text-xs font-bold text-text-secondary uppercase">Năm tốt nghiệp</p>
-                  <p className="text-sm text-on-surface mt-0.5">{selectedApp.academic_record.academic_record.graduation_year || "--"}</p>
+                  <p className="text-xs font-bold text-text-secondary uppercase">
+                    Năm tốt nghiệp
+                  </p>
+                  <p className="text-sm text-on-surface mt-0.5">
+                    {selectedApp.academic_record.academic_record
+                      .graduation_year || "--"}
+                  </p>
                 </div>
               </div>
             )}
@@ -810,25 +1149,47 @@ const Applications = () => {
             {selectedApp.academic_record?.academic_progress && (
               <div>
                 <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">school</span>
+                  <span className="material-symbols-outlined text-lg">
+                    school
+                  </span>
                   Học tập THPT
                 </h4>
                 <div className="bg-surface-container-low rounded-lg p-4">
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-x-4 gap-y-3">
-                    <p className="col-span-2 text-xs font-bold text-text-secondary uppercase">Lớp</p>
-                    <p className="col-span-7 text-xs font-bold text-text-secondary uppercase">Trường</p>
-                    <p className="col-span-3 text-xs font-bold text-text-secondary uppercase">Điểm TB</p>
-                    {(["grade_10", "grade_11", "grade_12"] as const).map((grade) => {
-                      const label = grade === "grade_10" ? "Lớp 10" : grade === "grade_11" ? "Lớp 11" : "Lớp 12";
-                      const data = selectedApp.academic_record!.academic_progress[grade];
-                      return (
-                        <div key={grade} className="contents">
-                          <p className="col-span-2 text-sm font-semibold text-on-surface">{label}</p>
-                          <p className="col-span-7 text-sm text-on-surface">{data?.school_name || "--"}</p>
-                          <p className="col-span-3 text-sm text-on-surface">{data?.avg_score != null ? data.avg_score : "--"}</p>
-                        </div>
-                      );
-                    })}
+                    <p className="col-span-2 text-xs font-bold text-text-secondary uppercase">
+                      Lớp
+                    </p>
+                    <p className="col-span-7 text-xs font-bold text-text-secondary uppercase">
+                      Trường
+                    </p>
+                    <p className="col-span-3 text-xs font-bold text-text-secondary uppercase">
+                      Điểm TB
+                    </p>
+                    {(["grade_10", "grade_11", "grade_12"] as const).map(
+                      (grade) => {
+                        const label =
+                          grade === "grade_10"
+                            ? "Lớp 10"
+                            : grade === "grade_11"
+                              ? "Lớp 11"
+                              : "Lớp 12";
+                        const data =
+                          selectedApp.academic_record!.academic_progress[grade];
+                        return (
+                          <div key={grade} className="contents">
+                            <p className="col-span-2 text-sm font-semibold text-on-surface">
+                              {label}
+                            </p>
+                            <p className="col-span-7 text-sm text-on-surface">
+                              {data?.school_name || "--"}
+                            </p>
+                            <p className="col-span-3 text-sm text-on-surface">
+                              {data?.avg_score != null ? data.avg_score : "--"}
+                            </p>
+                          </div>
+                        );
+                      },
+                    )}
                   </div>
                 </div>
               </div>
@@ -838,29 +1199,42 @@ const Applications = () => {
             {selectedApp.documents && selectedApp.documents.length > 0 && (
               <div>
                 <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">folder</span>
+                  <span className="material-symbols-outlined text-lg">
+                    folder
+                  </span>
                   Tài liệu đã tải lên
                 </h4>
                 <div className="bg-surface-container-low rounded-lg p-4">
                   <div className="space-y-2">
                     {selectedApp.documents.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between py-1.5 border-b border-border last:border-0"
+                      >
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="material-symbols-outlined text-base text-text-secondary shrink-0">
-                            {doc.file_type === "PDF" ? "picture_as_pdf" : "image"}
+                            {doc.file_type === "PDF"
+                              ? "picture_as_pdf"
+                              : "image"}
                           </span>
                           <div className="min-w-0">
                             <p className="text-sm text-on-surface truncate">
                               {doc.display_name || doc.file_name}
                             </p>
                             <p className="text-xs text-text-secondary">
-                              {doc.document_type === "TRANSCRIPT" ? "Bảng điểm"
-                                : doc.document_type === "CITIZEN_ID_Front" ? "CMND/CCCD mặt trước"
-                                : doc.document_type === "CITIZEN_ID_Back" ? "CMND/CCCD mặt sau"
-                                : doc.document_type === "PORTRAIT" ? "Ảnh thẻ"
-                                : doc.document_type === "EXAM_CERTIFICATE" ? "Giấy chứng nhận kết quả thi"
-                                : doc.document_type === "CERTIFICATE" ? "Chứng chỉ khác"
-                                : doc.document_type}
+                              {doc.document_type === "TRANSCRIPT"
+                                ? "Bảng điểm"
+                                : doc.document_type === "CITIZEN_ID_Front"
+                                  ? "CMND/CCCD mặt trước"
+                                  : doc.document_type === "CITIZEN_ID_Back"
+                                    ? "CMND/CCCD mặt sau"
+                                    : doc.document_type === "PORTRAIT"
+                                      ? "Ảnh thẻ"
+                                      : doc.document_type === "EXAM_CERTIFICATE"
+                                        ? "Giấy chứng nhận kết quả thi"
+                                        : doc.document_type === "CERTIFICATE"
+                                          ? "Chứng chỉ khác"
+                                          : doc.document_type}
                             </p>
                           </div>
                         </div>
@@ -882,56 +1256,79 @@ const Applications = () => {
             {/* Section 7: Lịch sử thay đổi trạng thái */}
             <div>
               <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">history</span>
+                <span className="material-symbols-outlined text-lg">
+                  history
+                </span>
                 Lịch sử thay đổi trạng thái
               </h4>
               {statusLogs.length === 0 ? (
-                <p className="text-xs text-text-secondary text-center py-4">Chưa có lịch sử thay đổi</p>
+                <p className="text-xs text-text-secondary text-center py-4">
+                  Chưa có lịch sử thay đổi
+                </p>
               ) : (
                 <div className="relative pl-6 space-y-4">
                   {statusLogs.map((log, idx) => (
                     <div key={log.id || idx} className="relative">
-                      <div className="absolute left-[-18px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white" style={{
-                        backgroundColor:
-                          log.new_status === "REJECTED" || log.new_status === "FAILED" ? "#C23934" :
-                          log.new_status === "APPROVED" || log.new_status === "PASSED" ? "#04844B" : "#00658e",
-                      }} />
+                      <div
+                        className="absolute left-[-18px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white"
+                        style={{
+                          backgroundColor:
+                            log.new_status === "REJECTED" ||
+                            log.new_status === "FAILED"
+                              ? "#C23934"
+                              : log.new_status === "APPROVED" ||
+                                  log.new_status === "PASSED"
+                                ? "#04844B"
+                                : "#00658e",
+                        }}
+                      />
                       {idx < statusLogs.length - 1 && (
                         <div className="absolute left-[-13.5px] top-3.5 bottom-[-16px] w-px bg-hairline" />
                       )}
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold ${getStatusStyle(log.new_status).bg} ${getStatusStyle(log.new_status).text} border ${getStatusStyle(log.new_status).border}`}>
+                        <span
+                          className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold ${getStatusStyle(log.new_status).bg} ${getStatusStyle(log.new_status).text} border ${getStatusStyle(log.new_status).border}`}
+                        >
                           {STATUS_DISPLAY[log.new_status] || log.new_status}
                         </span>
                         <span className="text-xs text-text-secondary">
                           {new Date(log.created_at).toLocaleString("vi-VN")}
                         </span>
                       </div>
-                      <p className="text-xs text-text-secondary mt-0.5">{log.note || "Không có ghi chú"}</p>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        {log.note || "Không có ghi chú"}
+                      </p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {selectedApp.status !== "PASSED" && selectedApp.status !== "FAILED" && (
-              <div className="flex justify-end gap-sm pt-2 border-t border-border sticky bottom-0 bg-white py-3">
-                <button
-                  className="bg-primary hover:bg-primary-hover text-on-primary px-lg py-sm rounded-full text-sm font-bold transition-all"
-                  onClick={() => openUpdate(selectedApp)}
-                >
-                  <span className="material-symbols-outlined text-[18px] mr-1">check_circle</span>
-                  Xử lý hồ sơ
-                </button>
-              </div>
-            )}
+            {selectedApp.status !== "PASSED" &&
+              selectedApp.status !== "FAILED" && (
+                <div className="flex justify-end gap-sm pt-2 border-t border-border sticky bottom-0 bg-white py-3">
+                  <button
+                    className="bg-primary hover:bg-primary-hover text-on-primary px-lg py-sm rounded-full text-sm font-bold transition-all"
+                    onClick={() => openUpdate(selectedApp)}
+                  >
+                    <span className="material-symbols-outlined text-[18px] mr-1">
+                      check_circle
+                    </span>
+                    Xử lý hồ sơ
+                  </button>
+                </div>
+              )}
           </div>
         ) : null}
       </Modal>
 
       {/* Status Update Modal */}
       <Modal
-        title={<span className="font-bold text-text-primary">Cập nhật trạng thái hồ sơ</span>}
+        title={
+          <span className="font-bold text-text-primary">
+            Cập nhật trạng thái hồ sơ
+          </span>
+        }
         open={updateOpen}
         onCancel={() => setUpdateOpen(false)}
         onOk={handleUpdate}
@@ -941,19 +1338,30 @@ const Applications = () => {
       >
         <div className="space-y-4 py-2">
           <p className="text-sm text-text-secondary">
-            Hồ sơ: <span className="font-bold text-text-primary">{selectedApp?.application_code}</span>
+            Hồ sơ:{" "}
+            <span className="font-bold text-text-primary">
+              {selectedApp?.application_code}
+            </span>
           </p>
           <div>
-            <p className="text-xs font-bold text-text-primary mb-1.5">Trạng thái mới</p>
+            <p className="text-xs font-bold text-text-primary mb-1.5">
+              Trạng thái mới
+            </p>
             <Select
               value={newStatus}
               onChange={setNewStatus}
               className="w-full"
               options={[
-                { value: "PENDING_REVIEW" as ApplicationStatus, label: "Chờ duyệt" },
+                {
+                  value: "PENDING_REVIEW" as ApplicationStatus,
+                  label: "Chờ duyệt",
+                },
                 { value: "APPROVED" as ApplicationStatus, label: "Đã duyệt" },
                 { value: "REJECTED" as ApplicationStatus, label: "Từ chối" },
-                { value: "PASSED" as ApplicationStatus, label: "Đã trúng tuyển" },
+                {
+                  value: "PASSED" as ApplicationStatus,
+                  label: "Đã trúng tuyển",
+                },
                 { value: "FAILED" as ApplicationStatus, label: "Không đỗ" },
               ]}
             />
@@ -977,7 +1385,11 @@ const Applications = () => {
 
       {/* Batch Update Modal */}
       <Modal
-        title={<span className="font-bold text-text-primary">Xử lý hàng loạt ({selectedIds.size} hồ sơ)</span>}
+        title={
+          <span className="font-bold text-text-primary">
+            Xử lý hàng loạt ({selectedIds.size} hồ sơ)
+          </span>
+        }
         open={batchUpdateOpen}
         onCancel={() => setBatchUpdateOpen(false)}
         onOk={handleBatchUpdate}
@@ -987,10 +1399,16 @@ const Applications = () => {
       >
         <div className="space-y-4 py-2">
           <p className="text-sm text-text-secondary">
-            Xét duyệt <span className="font-bold text-text-primary">{selectedIds.size}</span> hồ sơ
+            Xét duyệt{" "}
+            <span className="font-bold text-text-primary">
+              {selectedIds.size}
+            </span>{" "}
+            hồ sơ
           </p>
           <div>
-            <p className="text-xs font-bold text-text-primary mb-1.5">Trạng thái mới</p>
+            <p className="text-xs font-bold text-text-primary mb-1.5">
+              Trạng thái mới
+            </p>
             <Select
               value={batchStatus}
               onChange={setBatchStatus}
@@ -998,7 +1416,10 @@ const Applications = () => {
               options={[
                 { value: "APPROVED" as ApplicationStatus, label: "Đã duyệt" },
                 { value: "REJECTED" as ApplicationStatus, label: "Từ chối" },
-                { value: "PASSED" as ApplicationStatus, label: "Đã trúng tuyển" },
+                {
+                  value: "PASSED" as ApplicationStatus,
+                  label: "Đã trúng tuyển",
+                },
                 { value: "FAILED" as ApplicationStatus, label: "Không đỗ" },
               ]}
             />
@@ -1023,21 +1444,32 @@ const Applications = () => {
       {/* Contextual Banner */}
       <div className="relative overflow-hidden bg-primary-container rounded-xxl p-xxl flex items-center justify-between group">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
             <path d="M0 0 L100 0 L100 100 Z" fill="white" />
           </svg>
         </div>
         <div className="relative z-10 space-y-sm flex-1 min-w-0">
-          <h4 className="text-lg font-black text-primary">Xử lý hồ sơ ưu tiên?</h4>
+          <h4 className="text-lg font-black text-primary">
+            Xử lý hồ sơ ưu tiên?
+          </h4>
           <p className="text-sm text-on-primary-fixed-variant/90">
-            Có {pendingCount} hồ sơ thuộc diện chờ duyệt chưa được phê duyệt. Hãy kiểm tra các hồ sơ này để đảm bảo đúng tiến độ tuyển sinh.
+            Có {pendingCount} hồ sơ thuộc diện chờ duyệt chưa được phê duyệt.
+            Hãy kiểm tra các hồ sơ này để đảm bảo đúng tiến độ tuyển sinh.
           </p>
           <button
             className="mt-md bg-on-primary text-on-primary-container px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
             onClick={() => {
               setStatusFilter("PENDING_REVIEW");
               setPage(1);
-              filterRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              filterRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
             }}
           >
             Xem danh sách chờ duyệt
@@ -1046,7 +1478,9 @@ const Applications = () => {
         </div>
         <div className="relative z-10 hidden lg:block">
           <div className="bg-white/20 backdrop-blur-md p-md rounded-xl border border-white/30 transform rotate-3 group-hover:rotate-0 transition-transform duration-500">
-            <span className="material-symbols-outlined text-[48px] text-white/80">verified_user</span>
+            <span className="material-symbols-outlined text-[48px] text-white/80">
+              verified_user
+            </span>
           </div>
         </div>
       </div>
