@@ -100,11 +100,13 @@ const Profile = () => {
               <div className="flex flex-col md:flex-row gap-5 items-start">
                 <div className="flex flex-col items-center gap-3 w-full md:w-auto">
                   {user.avatar_url ? (
-                    <img
-                      src={user.avatar_url}
-                      alt={user.email}
-                      className="w-32 h-32 rounded-full object-cover shadow-md border border-hairline-soft"
-                    />
+                    <div className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 shadow-md border border-hairline-soft">
+                      <img
+                        src={user.avatar_url}
+                        alt={user.email}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="w-32 h-32 rounded-full bg-primary text-on-primary flex items-center justify-center text-4xl font-bold shadow-md">
                       {user.email?.charAt(0).toUpperCase() || 'A'}
