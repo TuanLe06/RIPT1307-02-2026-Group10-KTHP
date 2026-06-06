@@ -39,13 +39,17 @@ const Dashboard = () => {
   const [statusStats, setStatusStats] = useState<StatusStat[]>([]);
   const [statusLoading, setStatusLoading] = useState(true);
 
-  const [sortOrder, setSortOrder] = useState<"default" | "desc" | "asc">("default");
+  const [sortOrder, setSortOrder] = useState<"default" | "desc" | "asc">(
+    "default",
+  );
   const [topN, setTopN] = useState<number | null>(10);
 
   const filteredMajorDist = useMemo(() => {
     let data = [...majorDist];
     if (sortOrder !== "default") {
-      data.sort((a, b) => (sortOrder === "desc" ? b.count - a.count : a.count - b.count));
+      data.sort((a, b) =>
+        sortOrder === "desc" ? b.count - a.count : a.count - b.count,
+      );
     }
     if (topN && topN < data.length) data = data.slice(0, topN);
     return data;
@@ -121,14 +125,14 @@ const Dashboard = () => {
         const pct = totalStatusValue > 0 ? (val / totalStatusValue) * 100 : 0;
         return `${d.type}\n${pct.toFixed(0)}%`;
       },
-      style: { fill: theme === 'dark' ? '#e1e6ed' : '#171c20', fontSize: 11 },
+      style: { fill: theme === "dark" ? "#e1e6ed" : "#171c20", fontSize: 11 },
     },
     legend: {
       color: {
         title: false,
         position: "bottom",
         rowPadding: 8,
-        label: { style: { fill: theme === 'dark' ? '#9aa3af' : '#706e6b' } },
+        label: { style: { fill: theme === "dark" ? "#9aa3af" : "#706e6b" } },
       },
     },
     tooltip: {
@@ -144,7 +148,10 @@ const Dashboard = () => {
       key: "status_display",
       render: (v: string, r: StatusStat) => (
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: STATUS_COLORS[r.status] }} />
+          <span
+            className="w-3 h-3 rounded-full inline-block"
+            style={{ backgroundColor: STATUS_COLORS[r.status] }}
+          />
           <span>{v}</span>
         </div>
       ),
@@ -173,7 +180,7 @@ const Dashboard = () => {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="font-h2-page-title text-h2-page-title text-text-primary">
+          <h2 className="font-h3-section-title text-h3-section-title text-text-primary">
             Tổng quan hệ thống
           </h2>
           <p className="text-text-secondary font-body mt-1">
@@ -293,7 +300,11 @@ const Dashboard = () => {
             <div className="flex flex-row gap-4">
               <div className="flex-1 min-w-0" style={{ height: 400 }}>
                 <Pie
-                  data={filteredMajorDist.map((d) => ({ code: d.code, university: d.university, value: d.count }))}
+                  data={filteredMajorDist.map((d) => ({
+                    code: d.code,
+                    university: d.university,
+                    value: d.count,
+                  }))}
                   angleField="value"
                   colorField="university"
                   innerRadius={0.6}
@@ -301,11 +312,17 @@ const Dashboard = () => {
                   label={{
                     text: (d: Record<string, unknown>) => {
                       const val = d.value as number;
-                      const total = filteredMajorDist.reduce((s, item) => s + item.count, 0);
+                      const total = filteredMajorDist.reduce(
+                        (s, item) => s + item.count,
+                        0,
+                      );
                       const pct = total > 0 ? (val / total) * 100 : 0;
                       return `${d.code}\n${pct.toFixed(0)}%`;
                     },
-                    style: { fill: theme === 'dark' ? '#e1e6ed' : '#171c20', fontSize: 11 },
+                    style: {
+                      fill: theme === "dark" ? "#e1e6ed" : "#171c20",
+                      fontSize: 11,
+                    },
                   }}
                   legend={{
                     color: {
@@ -314,7 +331,10 @@ const Dashboard = () => {
                       layout: { flexDirection: "column" },
                       rowPadding: 4,
                       label: {
-                        style: { fill: theme === 'dark' ? '#9aa3af' : '#706e6b', fontSize: 12 },
+                        style: {
+                          fill: theme === "dark" ? "#9aa3af" : "#706e6b",
+                          fontSize: 12,
+                        },
                         maxWidth: 200,
                       },
                     },
@@ -358,7 +378,10 @@ const Dashboard = () => {
               Chi tiết theo trạng thái
             </h4>
             <span className="text-[14px] text-text-secondary">
-              Tổng số: <strong className="text-text-primary">{statusStats.reduce((s, r) => s + r.count, 0)}</strong>
+              Tổng số:{" "}
+              <strong className="text-text-primary">
+                {statusStats.reduce((s, r) => s + r.count, 0)}
+              </strong>
             </span>
           </div>
           <Table

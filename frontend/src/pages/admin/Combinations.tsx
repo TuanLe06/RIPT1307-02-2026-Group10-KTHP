@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Table,
   Button,
@@ -13,6 +13,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { combinationApi } from '../../api/combinations';
 import type { AdmissionCombination } from '../../types/university';
 import ColumnConfig, { loadColumnConfig, orderColumnsByKeys } from '../../components/common/ColumnConfig';
+import SearchBar from '../../components/common/SearchBar';
 
 const COLUMN_CONFIG_STORAGE_KEY = 'admin_combinations_visible_columns';
 const DEFAULT_COLUMN_KEYS = ['code', 'subject_1', 'subject_2', 'subject_3', 'actions'];
@@ -36,8 +37,27 @@ const Combinations = () => {
   const [visibleColumnKeys, setVisibleColumnKeys] = useState<string[]>(() =>
     loadColumnConfig(COLUMN_CONFIG_STORAGE_KEY, DEFAULT_COLUMN_KEYS),
   );
+  const [search, setSearch] = useState('');
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'ascend' | 'descend' | null>(null);
   const [form] = Form.useForm();
   const { message } = App.useApp();
+
+  const stripDiacritics = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  const filteredData = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = stripDiacritics(search.trim()).toLowerCase();
+    return data.filter(
+      (c) => {
+        const haystack = stripDiacritics(
+          `${c.code} ${c.subject_1} ${c.subject_2} ${c.subject_3}`,
+        ).toLowerCase();
+        return haystack.includes(q);
+      },
+    );
+  }, [data, search]);
 
   const loadData = async (p: number, size?: number) => {
     const ps = size ?? pageSize;
@@ -55,7 +75,9 @@ const Combinations = () => {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAdd = () => {
@@ -119,21 +141,29 @@ const Combinations = () => {
       dataIndex: 'code',
       key: 'code',
       width: 100,
+      sorter: (a: AdmissionCombination, b: AdmissionCombination) => a.code.localeCompare(b.code),
+      sortOrder: sortField === 'code' ? sortOrder : null,
     },
     {
       title: 'Môn 1',
       dataIndex: 'subject_1',
       key: 'subject_1',
+      sorter: (a: AdmissionCombination, b: AdmissionCombination) => a.subject_1.localeCompare(b.subject_1),
+      sortOrder: sortField === 'subject_1' ? sortOrder : null,
     },
     {
       title: 'Môn 2',
       dataIndex: 'subject_2',
       key: 'subject_2',
+      sorter: (a: AdmissionCombination, b: AdmissionCombination) => a.subject_2.localeCompare(b.subject_2),
+      sortOrder: sortField === 'subject_2' ? sortOrder : null,
     },
     {
       title: 'Môn 3',
       dataIndex: 'subject_3',
       key: 'subject_3',
+      sorter: (a: AdmissionCombination, b: AdmissionCombination) => a.subject_3.localeCompare(b.subject_3),
+      sortOrder: sortField === 'subject_3' ? sortOrder : null,
     },
     {
       title: 'Thao tác',
@@ -169,6 +199,12 @@ const Combinations = () => {
           Quản lý Tổ hợp xét tuyển
         </h3>
         <div className="flex items-center gap-sm">
+          <SearchBar
+            value={search}
+            onChange={(v) => setSearch(v)}
+            onSearch={() => {}}
+            placeholder="Tìm kiếm tổ hợp..."
+          />
           <ColumnConfig
             storageKey={COLUMN_CONFIG_STORAGE_KEY}
             options={COLUMN_CONFIG_OPTIONS}
@@ -189,9 +225,14 @@ const Combinations = () => {
 
       <Table
         columns={visibleColumns}
-        dataSource={data}
+        dataSource={filteredData}
         rowKey="id"
         loading={loading}
+        onChange={(_pagination, _filters, sorter) => {
+          const s = sorter as { field?: string; order?: 'ascend' | 'descend' };
+          setSortField(s.field ?? null);
+          setSortOrder(s.order ?? null);
+        }}
         pagination={{
           current: page,
           total,
