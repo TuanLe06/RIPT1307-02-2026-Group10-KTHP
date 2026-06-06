@@ -208,7 +208,7 @@ const Majors = () => {
           <Select
             value={selectedUniCode}
             onChange={selectUniversity}
-            style={{ width: 300 }}
+            className="w-full xs:w-[300px]"
             placeholder="Chọn trường"
             options={universities.map((u) => ({
               value: u.code,

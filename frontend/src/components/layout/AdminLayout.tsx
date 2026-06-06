@@ -45,6 +45,7 @@ const navItems = [
 
 const AdminLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
@@ -124,37 +125,91 @@ const AdminLayout = () => {
     navigate('/login', { replace: true });
   };
 
+  const renderNav = (full: boolean) => (
+    <nav className="flex-1 flex flex-col gap-0.5 px-2 py-3 overflow-y-auto">
+      {navItems.map((item) => {
+        const isActive = activePath === item.path;
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            onClick={() => setMobileOpen(false)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
+              isActive
+                ? 'bg-secondary-container text-on-secondary-container font-extrabold underline decoration-2 underline-offset-4'
+                : 'text-on-surface-variant hover:bg-surface-container-high'
+            } ${full ? '' : 'justify-center'}`}
+          >
+            <span className="material-symbols-outlined text-xl shrink-0">
+              {item.icon}
+            </span>
+            {full && (
+              <span className={`font-label truncate ${isActive ? 'text-[15px]' : 'text-label'}`}>{item.label}</span>
+            )}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+
+  const renderSidebar = (full: boolean) => (
+    <>
+      <div className={`flex items-center gap-3 px-4 h-16 border-b border-outline-variant ${full ? 'px-5' : 'justify-center'}`}>
+        {logoError ? (
+          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold shrink-0">
+            A
+          </div>
+        ) : (
+          <img
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8FMk_2YUwidtrwhRpI_5EggfXfw-tW7sKIBjhIt-mcuZ9qOrqQhL2OfwXenQwTGngfsQEVDlcn7O2Id2As_MWHFj9PGm8rtKvYKOIEWkxRspjvdHh9pyyYpGIw71DuAArN1TBmFC4lXjcD3ScWFYrv5w7LVzbL2QTnBFPjuVAv1KpSNO6s0ZET0NV9FDj9YNYQNesFcbb1jKOt6tnCx5b2T51n_A1ncaXy8xAReWb24bPvQMkGLAPN92PpDW1wEi-nD8GRSRJSnQ"
+            alt="AdmisX Logo"
+            className="w-9 h-9 rounded-lg shrink-0 object-contain"
+            onError={() => setLogoError(true)}
+          />
+        )}
+        {full && (
+          <div className="min-w-0">
+            <h1 className="font-h4-card-header text-h4-card-header text-text-primary leading-tight truncate">
+              AdmisX Admin
+            </h1>
+            <p className="font-metadata text-metadata text-text-secondary truncate">
+              Management Portal
+            </p>
+          </div>
+        )}
+      </div>
+
+      {renderNav(full)}
+
+      <div className="border-t border-outline-variant pt-2 pb-3 px-2">
+        <Link
+          to="#"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${full ? '' : 'justify-center'}`}
+        >
+          <span className="material-symbols-outlined text-xl shrink-0">contact_support</span>
+          {full && <span className="font-label text-label">Hỗ trợ</span>}
+        </Link>
+        <button
+          onClick={handleLogout}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${full ? '' : 'justify-center'}`}
+        >
+          <span className="material-symbols-outlined text-xl shrink-0">logout</span>
+          {full && <span className="font-label text-label">Đăng xuất</span>}
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen flex bg-surface">
+      {/* Desktop sidebar — fixed, respects collapsed state */}
       <aside
-        className={`fixed left-0 top-0 h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col z-50 transition-all duration-200 ${
+        className={`hidden lg:flex fixed left-0 top-0 h-full bg-surface-container-lowest border-r border-outline-variant flex-col z-50 transition-all duration-200 ${
           collapsed ? 'w-16' : 'w-64'
         }`}
       >
-        <div className={`flex items-center gap-3 px-4 h-16 border-b border-outline-variant ${collapsed ? 'justify-center' : 'px-5'}`}>
-          {logoError ? (
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-white font-bold shrink-0">
-              A
-            </div>
-          ) : (
-            <img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8FMk_2YUwidtrwhRpI_5EggfXfw-tW7sKIBjhIt-mcuZ9qOrqQhL2OfwXenQwTGngfsQEVDlcn7O2Id2As_MWHFj9PGm8rtKvYKOIEWkxRspjvdHh9pyyYpGIw71DuAArN1TBmFC4lXjcD3ScWFYrv5w7LVzbL2QTnBFPjuVAv1KpSNO6s0ZET0NV9FDj9YNYQNesFcbb1jKOt6tnCx5b2T51n_A1ncaXy8xAReWb24bPvQMkGLAPN92PpDW1wEi-nD8GRSRJSnQ"
-              alt="AdmisX Logo"
-              className="w-9 h-9 rounded-lg shrink-0 object-contain"
-              onError={() => setLogoError(true)}
-            />
-          )}
-          {!collapsed && (
-            <div className="min-w-0">
-              <h1 className="font-h4-card-header text-h4-card-header text-text-primary leading-tight truncate">
-                AdmisX Admin
-              </h1>
-              <p className="font-metadata text-metadata text-text-secondary truncate">
-                Management Portal
-              </p>
-            </div>
-          )}
-        </div>
+        {renderSidebar(!collapsed)}
+      </aside>
 
         <nav className="flex-1 flex flex-col gap-0.5 px-2 py-3 overflow-y-auto">
           {navItems.map((item) => {
@@ -201,11 +256,19 @@ const AdminLayout = () => {
       <main className={`flex-1 flex flex-col transition-all duration-200 ${collapsed ? 'ml-16' : 'ml-64'}`}>
         <header className="bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between h-14 px-4 lg:px-6 sticky top-0 z-40">
           <div className="flex items-center gap-3 flex-1">
+            {/* Mobile hamburger */}
+            <Button
+              type="text"
+              icon={<MenuFoldOutlined />}
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="text-lg text-on-surface-variant lg:!hidden"
+            />
+            {/* Desktop collapse toggle */}
             <Button
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
-              className="text-lg text-on-surface-variant"
+              className="text-lg text-on-surface-variant !hidden lg:!inline-flex"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -343,12 +406,14 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        <footer className="bg-surface-container-low border-t border-outline-variant flex items-center justify-between px-4 lg:px-6 py-2 font-metadata text-metadata text-text-secondary">
-          <span>&copy; 2024 AdmisX Admin Dashboard. All rights reserved.</span>
-          <div className="flex gap-4">
-            <a className="hover:text-primary transition-colors" href="#">Chính sách</a>
-            <a className="hover:text-primary transition-colors" href="#">Điều khoản</a>
-            <a className="hover:text-primary transition-colors" href="#">Trợ giúp</a>
+        <footer className="bg-surface-container-low border-t border-outline-variant px-4 lg:px-6 py-3 font-metadata text-metadata text-text-secondary">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2">
+            <span>&copy; 2024 AdmisX Admin Dashboard. All rights reserved.</span>
+            <div className="flex gap-4">
+              <a className="hover:text-primary transition-colors" href="#">Chính sách</a>
+              <a className="hover:text-primary transition-colors" href="#">Điều khoản</a>
+              <a className="hover:text-primary transition-colors" href="#">Trợ giúp</a>
+            </div>
           </div>
         </footer>
       </main>
