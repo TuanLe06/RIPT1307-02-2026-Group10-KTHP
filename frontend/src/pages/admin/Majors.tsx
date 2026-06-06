@@ -208,7 +208,7 @@ const Majors = () => {
           <Select
             value={selectedUniCode}
             onChange={selectUniversity}
-            style={{ width: 300 }}
+            className="w-full xs:w-[300px]"
             placeholder="Chọn trường"
             options={universities.map((u) => ({
               value: u.code,
@@ -334,7 +334,7 @@ const Majors = () => {
             </Checkbox.Group>
           </div>
 
-          <div className="w-72 border border-hairline-soft rounded-xl p-3">
+          <div className="w-full md:w-72 border border-hairline-soft rounded-xl p-3">
             <div className="font-medium mb-2 text-text-secondary">
               Đã chọn (<span className="text-primary">{selectedIds.length}</span>)
             </div>
