@@ -211,50 +211,25 @@ const AdminLayout = () => {
         {renderSidebar(!collapsed)}
       </aside>
 
-        <nav className="flex-1 flex flex-col gap-0.5 px-2 py-3 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = activePath === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 ${
-                  isActive
-                    ? 'bg-primary-soft text-primary font-bold'
-                    : 'text-on-surface-variant hover:bg-surface-container-high'
-                } ${collapsed ? 'justify-center' : ''}`}
-              >
-                <span className="material-symbols-outlined text-xl shrink-0">
-                  {item.icon}
-                </span>
-                {!collapsed && (
-                  <span className={`font-label truncate ${isActive ? 'text-[15px]' : 'text-label'}`}>{item.label}</span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+      {/* Mobile overlay backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
 
-        <div className="border-t border-outline-variant pt-2 pb-3 px-2">
-          <Link
-            to="#"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${collapsed ? 'justify-center' : ''}`}
-          >
-            <span className="material-symbols-outlined text-xl shrink-0">contact_support</span>
-            {!collapsed && <span className="font-label text-label">Hỗ trợ</span>}
-          </Link>
-          <button
-            onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors duration-150 ${collapsed ? 'justify-center' : ''}`}
-          >
-            <span className="material-symbols-outlined text-xl shrink-0">logout</span>
-            {!collapsed && <span className="font-label text-label">Đăng xuất</span>}
-          </button>
-        </div>
+      {/* Mobile sidebar drawer — always full width, slide from left */}
+      <aside
+        className={`lg:hidden fixed left-0 top-0 h-full w-64 bg-surface-container-lowest border-r border-outline-variant flex flex-col z-50 transition-transform duration-200 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {renderSidebar(true)}
       </aside>
 
-      <main className={`flex-1 flex flex-col transition-all duration-200 ${collapsed ? 'ml-16' : 'ml-64'}`}>
-        <header className="bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between h-14 px-4 lg:px-6 sticky top-0 z-40">
+      <main className={`flex-1 flex flex-col transition-all duration-200 ml-0 ${collapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
+        <header className="bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between h-14 px-4 lg:px-6 sticky top-0 z-30">
           <div className="flex items-center gap-3 flex-1">
             {/* Mobile hamburger */}
             <Button
