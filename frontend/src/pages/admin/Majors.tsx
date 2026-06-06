@@ -44,7 +44,6 @@ const Majors = () => {
   const [comboModalOpen, setComboModalOpen] = useState(false);
   const [comboMajor, setComboMajor] = useState<Major | null>(null);
   const [allCombos, setAllCombos] = useState<AdmissionCombination[]>([]);
-  const [assignedIds, setAssignedIds] = useState<string[]>([]);
   const [comboSubmitting, setComboSubmitting] = useState(false);
   const [comboLoading, setComboLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -113,7 +112,6 @@ const Majors = () => {
         combinationApi.getAssigned(selectedUniCode, record.code),
       ]);
       setAllCombos(allRes.data);
-      setAssignedIds(assignedRes.data);
       setSelectedIds(assignedRes.data);
     } catch {
       message.error('Không thể tải danh sách tổ hợp');
@@ -202,11 +200,11 @@ const Majors = () => {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Ngành học
         </h3>
-        <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
           <Select
             value={selectedUniCode}
             onChange={selectUniversity}
@@ -242,7 +240,7 @@ const Majors = () => {
             }
           },
         }}
-        className="bg-surface-container-lowest rounded-lg shadow-sm"
+        className="bg-surface-container-lowest rounded-xxl border border-hairline-soft"
       />
 
       <Modal
@@ -298,8 +296,8 @@ const Majors = () => {
         confirmLoading={comboSubmitting}
         width={800}
       >
-        <div className="flex flex-col md:flex-row gap-4" style={{ minHeight: 400 }}>
-          <div className="flex-1 border rounded-lg p-3">
+        <div className="flex flex-col lg:flex-row gap-4" style={{ minHeight: 400 }}>
+          <div className="flex-1 border border-hairline-soft rounded-xl p-3">
             <div className="font-medium mb-2 text-text-secondary">Tất cả tổ hợp</div>
             <Checkbox.Group
               value={selectedIds}
@@ -336,7 +334,7 @@ const Majors = () => {
             </Checkbox.Group>
           </div>
 
-          <div className="w-full md:w-72 border rounded-lg p-3">
+          <div className="w-72 border border-hairline-soft rounded-xl p-3">
             <div className="font-medium mb-2 text-text-secondary">
               Đã chọn (<span className="text-primary">{selectedIds.length}</span>)
             </div>

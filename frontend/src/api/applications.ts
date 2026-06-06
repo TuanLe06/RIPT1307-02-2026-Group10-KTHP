@@ -1,21 +1,26 @@
 import apiClient from './client';
-import type { Application, ApplicationStatus } from '../types/university';
+import type { ApplicationWithDetails, ApplicationStatus, ApplicationDetailData } from '../types/university';
 
 interface PaginatedResponse<T> {
   success: boolean;
-  message: string;
   data: T[];
   pagination: {
     total: number;
     page: number;
     limit: number;
-    totalPages: number;
+    pages: number;
   };
 }
 
 interface ActionResponse {
   success: boolean;
   message: string;
+  data?: ApplicationWithDetails;
+}
+
+export interface ApplicationDetailResponse {
+  success: boolean;
+  data: ApplicationDetailData;
 }
 
 export interface ApplicationFilter {
@@ -27,18 +32,16 @@ export interface ApplicationFilter {
   search?: string;
 }
 
-export interface ApplicationStats {
-  total: number;
-  by_status: Record<string, number>;
-  by_university: Record<string, number>;
-  by_major: Record<string, number>;
-}
-
 export const applicationApi = {
-  getAll: async (filters: ApplicationFilter = {}): Promise<PaginatedResponse<Application>> => {
-    const response = await apiClient.get<PaginatedResponse<Application>>('/admin/applications', {
+  getAll: async (filters: ApplicationFilter = {}): Promise<PaginatedResponse<ApplicationWithDetails>> => {
+    const response = await apiClient.get<PaginatedResponse<ApplicationWithDetails>>('/admin/applications', {
       params: filters,
     });
+    return response.data;
+  },
+
+  getById: async (id: number): Promise<ApplicationDetailResponse> => {
+    const response = await apiClient.get<ApplicationDetailResponse>(`/admin/applications/${id}`);
     return response.data;
   },
 
@@ -47,13 +50,6 @@ export const applicationApi = {
     data: { status: ApplicationStatus; reject_reason?: string },
   ): Promise<ActionResponse> => {
     const response = await apiClient.put<ActionResponse>(`/admin/applications/${id}/status`, data);
-    return response.data;
-  },
-
-  getStats: async (): Promise<{ success: boolean; data: ApplicationStats }> => {
-    const response = await apiClient.get<{ success: boolean; data: ApplicationStats }>(
-      '/admin/applications/stats',
-    );
     return response.data;
   },
 };

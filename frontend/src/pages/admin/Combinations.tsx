@@ -148,7 +148,7 @@ const Combinations = () => {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <h3 className="font-h3-section-title text-h3-section-title text-text-primary">
           Quản lý Tổ hợp xét tuyển
         </h3>
@@ -177,7 +177,7 @@ const Combinations = () => {
             }
           },
         }}
-        className="bg-surface-container-lowest rounded-lg shadow-sm"
+        className="bg-surface-container-lowest rounded-xxl border border-hairline-soft"
       />
 
       <Modal

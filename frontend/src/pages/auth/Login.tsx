@@ -26,7 +26,8 @@ const Login = () => {
         if (res.data.user.role === "ADMIN") {
           navigate("/admin", { replace: true });
         } else {
-          window.location.href = import.meta.env.VITE_CANDIDATE_URL || "https://www.youtube.com";
+          const candidateUrl = import.meta.env.VITE_CANDIDATE_URL || "http://localhost:3000";
+          window.location.href = `${candidateUrl}?token=${res.data.token}`;
         }
       }
     } catch (err: unknown) {
@@ -83,7 +84,7 @@ const Login = () => {
         </div>
 
         <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12">
-          <div className="w-full max-w-[580px] bg-surface-container-lowest p-6 sm:p-8 md:p-10 rounded-3xl shadow-xl border border-border">
+          <div className="w-full max-w-[580px] bg-surface-container-lowest p-6 sm:p-8 md:p-10 rounded-xxxl border border-hairline-soft">
             <div className="mb-7 md:mb-8">
               <h2 className="text-[32px] sm:text-[34px] md:text-[38px] leading-[1.2] font-bold text-text-primary mb-2">
                 Đăng nhập
@@ -126,12 +127,12 @@ const Login = () => {
                     <span className="text-[17px] md:text-[18px] leading-[1.5] font-semibold text-text-primary">
                       Mật khẩu
                     </span>
-                    <a
-                      className="text-[15px] text-primary hover:underline"
-                      href="#"
+                    <Link
+                      className="text-[15px] text-primary hover:underline whitespace-nowrap"
+                      to="/forgot-password"
                     >
                       Quên mật khẩu?
-                    </a>
+                    </Link>
                   </div>
                 }
                 rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
@@ -146,13 +147,13 @@ const Login = () => {
                   loading={loading}
                   block
                   size="large"
-                  className="font-bold shadow-sm"
+                  className="font-bold"
                   style={{
-                    backgroundColor: "#00a1e0",
-                    borderColor: "#00a1e0",
+                    backgroundColor: "#0143b5",
+                    borderColor: "#0143b5",
                     height: 54,
                     fontSize: 18,
-                    borderRadius: 8,
+                    borderRadius: 9999,
                   }}
                 >
                   Đăng nhập

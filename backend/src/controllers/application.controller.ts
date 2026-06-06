@@ -3,10 +3,14 @@ import { validationResult } from 'express-validator';
 import { ApplicationModel } from '../models/application.model';
 import { CandidateProfileModel } from '../models/candidate-profile.model';
 import { MajorModel, UniversityModel } from '../models/university.model';
-import { MajorCombinationModel } from '../models/combination.model';
+import { AdmissionCombinationModel } from '../models/admissionCombination.model';
 import { EmailNotificationModel, ApplicationStatusLogModel } from '../models/notification.model';
+import { UserModel } from '../models/user.model';
+import { isWithinDeadline, getDeadlineStatus } from '../utils/deadline.util';
 
-// ===================== CANDIDATE APPLICATION TRACKING =====================
+export const getDeadlineInfo = async (_req: Request, res: Response): Promise<void> => {
+  res.json({ success: true, data: getDeadlineStatus() });
+};
 
 export const createApplication = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
@@ -16,11 +20,23 @@ export const createApplication = async (req: Request, res: Response): Promise<vo
   }
 
   try {
-    const { university_id, major_id, combination_id } = req.body;
+    if (!isWithinDeadline()) {
+      const info = getDeadlineStatus();
+      res.status(400).json({ success: false, message: info.message, deadline: info });
+      return;
+    }
+
+    const { university_id, major_id, combination_id, subject_1_score, subject_2_score, subject_3_score } = req.body;
 
     const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
     if (!candidateProfile) {
       res.status(404).json({ success: false, message: 'Candidate profile not found' });
+      return;
+    }
+
+    const alreadySubmitted = await ApplicationModel.hasSubmittedInCurrentPeriod(req.user!.id);
+    if (alreadySubmitted) {
+      res.status(409).json({ success: false, message: 'Bạn đã đăng ký xét tuyển trong kỳ tuyển sinh này và không thể đăng ký thêm.' });
       return;
     }
 
@@ -36,11 +52,20 @@ export const createApplication = async (req: Request, res: Response): Promise<vo
       return;
     }
 
+    const combination = await AdmissionCombinationModel.findById(combination_id.toString());
+    if (!combination) {
+      res.status(404).json({ success: false, message: 'Combination not found' });
+      return;
+    }
+
     const application = await ApplicationModel.create({
-      candidate_id: candidateProfile.citizen_id,
+      candidate_id: req.user!.id,
       university_id,
       major_id,
       combination_id,
+      subject_1_score: subject_1_score ?? null,
+      subject_2_score: subject_2_score ?? null,
+      subject_3_score: subject_3_score ?? null,
     });
 
     res.status(201).json({
@@ -56,23 +81,39 @@ export const createApplication = async (req: Request, res: Response): Promise<vo
 
 export const submitApplication = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!isWithinDeadline()) {
+      const info = getDeadlineStatus();
+      res.status(400).json({ success: false, message: info.message, deadline: info });
+      return;
+    }
+
     const { application_id } = req.params;
 
-    const application = await ApplicationModel.findById(parseInt(application_id as string));
+    const application = await ApplicationModel.findByIdWithDetails(parseInt(application_id as string));
     if (!application) {
       res.status(404).json({ success: false, message: 'Application not found' });
       return;
     }
 
     const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
-    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+    if (!candidateProfile || candidateProfile.user_id !== application.candidate_id) {
       res.status(403).json({ success: false, message: 'Unauthorized' });
+      return;
+    }
+
+    if (application.status !== 'DRAFT') {
+      res.status(400).json({ success: false, message: 'Application is not in draft status' });
+      return;
+    }
+
+    const alreadySubmitted = await ApplicationModel.hasSubmittedInCurrentPeriod(req.user!.id);
+    if (alreadySubmitted) {
+      res.status(409).json({ success: false, message: 'Bạn đã đăng ký xét tuyển trong kỳ tuyển sinh này và không thể nộp thêm.' });
       return;
     }
 
     const submitted = await ApplicationModel.submit(parseInt(application_id as string));
 
-    // Log status change
     await ApplicationStatusLogModel.create({
       application_id: parseInt(application_id as string),
       old_status: 'DRAFT',
@@ -81,7 +122,6 @@ export const submitApplication = async (req: Request, res: Response): Promise<vo
       note: 'Application submitted by candidate',
     });
 
-    // Create notification
     const user = req.user!;
     await EmailNotificationModel.create({
       receiver_id: req.user!.id,
@@ -90,6 +130,38 @@ export const submitApplication = async (req: Request, res: Response): Promise<vo
       content: `Hồ sơ với mã ${application.application_code} đã được nộp thành công. Chúng tôi sẽ xem xét hồ sơ của bạn sớm nhất.`,
       type: 'APPLICATION_SUBMITTED',
     });
+
+    try {
+      const admins = await UserModel.findByRole('ADMIN');
+      const candidateName = candidateProfile?.full_name || 'Thí sinh';
+      for (const admin of admins) {
+        await EmailNotificationModel.create({
+          receiver_id: admin.id,
+          receiver_email: admin.email,
+          subject: 'Thí sinh vừa nộp hồ sơ mới',
+          content: `Thí sinh ${candidateName} vừa nộp hồ sơ mã ${application.application_code} - ${application.university_name} - ${application.major_name}. Vui lòng vào kiểm tra và xét duyệt.`,
+          type: 'APPLICATION_SUBMITTED',
+          sent_by: req.user!.id,
+        });
+      }
+    } catch {
+      console.error('Failed to notify admins');
+    }
+
+    try {
+      const io = req.app.get('io');
+      const candidateName = candidateProfile?.full_name || 'Thí sinh';
+      io.to('admin').emit('new-submission', {
+        application_id: parseInt(application_id as string),
+        application_code: application.application_code,
+        candidate_name: candidateName,
+        university_name: application.university_name,
+        major_name: application.major_name,
+        submitted_at: new Date().toISOString(),
+      });
+    } catch {
+      console.error('Failed to emit socket event');
+    }
 
     res.json({
       success: true,
@@ -113,7 +185,7 @@ export const getApplications = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const result = await ApplicationModel.findByCandidateId(candidateProfile.citizen_id, page, limit);
+    const result = await ApplicationModel.findByCandidateId(req.user!.id, page, limit);
 
     res.json({
       success: true,
@@ -142,7 +214,7 @@ export const getApplicationDetails = async (req: Request, res: Response): Promis
     }
 
     const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
-    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+    if (!candidateProfile || candidateProfile.user_id !== application.candidate_id) {
       res.status(403).json({ success: false, message: 'Unauthorized' });
       return;
     }
@@ -173,7 +245,7 @@ export const getApplicationStatus = async (req: Request, res: Response): Promise
     }
 
     const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
-    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+    if (!candidateProfile || candidateProfile.user_id !== application.candidate_id) {
       res.status(403).json({ success: false, message: 'Unauthorized' });
       return;
     }
@@ -216,13 +288,19 @@ export const deleteApplication = async (req: Request, res: Response): Promise<vo
     }
 
     const candidateProfile = await CandidateProfileModel.getByUserId(req.user!.id);
-    if (!candidateProfile || candidateProfile.citizen_id !== application.candidate_id) {
+    if (!candidateProfile || candidateProfile.user_id !== application.candidate_id) {
       res.status(403).json({ success: false, message: 'Unauthorized' });
       return;
     }
 
     if (application.status !== 'DRAFT') {
       res.status(400).json({ success: false, message: 'Only draft applications can be deleted' });
+      return;
+    }
+
+    const alreadySubmitted = await ApplicationModel.hasSubmittedInCurrentPeriod(req.user!.id);
+    if (alreadySubmitted) {
+      res.status(409).json({ success: false, message: 'Bạn đã đăng ký xét tuyển trong kỳ tuyển sinh này và không thể xóa thêm.' });
       return;
     }
 

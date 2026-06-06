@@ -8,6 +8,7 @@ export interface User {
   email: string;
   role: 'CANDIDATE' | 'ADMIN';
   status: 'ACTIVE' | 'LOCKED' | 'PENDING';
+  avatar_url?: string | null;
   last_login_at: string | null;
   created_at: string;
   updated_at: string;

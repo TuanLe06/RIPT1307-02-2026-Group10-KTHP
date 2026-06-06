@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import { CandidateProfileModel } from '../models/candidate-profile.model';
+import { CandidateExamScoresPayload, CandidateProfileModel } from '../models/candidate-profile.model';
 import { deleteAssetByPublicId, uploadDocumentBuffer } from '../services/cloudinary.service';
 
 export const candidateDocumentDeps = {
@@ -75,7 +75,6 @@ export const upsertCandidateAcademicRecord = async (req: Request, res: Response)
 
   const allowedFields = [
     'graduation_year',
-    'science_group',
     'priority_score',
   ] as const;
 
@@ -93,7 +92,17 @@ export const upsertCandidateAcademicRecord = async (req: Request, res: Response)
   res.json({ success: true, message: 'Academic record updated', data: updated });
 };
 
-export const upsertCandidateExamScoresByGroupAsAdmin = async (
+const isExamScoreValidationError = (errorMessage: string): boolean => {
+  const allowedPrefixes = [
+    'scores must',
+    'invalid optional subjects:',
+    'foreign_language.language_code',
+    'foreign_language is only allowed',
+  ];
+  return allowedPrefixes.some((prefix) => errorMessage.startsWith(prefix));
+};
+
+export const upsertCandidateExamScoresByGroup = async (
   req: Request,
   res: Response
 ): Promise<void> => {
@@ -103,23 +112,101 @@ export const upsertCandidateExamScoresByGroupAsAdmin = async (
     return;
   }
 
-  const citizenId = Number(req.params.citizenId);
-  if (!Number.isInteger(citizenId) || citizenId <= 0) {
-    res.status(400).json({ success: false, message: 'citizenId must be a positive integer' });
-    return;
-  }
-
-  const updated = await CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId(citizenId, {
-    science_group: req.body.science_group,
+  const scorePayload: CandidateExamScoresPayload = {
     scores: req.body.scores,
-  });
+    ...(req.body.foreign_language ? { foreign_language: req.body.foreign_language } : {}),
+  };
 
-  if (!updated) {
-    res.status(404).json({ success: false, message: 'Candidate profile not found' });
-    return;
+  let uploadedPublicId: string | null = null;
+  try {
+    const updated = await CandidateProfileModel.upsertExamScoresByGroupForCandidateByUserId(
+      req.user!.id,
+      scorePayload
+    );
+
+    if (!updated) {
+      res.status(404).json({ success: false, message: 'Candidate profile not found' });
+      return;
+    }
+
+    if (req.file) {
+      const fileType = mimeToFileType[req.file.mimetype];
+      if (!fileType) {
+        res.status(400).json({ success: false, message: 'Unsupported file type. Only PDF/JPEG/PNG allowed' });
+        return;
+      }
+
+      const uploaded = await candidateDocumentDeps.uploadDocumentBuffer(
+        req.file.buffer,
+        req.file.originalname
+      );
+      uploadedPublicId = uploaded.publicId;
+
+      await CandidateProfileModel.softDeleteDocumentsByTypeByUserId(req.user!.id, 'EXAM_CERTIFICATE');
+
+      const createdCertificate = await CandidateProfileModel.createDocumentByUserId(req.user!.id, {
+        document_type: 'EXAM_CERTIFICATE',
+        file_name: uploaded.publicId,
+        file_url: uploaded.secureUrl,
+        file_type: fileType,
+        file_size: req.file.size ?? null,
+      });
+
+      if (!createdCertificate) {
+        await candidateDocumentDeps.deleteAssetByPublicId(uploaded.publicId);
+        res.status(404).json({ success: false, message: 'Candidate profile not found' });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Candidate exam scores updated',
+        data: {
+          academic_record: updated,
+          exam_certificate: createdCertificate,
+        },
+      });
+    } else {
+      res.json({
+        success: true,
+        message: 'Candidate exam scores updated',
+        data: {
+          academic_record: updated,
+        },
+      });
+    }
+  } catch (error) {
+    if (uploadedPublicId) {
+      try {
+        await candidateDocumentDeps.deleteAssetByPublicId(uploadedPublicId);
+      } catch {
+        // Best effort cleanup.
+      }
+    }
+
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    if (isExamScoreValidationError(message)) {
+      res.status(400).json({ success: false, message });
+      return;
+    }
+
+    console.error('Error updating candidate exam scores:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
+};
 
-  res.json({ success: true, message: 'Candidate exam scores updated by group', data: updated });
+export const deleteCandidateExamScores = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const deleted = await CandidateProfileModel.deleteExamScoresByUserId(req.user!.id);
+    if (!deleted) {
+      res.status(404).json({ success: false, message: 'Candidate profile not found' });
+      return;
+    }
+    res.json({ success: true, message: 'Exam scores deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting exam scores:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 };
 
 export const upsertCandidateAcademicProgress = async (req: Request, res: Response): Promise<void> => {
@@ -186,6 +273,7 @@ export const uploadCandidateDocument = async (req: Request, res: Response): Prom
   const created = await CandidateProfileModel.createDocumentByUserId(req.user!.id, {
     document_type: req.body.document_type,
     file_name: uploaded.publicId,
+    display_name: req.body.display_name || null,
     file_url: uploaded.secureUrl,
     file_type: fileType,
     file_size: req.file.size ?? null,

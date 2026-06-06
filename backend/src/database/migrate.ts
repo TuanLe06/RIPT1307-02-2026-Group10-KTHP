@@ -4,11 +4,33 @@ const migrate = async (): Promise<void> => {
   await testConnection();
 
   const queries = [
+    // Idempotent ALTERs cho các cột thêm sau (an toàn cho cả fresh DB và prod)
+    `SET @sql = IF(
+      (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_url') = 0,
+      'ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) NULL COMMENT ''Cloudinary secure URL của avatar''',
+      'SELECT 1'
+    )`,
+    `PREPARE stmt FROM @sql`,
+    `EXECUTE stmt`,
+    `DEALLOCATE PREPARE stmt`,
+
+    `SET @sql = IF(
+      (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'avatar_public_id') = 0,
+      'ALTER TABLE users ADD COLUMN avatar_public_id VARCHAR(255) NULL COMMENT ''Cloudinary public_id để xoá asset''',
+      'SELECT 1'
+    )`,
+    `PREPARE stmt FROM @sql`,
+    `EXECUTE stmt`,
+    `DEALLOCATE PREPARE stmt`,
+
     `SET FOREIGN_KEY_CHECKS = 0`,
     `DROP TABLE IF EXISTS audit_logs`,
     `DROP TABLE IF EXISTS email_notifications`,
     `DROP TABLE IF EXISTS application_status_logs`,
     `DROP TABLE IF EXISTS candidate_documents`,
+    `DROP TABLE IF EXISTS foreign_language_scores`,
     `DROP TABLE IF EXISTS exam_scores`,
     `DROP TABLE IF EXISTS academic_progress`,
     `DROP TABLE IF EXISTS academic_records`,
@@ -28,6 +50,8 @@ const migrate = async (): Promise<void> => {
       password_hash VARCHAR(255) NOT NULL,
       role ENUM('CANDIDATE','ADMIN') NOT NULL,
       status ENUM('ACTIVE','LOCKED','PENDING') NOT NULL DEFAULT 'ACTIVE',
+      avatar_url VARCHAR(500) NULL COMMENT 'Cloudinary secure URL của avatar',
+      avatar_public_id VARCHAR(255) NULL COMMENT 'Cloudinary public_id để xoá asset',
       last_login_at DATETIME NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -137,6 +161,9 @@ const migrate = async (): Promise<void> => {
       reviewed_by BIGINT UNSIGNED NULL,
       reviewed_at DATETIME NULL,
       reject_reason TEXT NULL,
+      subject_1_score DECIMAL(4,2) NULL,
+      subject_2_score DECIMAL(4,2) NULL,
+      subject_3_score DECIMAL(4,2) NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       UNIQUE KEY uq_applications_code (application_code),
@@ -162,10 +189,6 @@ const migrate = async (): Promise<void> => {
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       candidate_id BIGINT UNSIGNED NOT NULL,
       graduation_year INT NULL,
-      science_group ENUM('NATURAL','SOCIAL') NULL,
-      subject_1_score DECIMAL(4,2) NULL,
-      subject_2_score DECIMAL(4,2) NULL,
-      subject_3_score DECIMAL(4,2) NULL,
       total_score DECIMAL(5,2) NULL,
       priority_score DECIMAL(4,2) NOT NULL DEFAULT 0,
       final_score DECIMAL(5,2) NULL,
@@ -187,24 +210,55 @@ const migrate = async (): Promise<void> => {
         FOREIGN KEY (record_id) REFERENCES academic_records(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    `CREATE TABLE IF NOT EXISTS exam_scores (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      record_id BIGINT UNSIGNED NOT NULL,
-      subject_code VARCHAR(20) NOT NULL,
-      subject_name VARCHAR(100) NOT NULL,
-      score DECIMAL(4,2) NOT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE KEY uq_exam_scores_record_subject (record_id, subject_code),
-      KEY idx_exam_scores_record_id (record_id),
-      CONSTRAINT fk_exam_scores_record
-        FOREIGN KEY (record_id) REFERENCES academic_records(id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+`CREATE TABLE IF NOT EXISTS exam_scores (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  record_id BIGINT UNSIGNED NOT NULL,
+  subject_code ENUM(
+    'TOAN',
+    'VAN',
+    'LY',
+    'HOA',
+    'SINH',
+    'SU',
+    'DIA',
+    'GDKTPL',
+    'TINHOC',
+    'CONGNGHE',
+    'NGOAINGU'
+  ) NOT NULL,
+  is_required BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'true = TOAN, VAN | false = môn tự chọn',
+  score DECIMAL(4,2) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_exam_scores_record_subject (record_id, subject_code),
+  KEY idx_exam_scores_record_id (record_id),
+  CONSTRAINT fk_exam_scores_record
+    FOREIGN KEY (record_id) REFERENCES academic_records(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+ `CREATE TABLE IF NOT EXISTS foreign_language_scores (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  record_id BIGINT UNSIGNED NOT NULL UNIQUE COMMENT 'Chỉ có nếu thí sinh chọn ngoại ngữ là môn tự chọn',
+  language_code ENUM(
+    'ANH',
+    'PHAP',
+    'DUC',
+    'NHAT',
+    'HAN',
+    'NGA',
+    'TRUNG'
+ ) NOT NULL,
+  language_name VARCHAR(50) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_foreign_language_scores_record_id (record_id),
+  CONSTRAINT fk_foreign_language_scores_record
+    FOREIGN KEY (record_id) REFERENCES academic_records(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
     `CREATE TABLE IF NOT EXISTS candidate_documents (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       candidate_id BIGINT UNSIGNED NOT NULL,
-      document_type ENUM('TRANSCRIPT','CITIZEN_ID','PORTRAIT','CERTIFICATE','OTHER') NOT NULL,
+      document_type ENUM('TRANSCRIPT','CITIZEN_ID_Front','CITIZEN_ID_Back','PORTRAIT','CERTIFICATE','EXAM_CERTIFICATE','OTHER') NOT NULL,
       file_name VARCHAR(255) NOT NULL,
+      display_name VARCHAR(255) NULL,
       file_url TEXT NOT NULL,
       file_type ENUM('PDF','JPEG','PNG') NOT NULL,
       file_size BIGINT NULL,
@@ -238,7 +292,7 @@ const migrate = async (): Promise<void> => {
       subject VARCHAR(255) NOT NULL,
       content TEXT NOT NULL,
       type ENUM('APPLICATION_SUBMITTED','STATUS_CHANGED','MANUAL','PASSWORD_RESET') NOT NULL,
-      status ENUM('PENDING','SENT','FAILED') NOT NULL DEFAULT 'PENDING',
+      status ENUM('PENDING','SENT','FAILED','READ') NOT NULL DEFAULT 'PENDING',
       sent_by BIGINT UNSIGNED NULL,
       sent_at DATETIME NULL,
       error_message TEXT NULL,
