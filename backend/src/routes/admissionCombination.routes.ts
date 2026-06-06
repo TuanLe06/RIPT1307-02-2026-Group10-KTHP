@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as ExpressRouter } from 'express';
 import { body, param, query } from 'express-validator';
 import {
   createCombination,
@@ -9,7 +9,7 @@ import {
 } from '../controllers/admissionCombination.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
-const router = Router({ mergeParams: true });
+const router: ExpressRouter = Router({ mergeParams: true });
 
 router.post(
   '/',
@@ -84,8 +84,6 @@ router.delete(
 
 router.get(
   '/',
-  authenticate,
-  authorize('ADMIN'),
   [
     param('universityCode').trim().notEmpty().withMessage('Mã trường không được để trống'),
     param('majorCode').trim().notEmpty().withMessage('Mã ngành không được để trống'),

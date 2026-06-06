@@ -52,8 +52,11 @@ const testRegisterSuccess = async (): Promise<void> => {
     id: 1,
     email: 'a@b.com',
     full_name: 'Nguyen Van A',
+    password_hash: 'hash',
     role: 'CANDIDATE',
     status: 'ACTIVE',
+    avatar_url: null,
+    avatar_public_id: null,
     last_login_at: null,
     created_at: new Date(),
     updated_at: new Date(),
@@ -71,6 +74,7 @@ const testRegisterSuccess = async (): Promise<void> => {
 
   await register(req, res as any);
   assert.equal(res.statusCode, 201);
+  assert.equal((res.body as any)?.data?.full_name, 'Nguyen Van A');
 };
 
 const testRegisterDuplicateEmail = async (): Promise<void> => {
@@ -116,6 +120,8 @@ const testLoginLockedAccount = async (): Promise<void> => {
     full_name: 'Lock User',
     role: 'CANDIDATE',
     status: 'LOCKED',
+    avatar_url: null,
+    avatar_public_id: null,
     last_login_at: null,
     created_at: new Date(),
     updated_at: new Date(),

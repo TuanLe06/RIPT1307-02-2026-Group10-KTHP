@@ -6,12 +6,17 @@ import {
   listCandidateDocuments,
   getCandidateProfile,
   uploadCandidateDocument,
-  upsertCandidateExamScoresByGroupAsAdmin,
+  upsertCandidateExamScoresByGroup,
   upsertCandidateAcademicProgress,
   upsertCandidateAcademicRecord,
   updateCandidateProfile,
 } from '../controllers/candidate-profile.controller';
-import { CandidateProfileModel } from '../models/candidate-profile.model';
+import pool from '../config/database';
+import { requireCompleteProfile } from '../middleware/requireCompleteProfile.middleware';
+import {
+  CandidateProfileModel,
+  type CandidateDocumentItem,
+} from '../models/candidate-profile.model';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
 type MockResponse = {
@@ -44,11 +49,14 @@ const original = {
   getAcademicByUserId: CandidateProfileModel.getAcademicByUserId,
   upsertAcademicRecordByUserId: CandidateProfileModel.upsertAcademicRecordByUserId,
   upsertAcademicProgressByUserId: CandidateProfileModel.upsertAcademicProgressByUserId,
+  upsertExamScoresByGroupForCandidateByUserId: CandidateProfileModel.upsertExamScoresByGroupForCandidateByUserId,
   upsertExamScoresByGroupForCandidateByCitizenId: CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId,
   listDocumentsByUserId: CandidateProfileModel.listDocumentsByUserId,
   createDocumentByUserId: CandidateProfileModel.createDocumentByUserId,
   findDocumentByUserId: CandidateProfileModel.findDocumentByUserId,
   softDeleteDocumentByUserId: CandidateProfileModel.softDeleteDocumentByUserId,
+  softDeleteDocumentsByTypeByUserId: CandidateProfileModel.softDeleteDocumentsByTypeByUserId,
+  poolExecute: pool.execute,
   uploadDocumentBuffer: candidateDocumentDeps.uploadDocumentBuffer,
   deleteAssetByPublicId: candidateDocumentDeps.deleteAssetByPublicId,
 };
@@ -60,12 +68,16 @@ const restore = (): void => {
   CandidateProfileModel.getAcademicByUserId = original.getAcademicByUserId;
   CandidateProfileModel.upsertAcademicRecordByUserId = original.upsertAcademicRecordByUserId;
   CandidateProfileModel.upsertAcademicProgressByUserId = original.upsertAcademicProgressByUserId;
+  CandidateProfileModel.upsertExamScoresByGroupForCandidateByUserId =
+    original.upsertExamScoresByGroupForCandidateByUserId;
   CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId =
     original.upsertExamScoresByGroupForCandidateByCitizenId;
   CandidateProfileModel.listDocumentsByUserId = original.listDocumentsByUserId;
   CandidateProfileModel.createDocumentByUserId = original.createDocumentByUserId;
   CandidateProfileModel.findDocumentByUserId = original.findDocumentByUserId;
   CandidateProfileModel.softDeleteDocumentByUserId = original.softDeleteDocumentByUserId;
+  CandidateProfileModel.softDeleteDocumentsByTypeByUserId = original.softDeleteDocumentsByTypeByUserId;
+  pool.execute = original.poolExecute;
   candidateDocumentDeps.uploadDocumentBuffer = original.uploadDocumentBuffer;
   candidateDocumentDeps.deleteAssetByPublicId = original.deleteAssetByPublicId;
 };
@@ -172,16 +184,14 @@ const testGetAcademicRecordSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
       exam_scores: [
-        { subject_code: 'ANH', subject_name: 'Tieng Anh', score: 8.0 },
-        { subject_code: 'SINH', subject_name: 'Sinh hoc', score: 8.5 },
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.5 },
-        { subject_code: 'VAN', subject_name: 'Ngu van', score: 8.25 },
-        { subject_code: 'LY', subject_name: 'Vat ly', score: 8.25 },
-        { subject_code: 'HOA', subject_name: 'Hoa hoc', score: 9 },
+        { subject_code: 'TOAN', subject_name: 'Toán', is_required: true, score: 8.5 },
+        { subject_code: 'VAN', subject_name: 'Ngữ văn', is_required: true, score: 8.25 },
+        { subject_code: 'LY', subject_name: 'Vật lý', is_required: false, score: 8.25 },
+        { subject_code: 'NGOAINGU', subject_name: 'Ngoại ngữ', is_required: false, score: 8.0 },
       ],
+      foreign_language: { language_code: 'ANH', language_name: 'Tiếng Anh' },
     },
     academic_progress: {
       grade_10: { school_name: 'THPT A', avg_score: 8.0 },
@@ -199,8 +209,8 @@ const testGetAcademicRecordSuccess = async (): Promise<void> => {
 const testUpsertAcademicRecordValidationFail = async (): Promise<void> => {
   const req = {
     user: { id: 1, role: 'CANDIDATE' },
-    body: { science_group: 'INVALID' },
-    'express-validator#contexts': [{ errors: [{ msg: 'science_group is invalid' }] }],
+    body: { priority_score: 11 },
+    'express-validator#contexts': [{ errors: [{ msg: 'priority_score must be between 0 and 10' }] }],
   } as any;
   const res = createMockResponse();
   await upsertCandidateAcademicRecord(req, res as any);
@@ -213,13 +223,12 @@ const testUpsertAcademicRecordSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
       exam_scores: [
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.5 },
-        { subject_code: 'LY', subject_name: 'Vat ly', score: 8.25 },
-        { subject_code: 'HOA', subject_name: 'Hoa hoc', score: 9 },
+        { subject_code: 'TOAN', subject_name: 'Toán', is_required: true, score: 8.5 },
+        { subject_code: 'VAN', subject_name: 'Ngữ văn', is_required: true, score: 8.25 },
       ],
+      foreign_language: null,
     },
     academic_progress: { grade_10: {}, grade_11: {}, grade_12: {} },
   });
@@ -228,7 +237,6 @@ const testUpsertAcademicRecordSuccess = async (): Promise<void> => {
     user: { id: 1, role: 'CANDIDATE' },
     body: {
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
     },
     'express-validator#contexts': [],
@@ -244,9 +252,9 @@ const testUpsertAcademicProgressSuccess = async (): Promise<void> => {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 0,
       exam_scores: [],
+      foreign_language: null,
     },
     academic_progress: {
       grade_10: { school_name: 'THPT A', avg_score: 8.0 },
@@ -265,88 +273,163 @@ const testUpsertAcademicProgressSuccess = async (): Promise<void> => {
   assert.equal(res.statusCode, 200);
 };
 
-const testAdminUpsertGroupScoresNaturalSuccess = async (): Promise<void> => {
-  CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId = async () => ({
+const testCandidateUpsertGroupScoresNaturalSuccess = async (): Promise<void> => {
+  candidateDocumentDeps.uploadDocumentBuffer = async () => ({
+    publicId: 'folder/exam-certificate',
+    secureUrl: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/exam-certificate.pdf',
+    width: 0,
+    height: 0,
+    format: 'pdf',
+    bytes: 12345,
+    resourceType: 'raw',
+  });
+  CandidateProfileModel.upsertExamScoresByGroupForCandidateByUserId = async () => ({
     academic_record: {
       id: 5,
       candidate_id: 123456789012,
       graduation_year: 2024,
-      science_group: 'NATURAL',
       priority_score: 1.5,
       exam_scores: [
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.5 },
-        { subject_code: 'LY', subject_name: 'Vat ly', score: 8.25 },
-        { subject_code: 'HOA', subject_name: 'Hoa hoc', score: 9 },
+        { subject_code: 'TOAN', subject_name: 'Toán', is_required: true, score: 8.5 },
+        { subject_code: 'VAN', subject_name: 'Ngữ văn', is_required: true, score: 8.25 },
+        { subject_code: 'LY', subject_name: 'Vật lý', is_required: false, score: 8.25 },
+        { subject_code: 'NGOAINGU', subject_name: 'Ngoại ngữ', is_required: false, score: 8.0 },
       ],
+      foreign_language: { language_code: 'ANH', language_name: 'Tiếng Anh' },
     },
     academic_progress: { grade_10: {}, grade_11: {}, grade_12: {} },
   });
 
-  const req = {
-    user: { id: 10, role: 'ADMIN' },
-    params: { citizenId: '123456789012' },
-    body: { science_group: 'NATURAL', scores: { TOAN: 8.5, VAN: 8.25, ANH: 8.0, LY: 8.25, HOA: 9, SINH: 8.5 } },
-    'express-validator#contexts': [],
-  } as any;
-  const res = createMockResponse();
-  await upsertCandidateExamScoresByGroupAsAdmin(req, res as any);
-  assert.equal(res.statusCode, 200);
-};
+  let replacedDocumentType: string | null = null;
+  CandidateProfileModel.softDeleteDocumentsByTypeByUserId = async (_userId, documentType) => {
+    replacedDocumentType = documentType;
+    return true;
+  };
 
-const testAdminUpsertGroupScoresSocialSuccess = async (): Promise<void> => {
-  CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId = async () => ({
-    academic_record: {
-      id: 5,
-      candidate_id: 123456789012,
-      graduation_year: 2024,
-      science_group: 'SOCIAL',
-      priority_score: 1.5,
-      exam_scores: [
-        { subject_code: 'TOAN', subject_name: 'Toan', score: 8.0 },
-        { subject_code: 'ANH', subject_name: 'Tieng Anh', score: 7.25 },
-        { subject_code: 'VAN', subject_name: 'Ngu van', score: 8.5 },
-        { subject_code: 'SU', subject_name: 'Lich su', score: 8.25 },
-        { subject_code: 'DIA', subject_name: 'Dia ly', score: 9 },
-        { subject_code: 'GDCD', subject_name: 'GDCD', score: 8.0 },
-      ],
+  let createdDocumentType: string | null = null;
+  CandidateProfileModel.createDocumentByUserId = async (_userId, data) => {
+    createdDocumentType = data.document_type;
+    return {
+      id: 100,
+      document_type: data.document_type as CandidateDocumentItem['document_type'],
+      file_name: data.file_name,
+      display_name: data.display_name ?? null,
+      file_url: data.file_url,
+      file_type: data.file_type,
+      file_size: data.file_size,
+      uploaded_at: new Date(),
+    };
+  };
+
+  const req = {
+    user: { id: 1, role: 'CANDIDATE' },
+    body: {
+      scores: { TOAN: 8.5, VAN: 8.25, NGOAINGU: 8.0, LY: 8.25 },
+      foreign_language: { language_code: 'ANH' },
     },
-    academic_progress: { grade_10: {}, grade_11: {}, grade_12: {} },
-  });
-
-  const req = {
-    user: { id: 10, role: 'ADMIN' },
-    params: { citizenId: '123456789012' },
-    body: { science_group: 'SOCIAL', scores: { TOAN: 8.0, VAN: 8.5, ANH: 7.25, SU: 8.25, DIA: 9, GDCD: 8.0 } },
+    file: {
+      mimetype: 'application/pdf',
+      originalname: 'exam-certificate.pdf',
+      buffer: Buffer.from('fake'),
+      size: 12345,
+    },
     'express-validator#contexts': [],
   } as any;
+
   const res = createMockResponse();
-  await upsertCandidateExamScoresByGroupAsAdmin(req, res as any);
+  await upsertCandidateExamScoresByGroup(req, res as any);
   assert.equal(res.statusCode, 200);
+  assert.equal(replacedDocumentType, 'EXAM_CERTIFICATE');
+  assert.equal(createdDocumentType, 'EXAM_CERTIFICATE');
 };
 
-const testAdminUpsertGroupScoresInvalidPayload = async (): Promise<void> => {
+const testCandidateUpsertGroupScoresInvalidPayload = async (): Promise<void> => {
   const req = {
-    user: { id: 10, role: 'ADMIN' },
-    params: { citizenId: '123456789012' },
-    body: { science_group: 'INVALID' },
-    'express-validator#contexts': [{ errors: [{ msg: 'science_group is invalid' }] }],
+    user: { id: 1, role: 'CANDIDATE' },
+    body: { scores: { TOAN: 8.5 } },
+    file: {
+      mimetype: 'application/pdf',
+      originalname: 'exam-certificate.pdf',
+      buffer: Buffer.from('fake'),
+      size: 12345,
+    },
+    'express-validator#contexts': [{ errors: [{ msg: 'scores must contain exactly 4 subjects' }] }],
   } as any;
   const res = createMockResponse();
-  await upsertCandidateExamScoresByGroupAsAdmin(req, res as any);
+  await upsertCandidateExamScoresByGroup(req, res as any);
   assert.equal(res.statusCode, 400);
 };
 
-const testAdminUpsertGroupScoresCandidateNotFound = async (): Promise<void> => {
-  CandidateProfileModel.upsertExamScoresByGroupForCandidateByCitizenId = async () => null;
+const testCandidateUpsertGroupScoresMissingCertificateFile = async (): Promise<void> => {
   const req = {
-    user: { id: 10, role: 'ADMIN' },
-    params: { citizenId: '999999999999' },
-    body: { science_group: 'NATURAL', scores: { TOAN: 8.5, VAN: 8.25, ANH: 8.0, LY: 8.25, HOA: 9, SINH: 8.5 } },
+    user: { id: 1, role: 'CANDIDATE' },
+    body: { scores: { TOAN: 8.5, VAN: 8.25, LY: 8.25, HOA: 9 } },
     'express-validator#contexts': [],
   } as any;
   const res = createMockResponse();
-  await upsertCandidateExamScoresByGroupAsAdmin(req, res as any);
+  await upsertCandidateExamScoresByGroup(req, res as any);
+  assert.equal(res.statusCode, 400);
+};
+
+const testCandidateUpsertGroupScoresCandidateNotFound = async (): Promise<void> => {
+  candidateDocumentDeps.uploadDocumentBuffer = async () => ({
+    publicId: 'folder/exam-certificate',
+    secureUrl: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/exam-certificate.pdf',
+    width: 0,
+    height: 0,
+    format: 'pdf',
+    bytes: 12345,
+    resourceType: 'raw',
+  });
+  CandidateProfileModel.upsertExamScoresByGroupForCandidateByUserId = async () => null;
+  candidateDocumentDeps.deleteAssetByPublicId = async () => undefined;
+
+  const req = {
+    user: { id: 1, role: 'CANDIDATE' },
+    body: { scores: { TOAN: 8.5, VAN: 8.25, LY: 8.25, HOA: 9 } },
+    file: {
+      mimetype: 'application/pdf',
+      originalname: 'exam-certificate.pdf',
+      buffer: Buffer.from('fake'),
+      size: 12345,
+    },
+    'express-validator#contexts': [],
+  } as any;
+  const res = createMockResponse();
+  await upsertCandidateExamScoresByGroup(req, res as any);
   assert.equal(res.statusCode, 404);
+};
+
+const testCandidateUpsertGroupScoresMissingForeignLanguage = async (): Promise<void> => {
+  candidateDocumentDeps.uploadDocumentBuffer = async () => ({
+    publicId: 'folder/exam-certificate',
+    secureUrl: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/exam-certificate.pdf',
+    width: 0,
+    height: 0,
+    format: 'pdf',
+    bytes: 12345,
+    resourceType: 'raw',
+  });
+  CandidateProfileModel.upsertExamScoresByGroupForCandidateByUserId = async () => {
+    throw new Error('foreign_language.language_code is required when NGOAINGU is selected');
+  };
+  candidateDocumentDeps.deleteAssetByPublicId = async () => undefined;
+
+  const req = {
+    user: { id: 1, role: 'CANDIDATE' },
+    body: { scores: { TOAN: 8.5, VAN: 8.25, NGOAINGU: 8.25, LY: 8.0 } },
+    file: {
+      mimetype: 'application/pdf',
+      originalname: 'exam-certificate.pdf',
+      buffer: Buffer.from('fake'),
+      size: 12345,
+    },
+    'express-validator#contexts': [],
+  } as any;
+
+  const res = createMockResponse();
+  await upsertCandidateExamScoresByGroup(req, res as any);
+  assert.equal(res.statusCode, 400);
 };
 
 const testListDocumentsSuccess = async (): Promise<void> => {
@@ -355,6 +438,7 @@ const testListDocumentsSuccess = async (): Promise<void> => {
       id: 1,
       document_type: 'TRANSCRIPT',
       file_name: 'doc1',
+      display_name: null,
       file_url: 'https://res.cloudinary.com/demo/image/upload/v1/folder/doc1.pdf',
       file_type: 'PDF',
       file_size: 12345,
@@ -381,6 +465,7 @@ const testUploadDocumentSuccess = async (): Promise<void> => {
     id: 1,
     document_type: 'TRANSCRIPT',
     file_name: 'folder/doc1',
+    display_name: null,
     file_url: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/doc1.pdf',
     file_type: 'PDF',
     file_size: 12345,
@@ -408,6 +493,7 @@ const testDeleteDocumentSuccess = async (): Promise<void> => {
     candidate_id: 123456789012,
     document_type: 'TRANSCRIPT',
     file_name: 'folder/doc1',
+    display_name: null,
     file_url: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/doc1.pdf',
     file_type: 'PDF',
     file_size: 12345,
@@ -436,6 +522,81 @@ const testAuthorizeWrongRole = (): Promise<void> =>
     }
   });
 
+const testRequireCompleteProfileMissingExamCertificate = (): Promise<void> =>
+  new Promise((resolve, reject) => {
+    let callIndex = 0;
+    pool.execute = (async () => {
+      callIndex += 1;
+      if (callIndex === 1) {
+        return [[{ phone: '0901', date_of_birth: '2006-01-01', gender: 'MALE', province: 'HN', address: 'A' }], []] as any;
+      }
+      if (callIndex === 2) {
+        return [[{ id: 5, graduation_year: 2024 }], []] as any;
+      }
+      if (callIndex === 3) {
+        return [[{ subject_code: 'TOAN' }, { subject_code: 'VAN' }, { subject_code: 'LY' }, { subject_code: 'HOA' }], []] as any;
+      }
+      if (callIndex === 4) {
+        return [[], []] as any;
+      }
+      if (callIndex === 5) {
+        return [[{ school_name: 'THPT A' }], []] as any;
+      }
+      if (callIndex === 6) {
+        return [[], []] as any;
+      }
+      return [[], []] as any;
+    }) as any;
+
+    const req = { user: { id: 1, role: 'CANDIDATE' } } as any;
+    const res = createMockResponse();
+    requireCompleteProfile(req, res as any, () => reject(new Error('next() should not be called')))
+      .then(() => {
+        try {
+          assert.equal(res.statusCode, 400);
+          assert.equal((res.body as any).success, false);
+          assert.ok(Array.isArray((res.body as any).missing_fields));
+          assert.ok((res.body as any).missing_fields.includes('Giấy chứng nhận kết quả thi'));
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .catch(reject);
+  });
+
+const testRequireCompleteProfileWithExamCertificate = (): Promise<void> =>
+  new Promise((resolve, reject) => {
+    let callIndex = 0;
+    pool.execute = (async () => {
+      callIndex += 1;
+      if (callIndex === 1) {
+        return [[{ phone: '0901', date_of_birth: '2006-01-01', gender: 'MALE', province: 'HN', address: 'A' }], []] as any;
+      }
+      if (callIndex === 2) {
+        return [[{ id: 5, graduation_year: 2024 }], []] as any;
+      }
+      if (callIndex === 3) {
+        return [[{ subject_code: 'TOAN' }, { subject_code: 'VAN' }, { subject_code: 'LY' }, { subject_code: 'HOA' }], []] as any;
+      }
+      if (callIndex === 4) {
+        return [[], []] as any;
+      }
+      if (callIndex === 5) {
+        return [[{ school_name: 'THPT A' }], []] as any;
+      }
+      if (callIndex === 6) {
+        return [[{ id: 88 }], []] as any;
+      }
+      return [[], []] as any;
+    }) as any;
+
+    const req = { user: { id: 1, role: 'CANDIDATE' } } as any;
+    const res = createMockResponse();
+    requireCompleteProfile(req, res as any, () => resolve())
+      .catch(reject);
+  });
+
 const run = async (): Promise<void> => {
   process.env.SECRET_KEY = process.env.SECRET_KEY || 'test-secret';
   const tests: Array<[string, () => Promise<void>]> = [
@@ -447,13 +608,16 @@ const run = async (): Promise<void> => {
     ['upsert academic record validation failed', testUpsertAcademicRecordValidationFail],
     ['upsert academic record success', testUpsertAcademicRecordSuccess],
     ['upsert academic progress success', testUpsertAcademicProgressSuccess],
-    ['admin upsert NATURAL group scores success', testAdminUpsertGroupScoresNaturalSuccess],
-    ['admin upsert SOCIAL group scores success', testAdminUpsertGroupScoresSocialSuccess],
-    ['admin upsert group scores invalid payload', testAdminUpsertGroupScoresInvalidPayload],
-    ['admin upsert group scores candidate not found', testAdminUpsertGroupScoresCandidateNotFound],
+    ['candidate upsert scores success with NGOAINGU + exam certificate', testCandidateUpsertGroupScoresNaturalSuccess],
+    ['candidate upsert group scores invalid payload', testCandidateUpsertGroupScoresInvalidPayload],
+    ['candidate upsert group scores missing exam certificate', testCandidateUpsertGroupScoresMissingCertificateFile],
+    ['candidate upsert group scores candidate not found', testCandidateUpsertGroupScoresCandidateNotFound],
+    ['candidate upsert group scores missing foreign_language when NGOAINGU', testCandidateUpsertGroupScoresMissingForeignLanguage],
     ['list documents success', testListDocumentsSuccess],
     ['upload document success', testUploadDocumentSuccess],
     ['delete document success', testDeleteDocumentSuccess],
+    ['require complete profile missing exam certificate', testRequireCompleteProfileMissingExamCertificate],
+    ['require complete profile with exam certificate', testRequireCompleteProfileWithExamCertificate],
     ['auth middleware no token', testAuthMiddlewareNoToken],
     ['authorize wrong role', testAuthorizeWrongRole],
   ];

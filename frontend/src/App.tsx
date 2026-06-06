@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Register from './pages/auth/Register';
 import Login from './pages/auth/Login';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import VerifyOtp from './pages/auth/VerifyOtp';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLayout from './components/layout/AdminLayout';
 import DashboardOverview from './pages/admin/Dashboard';
@@ -17,6 +19,8 @@ const App = () => {
       <Route path="/" element={<Navigate to="/register" replace />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route
         path="/admin"
         element={

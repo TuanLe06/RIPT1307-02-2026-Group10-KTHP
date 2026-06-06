@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { Button, Table, Tag } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import { Table, Tag, Select } from "antd";
 import {
-  PlusOutlined,
   BankOutlined,
   BookOutlined,
   AppstoreOutlined,
@@ -11,7 +10,8 @@ import { Pie } from "@ant-design/charts";
 import { useTheme } from "../../hooks/useTheme";
 import { universityApi } from "../../api/universities";
 import { majorApi } from "../../api/majors";
-import type { University } from "../../types/university";
+import { reportsApi } from "../../api/reports";
+import type { StatusStat } from "../../types/university";
 
 interface UniMajorCount {
   university: string;
@@ -19,33 +19,43 @@ interface UniMajorCount {
   count: number;
 }
 
-const COLORS = [
-  "#1677ff",
-  "#52c41a",
-  "#faad14",
-  "#ff4d4f",
-  "#722ed1",
-  "#13c2c2",
-  "#eb2f96",
-  "#fa8c16",
-  "#2f54eb",
-  "#a0d911",
-];
+const STATUS_COLORS: Record<string, string> = {
+  DRAFT: "#8c8c8c",
+  SUBMITTED: "#1677ff",
+  PENDING_REVIEW: "#faad14",
+  APPROVED: "#52c41a",
+  REJECTED: "#ff4d4f",
+  PASSED: "#722ed1",
+  FAILED: "#fa8c16",
+};
 
 const Dashboard = () => {
   const { theme } = useTheme();
-  const [universities, setUniversities] = useState<University[]>([]);
   const [totalUni, setTotalUni] = useState(0);
   const [totalMajors, setTotalMajors] = useState(0);
   const [majorDist, setMajorDist] = useState<UniMajorCount[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [statusStats, setStatusStats] = useState<StatusStat[]>([]);
+  const [statusLoading, setStatusLoading] = useState(true);
+
+  const [sortOrder, setSortOrder] = useState<"default" | "desc" | "asc">("default");
+  const [topN, setTopN] = useState<number | null>(10);
+
+  const filteredMajorDist = useMemo(() => {
+    let data = [...majorDist];
+    if (sortOrder !== "default") {
+      data.sort((a, b) => (sortOrder === "desc" ? b.count - a.count : a.count - b.count));
+    }
+    if (topN && topN < data.length) data = data.slice(0, topN);
+    return data;
+  }, [majorDist, sortOrder, topN]);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
         const uniRes = await universityApi.getAll(1, 100);
-        setUniversities(uniRes.data);
         setTotalUni(uniRes.pagination.total);
         let majorCount = 0;
         const dist: UniMajorCount[] = [];
@@ -73,68 +83,42 @@ const Dashboard = () => {
     load();
   }, []);
 
-  const columns = [
-    {
-      title: "TRƯỜNG",
-      key: "name",
-      render: (_: unknown, record: University) => (
-        <div>
-          <p className="font-label text-label text-text-primary font-semibold">
-            {record.name}
-          </p>
-          <p className="text-[13px] text-text-secondary">Mã: {record.code}</p>
-        </div>
-      ),
-    },
-    {
-      title: "EMAIL",
-      dataIndex: "email",
-      key: "email",
-      render: (v: string | null) => (
-        <span className="font-body text-body">{v ?? "--"}</span>
-      ),
-    },
-    {
-      title: "ĐIỆN THOẠI",
-      dataIndex: "phone",
-      key: "phone",
-      render: (v: string | null) => (
-        <span className="font-body text-body">{v ?? "--"}</span>
-      ),
-    },
-    {
-      title: "TRẠNG THÁI",
-      dataIndex: "status",
-      key: "status",
-      render: (v: string) => (
-        <Tag color={v === "ACTIVE" ? "green" : "red"}>
-          {v === "ACTIVE" ? "Hoạt động" : "Ngưng"}
-        </Tag>
-      ),
-    },
-  ];
+  useEffect(() => {
+    const loadStatusStats = async () => {
+      setStatusLoading(true);
+      try {
+        const res = await reportsApi.getByStatus();
+        if (res.success) {
+          setStatusStats(res.data);
+        }
+      } catch {
+        // ignore
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+    loadStatusStats();
+  }, []);
 
-  const donutData = majorDist
-    .filter((d) => d.count > 0)
-    .map((d, i) => ({
-      type: d.code,
-      value: d.count,
-      color: COLORS[i % COLORS.length],
-    }));
+  const statusPieData = statusStats.map((s) => ({
+    type: s.status_display,
+    value: s.count,
+    color: STATUS_COLORS[s.status] || "#8c8c8c",
+  }));
 
-  const totalValue = donutData.reduce((s, d) => s + d.value, 0);
+  const totalStatusValue = statusPieData.reduce((s, d) => s + d.value, 0);
 
-  const donutConfig = {
-    data: donutData,
+  const statusPieConfig = {
+    data: statusPieData,
     angleField: "value",
     colorField: "type",
-    color: donutData.map((d) => d.color),
+    color: statusPieData.map((d) => d.color),
     innerRadius: 0.6,
     radius: 0.9,
     label: {
       text: (d: Record<string, unknown>) => {
         const val = d.value as number;
-        const pct = totalValue > 0 ? (val / totalValue) * 100 : 0;
+        const pct = totalStatusValue > 0 ? (val / totalStatusValue) * 100 : 0;
         return `${d.type}\n${pct.toFixed(0)}%`;
       },
       style: { fill: theme === 'dark' ? '#e1e6ed' : '#171c20', fontSize: 11 },
@@ -149,9 +133,41 @@ const Dashboard = () => {
     },
     tooltip: {
       title: "type",
-      items: [{ field: "value", name: "Số ngành" }],
+      items: [{ field: "value", name: "Số lượng" }],
     },
   };
+
+  const statusColumns = [
+    {
+      title: "Trạng thái",
+      dataIndex: "status_display",
+      key: "status_display",
+      render: (v: string, r: StatusStat) => (
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: STATUS_COLORS[r.status] }} />
+          <span>{v}</span>
+        </div>
+      ),
+    },
+    {
+      title: "Mã",
+      dataIndex: "status",
+      key: "status",
+      render: (v: string) => <Tag>{v}</Tag>,
+    },
+    {
+      title: "Số lượng",
+      dataIndex: "count",
+      key: "count",
+      sorter: (a: StatusStat, b: StatusStat) => b.count - a.count,
+    },
+    {
+      title: "Tỷ lệ",
+      dataIndex: "percentage",
+      key: "percentage",
+      render: (v: number) => `${v}%`,
+    },
+  ];
 
   return (
     <div className="space-y-5">
@@ -164,17 +180,10 @@ const Dashboard = () => {
             Chào mừng quay trở lại, đây là dữ liệu mới nhất hôm nay.
           </p>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          className="!bg-primary hover:!bg-primary-hover !text-on-primary !shadow-md !h-auto !px-5 !py-2.5 !rounded-lg !font-label !text-[14px] flex items-center gap-2 !font-bold"
-        >
-          Tạo báo cáo mới
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm relative overflow-hidden">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-[0.07]">
             <BankOutlined className="text-[64px] text-primary" />
           </div>
@@ -190,7 +199,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm relative overflow-hidden">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-[0.07]">
             <BookOutlined className="text-[64px] text-primary" />
           </div>
@@ -208,7 +217,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-xl shadow-sm relative overflow-hidden">
+        <div className="bg-surface-container-lowest border border-hairline-soft p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-[0.07]">
             <AppstoreOutlined className="text-[64px] text-primary" />
           </div>
@@ -226,7 +235,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-primary text-on-primary p-5 rounded-xl shadow-lg relative overflow-hidden">
+        <div className="bg-primary text-on-primary p-5 rounded-xxl relative overflow-hidden">
           <div className="absolute -right-4 -bottom-4 opacity-20">
             <span className="material-symbols-outlined text-[120px]">
               analytics
@@ -240,42 +249,123 @@ const Dashboard = () => {
         </div>
       </div>
 
+      <div className="bg-surface-container-lowest border border-hairline-soft rounded-xxl">
+        <div className="px-5 py-4 border-b border-hairline-soft flex flex-col sm:flex-row sm:items-center gap-3">
+          <h4 className="font-h4-card-header text-h4-card-header text-text-primary shrink-0">
+            Phân bố ngành học theo trường
+          </h4>
+          <div className="flex items-center gap-2 flex-1 ml-auto">
+            <Select
+              value={sortOrder}
+              onChange={setSortOrder}
+              size="small"
+              className="min-w-[90px]"
+              options={[
+                { value: "default", label: "Mặc định" },
+                { value: "desc", label: "Giảm dần" },
+                { value: "asc", label: "Tăng dần" },
+              ]}
+            />
+            <Select
+              value={topN}
+              onChange={setTopN}
+              size="small"
+              className="min-w-[80px]"
+              options={[
+                { value: 10, label: "Top 10" },
+                { value: 20, label: "Top 20" },
+                { value: 50, label: "Top 50" },
+                { value: 100, label: "Tất cả" },
+              ]}
+            />
+          </div>
+        </div>
+        <div className="p-5">
+          {loading ? (
+            <div className="flex items-center justify-center h-[400px] text-text-secondary">
+              Đang tải...
+            </div>
+          ) : filteredMajorDist.length === 0 ? (
+            <div className="flex items-center justify-center h-[400px] text-text-secondary">
+              Chưa có dữ liệu
+            </div>
+          ) : (
+            <div className="flex flex-row gap-4">
+              <div className="flex-1 min-w-0" style={{ height: 400 }}>
+                <Pie
+                  data={filteredMajorDist.map((d) => ({ code: d.code, university: d.university, value: d.count }))}
+                  angleField="value"
+                  colorField="university"
+                  innerRadius={0.6}
+                  radius={0.9}
+                  label={{
+                    text: (d: Record<string, unknown>) => {
+                      const val = d.value as number;
+                      const total = filteredMajorDist.reduce((s, item) => s + item.count, 0);
+                      const pct = total > 0 ? (val / total) * 100 : 0;
+                      return `${d.code}\n${pct.toFixed(0)}%`;
+                    },
+                    style: { fill: theme === 'dark' ? '#e1e6ed' : '#171c20', fontSize: 11 },
+                  }}
+                  legend={{
+                    color: {
+                      title: false,
+                      position: "right",
+                      layout: { flexDirection: "column" },
+                      rowPadding: 4,
+                      label: {
+                        style: { fill: theme === 'dark' ? '#9aa3af' : '#706e6b', fontSize: 12 },
+                        maxWidth: 200,
+                      },
+                    },
+                  }}
+                  tooltip={{
+                    title: "university",
+                    items: [{ field: "value", name: "Số ngành" }],
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        <div className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
-          <div className="px-5 py-4 border-b border-outline-variant">
+        <div className="lg:col-span-2 bg-surface-container-lowest border border-hairline-soft rounded-xxl">
+          <div className="px-5 py-4 border-b border-hairline-soft">
             <h4 className="font-h4-card-header text-h4-card-header text-text-primary">
-              Phân bố ngành học
+              Thống kê trạng thái hồ sơ
             </h4>
           </div>
           <div className="p-4">
-            {loading ? (
+            {statusLoading ? (
               <div className="flex items-center justify-center h-[300px] text-text-secondary">
                 Đang tải...
               </div>
-            ) : donutData.length === 0 ? (
+            ) : statusPieData.length === 0 ? (
               <div className="flex items-center justify-center h-[300px] text-text-secondary">
                 Chưa có dữ liệu
               </div>
             ) : (
-              <Pie {...donutConfig} />
+              <Pie {...statusPieConfig} />
             )}
           </div>
         </div>
 
-        <div className="lg:col-span-3 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
-          <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
+        <div className="lg:col-span-3 bg-surface-container-lowest border border-hairline-soft rounded-xxl">
+          <div className="px-5 py-4 border-b border-hairline-soft flex items-center justify-between">
             <h4 className="font-h4-card-header text-h4-card-header text-text-primary">
-              Danh sách trường
+              Chi tiết theo trạng thái
             </h4>
             <span className="text-[14px] text-text-secondary">
-              Tổng số: <strong className="text-text-primary">{totalUni}</strong>
+              Tổng số: <strong className="text-text-primary">{statusStats.reduce((s, r) => s + r.count, 0)}</strong>
             </span>
           </div>
           <Table
-            columns={columns}
-            dataSource={universities}
-            rowKey="id"
-            loading={loading}
+            columns={statusColumns}
+            dataSource={statusStats}
+            rowKey="status"
+            loading={statusLoading}
             pagination={false}
             className="[&_.ant-table-thead_.ant-table-cell]:!bg-surface-container-low [&_.ant-table-thead_.ant-table-cell]:!font-table-header [&_.ant-table-thead_.ant-table-cell]:!text-table-header [&_.ant-table-thead_.ant-table-cell]:!text-on-surface-variant [&_.ant-table-thead_.ant-table-cell]:!uppercase [&_.ant-table-tbody_.ant-table-row]:!hover:bg-surface-container-low [&_.ant-table-cell]:!border-b-outline-variant"
           />

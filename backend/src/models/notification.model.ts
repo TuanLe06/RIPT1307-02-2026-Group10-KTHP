@@ -7,8 +7,8 @@ export interface EmailNotification {
   receiver_email: string;
   subject: string;
   content: string;
-  type: 'APPLICATION_SUBMITTED' | 'STATUS_CHANGED' | 'REJECTION' | 'APPROVAL' | 'RESULT' | 'MANUAL';
-  status: 'PENDING' | 'SENT' | 'FAILED';
+  type: 'APPLICATION_SUBMITTED' | 'STATUS_CHANGED' | 'REJECTION' | 'APPROVAL' | 'RESULT' | 'MANUAL' | 'PASSWORD_RESET';
+  status: 'PENDING' | 'SENT' | 'FAILED' | 'READ';
   sent_by: number | null;
   sent_at: Date | null;
   error_message: string | null;
@@ -64,10 +64,19 @@ export class EmailNotificationModel {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT id, receiver_id, receiver_email, subject, content, type, status, sent_by, sent_at, error_message, created_at
        FROM email_notifications WHERE status = 'PENDING'
-       ORDER BY created_at ASC LIMIT ?`,
-      [limit]
+       ORDER BY created_at ASC LIMIT ${Number(limit)}`,
+      []
     );
     return rows as EmailNotification[];
+  }
+
+  static async markAsRead(id: number): Promise<EmailNotification | null> {
+    const [result] = await pool.execute<ResultSetHeader>(
+      `UPDATE email_notifications SET status = 'READ' WHERE id = ? AND status != 'READ'`,
+      [id]
+    );
+    if (result.affectedRows === 0) return null;
+    return EmailNotificationModel.findById(id);
   }
 
   static async updateStatus(
@@ -87,18 +96,21 @@ export class EmailNotificationModel {
     page = 1,
     limit = 20
   ): Promise<{ notifications: EmailNotification[]; total: number }> {
-    const offset = (page - 1) * limit;
+    const p = Math.max(1, Math.floor(Number(page) || 1));
+    const l = Math.min(100, Math.max(1, Math.floor(Number(limit) || 20)));
+    const offset = (p - 1) * l;
+    const rid = Number(receiverId);
 
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    const [rows] = await pool.query<RowDataPacket[]>(
       `SELECT id, receiver_id, receiver_email, subject, content, type, status, sent_by, sent_at, error_message, created_at
        FROM email_notifications WHERE receiver_id = ?
-       ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [receiverId, limit, offset]
+       ORDER BY created_at DESC LIMIT ${Number(l)} OFFSET ${Number(offset)}`,
+      [rid]
     );
 
-    const [countRows] = await pool.execute<RowDataPacket[]>(
+    const [countRows] = await pool.query<RowDataPacket[]>(
       `SELECT COUNT(*) as total FROM email_notifications WHERE receiver_id = ?`,
-      [receiverId]
+      [rid]
     );
 
     return {
@@ -141,11 +153,11 @@ export class ApplicationStatusLogModel {
   ): Promise<ApplicationStatusLogWithDetails[]> {
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT asl.id, asl.application_id, asl.old_status, asl.new_status, asl.changed_by, asl.note, asl.created_at,
-              a.application_code, cp.full_name as candidate_name, u.full_name as changed_by_name
+              a.application_code, cp.full_name as candidate_name, u.email as changed_by_name
        FROM application_status_logs asl
        LEFT JOIN applications a ON asl.application_id = a.id
        LEFT JOIN users u ON asl.changed_by = u.id
-       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.citizen_id
+       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.user_id
        WHERE asl.application_id = ?
        ORDER BY asl.created_at DESC`,
       [applicationId]
@@ -162,15 +174,15 @@ export class ApplicationStatusLogModel {
 
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT asl.id, asl.application_id, asl.old_status, asl.new_status, asl.changed_by, asl.note, asl.created_at,
-              a.application_code, cp.full_name as candidate_name, u.full_name as changed_by_name
+              a.application_code, cp.full_name as candidate_name, u.email as changed_by_name
        FROM application_status_logs asl
        LEFT JOIN applications a ON asl.application_id = a.id
        LEFT JOIN users u ON asl.changed_by = u.id
-       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.citizen_id
+       LEFT JOIN candidate_profiles cp ON a.candidate_id = cp.user_id
        WHERE asl.changed_by = ?
        ORDER BY asl.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [changedBy, limit, offset]
+       LIMIT ${Number(limit)} OFFSET ${Number(offset)}`,
+      [changedBy]
     );
 
     const [countRows] = await pool.execute<RowDataPacket[]>(
