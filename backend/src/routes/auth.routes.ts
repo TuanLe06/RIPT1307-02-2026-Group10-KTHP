@@ -39,8 +39,11 @@ router.post(
   '/register',
   [
     body('citizen_id')
-      .isInt({ gt: 0 })
-      .withMessage('CCCD phải là số nguyên dương'),
+      .customSanitizer((value) => String(value ?? '').trim())
+      .notEmpty()
+      .withMessage('CCCD không được để trống')
+      .matches(/^\d{12}$/)
+      .withMessage('Số CCCD phải gồm 12 chữ số'),
     body('full_name').trim().notEmpty().withMessage('Họ tên không được để trống'),
     emailRule(),
     passwordRules(),

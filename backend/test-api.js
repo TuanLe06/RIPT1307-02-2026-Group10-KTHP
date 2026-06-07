@@ -41,7 +41,7 @@ function testUniversities() {
 function testRegister() {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
-      citizen_id: 123456789012,
+      citizen_id: '123456789012',
       full_name: 'Test User ' + Date.now(),
       email: `test${Date.now()}@example.com`,
       password: 'TestPassword123!'

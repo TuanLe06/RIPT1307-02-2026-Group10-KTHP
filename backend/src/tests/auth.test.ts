@@ -64,7 +64,7 @@ const testRegisterSuccess = async (): Promise<void> => {
 
   const req = {
     body: {
-      citizen_id: 123456789012,
+      citizen_id: '123456789012',
       full_name: 'Nguyen Van A',
       email: 'a@b.com',
       password: 'secret123',
@@ -81,7 +81,7 @@ const testRegisterDuplicateEmail = async (): Promise<void> => {
   UserModel.existsByEmail = async () => true;
 
   const req = {
-    body: { citizen_id: 123, full_name: 'A', email: 'a@b.com', password: 'secret123' },
+    body: { citizen_id: '123456789012', full_name: 'A', email: 'a@b.com', password: 'secret123' },
   } as any;
   const res = createMockResponse();
 
@@ -94,7 +94,7 @@ const testRegisterDuplicateCitizen = async (): Promise<void> => {
   UserModel.existsCandidateByCitizenId = async () => true;
 
   const req = {
-    body: { citizen_id: 123, full_name: 'A', email: 'a@b.com', password: 'secret123' },
+    body: { citizen_id: '123456789012', full_name: 'A', email: 'a@b.com', password: 'secret123' },
   } as any;
   const res = createMockResponse();
 
