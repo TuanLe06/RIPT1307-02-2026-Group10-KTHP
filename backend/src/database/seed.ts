@@ -7,11 +7,22 @@ const seed = async (): Promise<void> => {
 
   await pool.execute("SET FOREIGN_KEY_CHECKS = 0");
   const tables = [
-    "audit_logs", "email_notifications", "application_status_logs",
-    "candidate_documents", "foreign_language_scores", "exam_scores", "academic_progress",
-    "academic_records", "applications", "candidate_profiles",
-    "major_combinations", "majors", "admission_combinations",
-    "universities", "password_reset_tokens", "users",
+    "audit_logs",
+    "email_notifications",
+    "application_status_logs",
+    "candidate_documents",
+    "foreign_language_scores",
+    "exam_scores",
+    "academic_progress",
+    "academic_records",
+    "applications",
+    "candidate_profiles",
+    "major_combinations",
+    "majors",
+    "admission_combinations",
+    "universities",
+    "password_reset_tokens",
+    "users",
   ];
   for (const table of tables) {
     await pool.execute(`TRUNCATE TABLE ${table}`);
@@ -108,49 +119,98 @@ const seed = async (): Promise<void> => {
      ('TH000034', 'D09', 'Toán', 'Sử', 'Anh'),
      ('TH000035', 'D10', 'Toán', 'Địa', 'Anh'),
      ('TH000036', 'D14', 'Văn', 'Sử', 'Anh'),
-     ('TH000037', 'D15', 'Văn', 'Địa', 'Anh')`
+     ('TH000037', 'D15', 'Văn', 'Địa', 'Anh')`,
   );
 
   await pool.execute(
     `INSERT INTO major_combinations (major_id, combination_id)
      SELECT m.id, ac.id
      FROM majors m
-     CROSS JOIN admission_combinations ac`
+     CROSS JOIN admission_combinations ac`,
   );
 
   // Candidate profiles
   const profiles = [
-    { userId: candidateId, citizenId: 123456789, fullName: "Nguyễn Văn An", phone: "0912345678", dob: "2002-05-15", gender: "MALE", province: "Hà Nội" },
-    { userId: candidate2Id, citizenId: 987654321, fullName: "Trần Thị Hồng", phone: "0987654321", dob: "2003-08-22", gender: "FEMALE", province: "Hải Phòng" },
-    { userId: candidate3Id, citizenId: 456789123, fullName: "Lê Minh Tâm", phone: "0977112233", dob: "2002-11-03", gender: "MALE", province: "Đà Nẵng" },
+    {
+      userId: candidateId,
+      citizenId: 123456789,
+      fullName: "Nguyễn Văn An",
+      phone: "0912345678",
+      dob: "2002-05-15",
+      gender: "MALE",
+      province: "Hà Nội",
+    },
+    {
+      userId: candidate2Id,
+      citizenId: 987654321,
+      fullName: "Trần Thị Hồng",
+      phone: "0987654321",
+      dob: "2003-08-22",
+      gender: "FEMALE",
+      province: "Hải Phòng",
+    },
+    {
+      userId: candidate3Id,
+      citizenId: 456789123,
+      fullName: "Lê Minh Tâm",
+      phone: "0977112233",
+      dob: "2002-11-03",
+      gender: "MALE",
+      province: "Đà Nẵng",
+    },
   ];
   for (const p of profiles) {
     await pool.execute(
       `INSERT INTO candidate_profiles (citizen_id, user_id, full_name, phone, date_of_birth, gender, province, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [p.citizenId, p.userId, p.fullName, p.phone, p.dob, p.gender, p.province, `${p.province}, Việt Nam`],
+      [
+        p.citizenId,
+        p.userId,
+        p.fullName,
+        p.phone,
+        p.dob,
+        p.gender,
+        p.province,
+        `${p.province}, Việt Nam`,
+      ],
     );
   }
 
   // Academic records & exam scores
   const academicData = [
-    { userId: candidateId, graduationYear: 2024, priorityScore: 0.25, scores: [
-      { subjectCode: 'TOAN', score: 8.5, isRequired: true },
-      { subjectCode: 'VAN', score: 7.0, isRequired: true },
-      { subjectCode: 'LY', score: 7.5, isRequired: false },
-      { subjectCode: 'HOA', score: 8.0, isRequired: false },
-    ]},
-    { userId: candidate2Id, graduationYear: 2024, priorityScore: 0, scores: [
-      { subjectCode: 'TOAN', score: 9.0, isRequired: true },
-      { subjectCode: 'VAN', score: 8.0, isRequired: true },
-      { subjectCode: 'NGOAINGU', score: 9.5, isRequired: false },
-      { subjectCode: 'LY', score: 8.5, isRequired: false },
-    ], foreignLanguage: { languageCode: 'ANH', languageName: 'Tiếng Anh' }},
-    { userId: candidate3Id, graduationYear: 2024, priorityScore: 0.5, scores: [
-      { subjectCode: 'TOAN', score: 7.0, isRequired: true },
-      { subjectCode: 'VAN', score: 6.5, isRequired: true },
-      { subjectCode: 'SINH', score: 8.0, isRequired: false },
-      { subjectCode: 'HOA', score: 7.5, isRequired: false },
-    ]},
+    {
+      userId: candidateId,
+      graduationYear: 2024,
+      priorityScore: 0.25,
+      scores: [
+        { subjectCode: "TOAN", score: 8.5, isRequired: true },
+        { subjectCode: "VAN", score: 7.0, isRequired: true },
+        { subjectCode: "LY", score: 7.5, isRequired: false },
+        { subjectCode: "HOA", score: 8.0, isRequired: false },
+      ],
+    },
+    {
+      userId: candidate2Id,
+      graduationYear: 2024,
+      priorityScore: 0,
+      scores: [
+        { subjectCode: "TOAN", score: 9.0, isRequired: true },
+        { subjectCode: "VAN", score: 8.0, isRequired: true },
+        { subjectCode: "NGOAINGU", score: 9.5, isRequired: false },
+        { subjectCode: "LY", score: 8.5, isRequired: false },
+      ],
+      foreignLanguage: { languageCode: "ANH", languageName: "Tiếng Anh" },
+    },
+    {
+      userId: candidate3Id,
+      graduationYear: 2024,
+      priorityScore: 0.5,
+      scores: [
+        { subjectCode: "TOAN", score: 7.0, isRequired: true },
+        { subjectCode: "VAN", score: 6.5, isRequired: true },
+        { subjectCode: "SINH", score: 8.0, isRequired: false },
+        { subjectCode: "HOA", score: 7.5, isRequired: false },
+      ],
+    },
   ];
 
   for (const a of academicData) {
@@ -177,34 +237,148 @@ const seed = async (): Promise<void> => {
     if (a.foreignLanguage) {
       await pool.execute(
         `INSERT INTO foreign_language_scores (record_id, language_code, language_name) VALUES (?, ?, ?)`,
-        [recordId, a.foreignLanguage.languageCode, a.foreignLanguage.languageName],
+        [
+          recordId,
+          a.foreignLanguage.languageCode,
+          a.foreignLanguage.languageName,
+        ],
       );
     }
   }
 
   // Applications with various statuses
   const appData = [
-    { candidateId: candidateId, code: "HS-2024-001", uniId: "DH000001", majorId: "NH000001", combId: "TH000002", status: "PASSED", submittedAt: "2024-05-24 08:30:00", reviewedBy: adminId },
-    { candidateId: candidateId, code: "HS-2024-002", uniId: "DH000003", majorId: "NH000006", combId: "TH000001", status: "PENDING_REVIEW", submittedAt: "2024-05-23 10:15:00", reviewedBy: null },
-    { candidateId: candidate2Id, code: "HS-2024-003", uniId: "DH000004", majorId: "NH000008", combId: "TH000028", status: "REJECTED", submittedAt: "2024-05-22 14:00:00", reviewedBy: adminId },
-    { candidateId: candidate2Id, code: "HS-2024-004", uniId: "DH000002", majorId: "NH000004", combId: "TH000002", status: "APPROVED", submittedAt: "2024-05-21 09:45:00", reviewedBy: adminId },
-    { candidateId: candidate3Id, code: "HS-2024-005", uniId: "DH000001", majorId: "NH000002", combId: "TH000001", status: "SUBMITTED", submittedAt: "2024-06-01 07:30:00", reviewedBy: null },
-    { candidateId: candidate3Id, code: "HS-2024-006", uniId: "DH000003", majorId: "NH000007", combId: "TH000032", status: "DRAFT", submittedAt: null, reviewedBy: null },
-    { candidateId: candidateId, code: "HS-2024-007", uniId: "DH000004", majorId: "NH000009", combId: "TH000028", status: "PASSED", submittedAt: "2024-05-20 11:00:00", reviewedBy: adminId },
-    { candidateId: candidate2Id, code: "HS-2024-008", uniId: "DH000001", majorId: "NH000003", combId: "TH000002", status: "FAILED", submittedAt: "2024-05-19 16:30:00", reviewedBy: adminId },
-    { candidateId: candidate3Id, code: "HS-2024-009", uniId: "DH000002", majorId: "NH000005", combId: "TH000032", status: "PENDING_REVIEW", submittedAt: "2024-06-02 13:00:00", reviewedBy: null },
-    { candidateId: candidateId, code: "HS-2024-010", uniId: "DH000002", majorId: "NH000004", combId: "TH000002", status: "PENDING_REVIEW", submittedAt: "2024-06-03 08:00:00", reviewedBy: null },
+    {
+      candidateId: candidateId,
+      code: "HS-2024-001",
+      uniId: "DH000001",
+      majorId: "NH000001",
+      combId: "TH000002",
+      status: "PASSED",
+      submittedAt: "2024-05-24 08:30:00",
+      reviewedBy: adminId,
+    },
+    {
+      candidateId: candidateId,
+      code: "HS-2024-002",
+      uniId: "DH000003",
+      majorId: "NH000006",
+      combId: "TH000001",
+      status: "PENDING_REVIEW",
+      submittedAt: "2024-05-23 10:15:00",
+      reviewedBy: null,
+    },
+    {
+      candidateId: candidate2Id,
+      code: "HS-2024-003",
+      uniId: "DH000004",
+      majorId: "NH000008",
+      combId: "TH000028",
+      status: "REJECTED",
+      submittedAt: "2024-05-22 14:00:00",
+      reviewedBy: adminId,
+    },
+    {
+      candidateId: candidate2Id,
+      code: "HS-2024-004",
+      uniId: "DH000002",
+      majorId: "NH000004",
+      combId: "TH000002",
+      status: "APPROVED",
+      submittedAt: "2024-05-21 09:45:00",
+      reviewedBy: adminId,
+    },
+    {
+      candidateId: candidate3Id,
+      code: "HS-2024-005",
+      uniId: "DH000001",
+      majorId: "NH000002",
+      combId: "TH000001",
+      status: "SUBMITTED",
+      submittedAt: "2024-06-01 07:30:00",
+      reviewedBy: null,
+    },
+    {
+      candidateId: candidate3Id,
+      code: "HS-2024-006",
+      uniId: "DH000003",
+      majorId: "NH000007",
+      combId: "TH000032",
+      status: "DRAFT",
+      submittedAt: null,
+      reviewedBy: null,
+    },
+    {
+      candidateId: candidateId,
+      code: "HS-2024-007",
+      uniId: "DH000004",
+      majorId: "NH000009",
+      combId: "TH000028",
+      status: "PASSED",
+      submittedAt: "2024-05-20 11:00:00",
+      reviewedBy: adminId,
+    },
+    {
+      candidateId: candidate2Id,
+      code: "HS-2024-008",
+      uniId: "DH000001",
+      majorId: "NH000003",
+      combId: "TH000002",
+      status: "FAILED",
+      submittedAt: "2024-05-19 16:30:00",
+      reviewedBy: adminId,
+    },
+    {
+      candidateId: candidate3Id,
+      code: "HS-2024-009",
+      uniId: "DH000002",
+      majorId: "NH000005",
+      combId: "TH000032",
+      status: "PENDING_REVIEW",
+      submittedAt: "2024-06-02 13:00:00",
+      reviewedBy: null,
+    },
+    {
+      candidateId: candidateId,
+      code: "HS-2024-010",
+      uniId: "DH000002",
+      majorId: "NH000004",
+      combId: "TH000002",
+      status: "PENDING_REVIEW",
+      submittedAt: "2024-06-03 08:00:00",
+      reviewedBy: null,
+    },
   ];
   for (const a of appData) {
+    // Resolve citizen_id from candidate_profiles by user_id
+    const [cpRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT citizen_id FROM candidate_profiles WHERE user_id = ? LIMIT 1`,
+      [a.candidateId],
+    );
+    if (!cpRows.length) {
+      // skip if profile not found
+      continue;
+    }
+    const appCitizenId = cpRows[0].citizen_id;
+
     if (a.submittedAt) {
       await pool.execute(
         `INSERT INTO applications (candidate_id, application_code, university_id, major_id, combination_id, status, submitted_at, reviewed_by, reviewed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-        [a.candidateId, a.code, a.uniId, a.majorId, a.combId, a.status, a.submittedAt, a.reviewedBy],
+        [
+          appCitizenId,
+          a.code,
+          a.uniId,
+          a.majorId,
+          a.combId,
+          a.status,
+          a.submittedAt,
+          a.reviewedBy,
+        ],
       );
     } else {
       await pool.execute(
         `INSERT INTO applications (candidate_id, application_code, university_id, major_id, combination_id, status) VALUES (?, ?, ?, ?, ?, ?)`,
-        [a.candidateId, a.code, a.uniId, a.majorId, a.combId, a.status],
+        [appCitizenId, a.code, a.uniId, a.majorId, a.combId, a.status],
       );
     }
   }
@@ -212,20 +386,36 @@ const seed = async (): Promise<void> => {
   // Application status logs
   const logs = [
     { code: "HS-2024-001", oldStatus: "DRAFT", newStatus: "SUBMITTED" },
-    { code: "HS-2024-001", oldStatus: "SUBMITTED", newStatus: "PENDING_REVIEW" },
+    {
+      code: "HS-2024-001",
+      oldStatus: "SUBMITTED",
+      newStatus: "PENDING_REVIEW",
+    },
     { code: "HS-2024-001", oldStatus: "PENDING_REVIEW", newStatus: "APPROVED" },
     { code: "HS-2024-001", oldStatus: "APPROVED", newStatus: "PASSED" },
     { code: "HS-2024-003", oldStatus: "DRAFT", newStatus: "SUBMITTED" },
-    { code: "HS-2024-003", oldStatus: "SUBMITTED", newStatus: "PENDING_REVIEW" },
+    {
+      code: "HS-2024-003",
+      oldStatus: "SUBMITTED",
+      newStatus: "PENDING_REVIEW",
+    },
     { code: "HS-2024-003", oldStatus: "PENDING_REVIEW", newStatus: "REJECTED" },
     { code: "HS-2024-004", oldStatus: "DRAFT", newStatus: "SUBMITTED" },
-    { code: "HS-2024-004", oldStatus: "SUBMITTED", newStatus: "PENDING_REVIEW" },
+    {
+      code: "HS-2024-004",
+      oldStatus: "SUBMITTED",
+      newStatus: "PENDING_REVIEW",
+    },
     { code: "HS-2024-004", oldStatus: "PENDING_REVIEW", newStatus: "APPROVED" },
     { code: "HS-2024-008", oldStatus: "DRAFT", newStatus: "SUBMITTED" },
     { code: "HS-2024-008", oldStatus: "SUBMITTED", newStatus: "REJECTED" },
     { code: "HS-2024-008", oldStatus: "REJECTED", newStatus: "FAILED" },
     { code: "HS-2024-007", oldStatus: "DRAFT", newStatus: "SUBMITTED" },
-    { code: "HS-2024-007", oldStatus: "SUBMITTED", newStatus: "PENDING_REVIEW" },
+    {
+      code: "HS-2024-007",
+      oldStatus: "SUBMITTED",
+      newStatus: "PENDING_REVIEW",
+    },
     { code: "HS-2024-007", oldStatus: "PENDING_REVIEW", newStatus: "APPROVED" },
     { code: "HS-2024-007", oldStatus: "APPROVED", newStatus: "PASSED" },
   ];
@@ -237,16 +427,30 @@ const seed = async (): Promise<void> => {
     if (appRows.length > 0) {
       await pool.execute(
         `INSERT INTO application_status_logs (application_id, old_status, new_status, changed_by, note, created_at) VALUES (?, ?, ?, ?, ?, NOW())`,
-        [appRows[0].id, log.oldStatus, log.newStatus, adminId, `Seed: ${log.oldStatus} -> ${log.newStatus}`],
+        [
+          appRows[0].id,
+          log.oldStatus,
+          log.newStatus,
+          adminId,
+          `Seed: ${log.oldStatus} -> ${log.newStatus}`,
+        ],
       );
     }
   }
 
   console.log("Đã chèn dữ liệu mẫu");
-  console.log(`  Admin: ${adminEmail} / ${adminPlainPassword} (ID: ${adminId})`);
-  console.log(`  Thí sinh: candidate@example.com / candidate123 (ID: ${candidateId})`);
-  console.log(`  Thí sinh 2: nguyenvana@example.com / candidate123 (ID: ${candidate2Id})`);
-  console.log(`  Thí sinh 3: tranthib@example.com / candidate123 (ID: ${candidate3Id})`);
+  console.log(
+    `  Admin: ${adminEmail} / ${adminPlainPassword} (ID: ${adminId})`,
+  );
+  console.log(
+    `  Thí sinh: candidate@example.com / candidate123 (ID: ${candidateId})`,
+  );
+  console.log(
+    `  Thí sinh 2: nguyenvana@example.com / candidate123 (ID: ${candidate2Id})`,
+  );
+  console.log(
+    `  Thí sinh 3: tranthib@example.com / candidate123 (ID: ${candidate3Id})`,
+  );
   console.log("  Trường đại học/Ngành học/Tổ hợp: đã chèn");
   console.log("  Hồ sơ ứng tuyển: 10 hồ sơ mẫu");
   console.log("  Lịch sử trạng thái: đã chèn");
