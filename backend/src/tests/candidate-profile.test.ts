@@ -17,6 +17,7 @@ import {
   CandidateProfileModel,
   type CandidateDocumentItem,
 } from '../models/candidate-profile.model';
+import { CandidateIdentityVerificationModel } from '../models/candidate-identity-verification.model';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
 type MockResponse = {
@@ -56,6 +57,8 @@ const original = {
   findDocumentByUserId: CandidateProfileModel.findDocumentByUserId,
   softDeleteDocumentByUserId: CandidateProfileModel.softDeleteDocumentByUserId,
   softDeleteDocumentsByTypeByUserId: CandidateProfileModel.softDeleteDocumentsByTypeByUserId,
+  isIdentityVerified: CandidateIdentityVerificationModel.isVerified,
+  resetForDeletedDocument: CandidateIdentityVerificationModel.resetForDeletedDocument,
   poolExecute: pool.execute,
   uploadDocumentBuffer: candidateDocumentDeps.uploadDocumentBuffer,
   deleteAssetByPublicId: candidateDocumentDeps.deleteAssetByPublicId,
@@ -77,6 +80,8 @@ const restore = (): void => {
   CandidateProfileModel.findDocumentByUserId = original.findDocumentByUserId;
   CandidateProfileModel.softDeleteDocumentByUserId = original.softDeleteDocumentByUserId;
   CandidateProfileModel.softDeleteDocumentsByTypeByUserId = original.softDeleteDocumentsByTypeByUserId;
+  CandidateIdentityVerificationModel.isVerified = original.isIdentityVerified;
+  CandidateIdentityVerificationModel.resetForDeletedDocument = original.resetForDeletedDocument;
   pool.execute = original.poolExecute;
   candidateDocumentDeps.uploadDocumentBuffer = original.uploadDocumentBuffer;
   candidateDocumentDeps.deleteAssetByPublicId = original.deleteAssetByPublicId;
@@ -452,6 +457,7 @@ const testListDocumentsSuccess = async (): Promise<void> => {
 };
 
 const testUploadDocumentSuccess = async (): Promise<void> => {
+  let ekycProviderCalled = false;
   candidateDocumentDeps.uploadDocumentBuffer = async () => ({
     publicId: 'folder/doc1',
     secureUrl: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/doc1.pdf',
@@ -463,7 +469,7 @@ const testUploadDocumentSuccess = async (): Promise<void> => {
   });
   CandidateProfileModel.createDocumentByUserId = async () => ({
     id: 1,
-    document_type: 'TRANSCRIPT',
+    document_type: 'CITIZEN_ID_Front',
     file_name: 'folder/doc1',
     display_name: null,
     file_url: 'https://res.cloudinary.com/demo/raw/upload/v1/folder/doc1.pdf',
@@ -473,7 +479,7 @@ const testUploadDocumentSuccess = async (): Promise<void> => {
   });
   const req = {
     user: { id: 1, role: 'CANDIDATE' },
-    body: { document_type: 'TRANSCRIPT' },
+    body: { document_type: 'CITIZEN_ID_Front' },
     file: {
       mimetype: 'application/pdf',
       originalname: 'transcript.pdf',
@@ -485,6 +491,7 @@ const testUploadDocumentSuccess = async (): Promise<void> => {
   const res = createMockResponse();
   await uploadCandidateDocument(req, res as any);
   assert.equal(res.statusCode, 201);
+  assert.equal(ekycProviderCalled, false);
 };
 
 const testDeleteDocumentSuccess = async (): Promise<void> => {
@@ -502,10 +509,15 @@ const testDeleteDocumentSuccess = async (): Promise<void> => {
   });
   candidateDocumentDeps.deleteAssetByPublicId = async () => undefined;
   CandidateProfileModel.softDeleteDocumentByUserId = async () => true;
+  let resetDocumentId: number | null = null;
+  CandidateIdentityVerificationModel.resetForDeletedDocument = async (_userId, documentId) => {
+    resetDocumentId = documentId;
+  };
   const req = { user: { id: 1, role: 'CANDIDATE' }, params: { documentId: '1' } } as any;
   const res = createMockResponse();
   await deleteCandidateDocument(req, res as any);
   assert.equal(res.statusCode, 200);
+  assert.equal(resetDocumentId, 1);
 };
 
 const testAuthorizeWrongRole = (): Promise<void> =>
@@ -524,6 +536,7 @@ const testAuthorizeWrongRole = (): Promise<void> =>
 
 const testRequireCompleteProfileMissingExamCertificate = (): Promise<void> =>
   new Promise((resolve, reject) => {
+    CandidateIdentityVerificationModel.isVerified = async () => true;
     let callIndex = 0;
     pool.execute = (async () => {
       callIndex += 1;
@@ -567,6 +580,7 @@ const testRequireCompleteProfileMissingExamCertificate = (): Promise<void> =>
 
 const testRequireCompleteProfileWithExamCertificate = (): Promise<void> =>
   new Promise((resolve, reject) => {
+    CandidateIdentityVerificationModel.isVerified = async () => true;
     let callIndex = 0;
     pool.execute = (async () => {
       callIndex += 1;
@@ -597,6 +611,48 @@ const testRequireCompleteProfileWithExamCertificate = (): Promise<void> =>
       .catch(reject);
   });
 
+const testRequireCompleteProfileMissingEkyc = (): Promise<void> =>
+  new Promise((resolve, reject) => {
+    CandidateIdentityVerificationModel.isVerified = async () => false;
+    let callIndex = 0;
+    pool.execute = (async () => {
+      callIndex += 1;
+      if (callIndex === 1) {
+        return [[{ phone: '0901', date_of_birth: '2006-01-01', gender: 'MALE', province: 'HN', address: 'A' }], []] as any;
+      }
+      if (callIndex === 2) {
+        return [[{ id: 5, graduation_year: 2024 }], []] as any;
+      }
+      if (callIndex === 3) {
+        return [[{ subject_code: 'TOAN' }, { subject_code: 'VAN' }, { subject_code: 'LY' }, { subject_code: 'HOA' }], []] as any;
+      }
+      if (callIndex === 4) {
+        return [[], []] as any;
+      }
+      if (callIndex === 5) {
+        return [[{ school_name: 'THPT A' }], []] as any;
+      }
+      if (callIndex === 6) {
+        return [[{ id: 88 }], []] as any;
+      }
+      return [[], []] as any;
+    }) as any;
+
+    const req = { user: { id: 1, role: 'CANDIDATE' } } as any;
+    const res = createMockResponse();
+    requireCompleteProfile(req, res as any, () => reject(new Error('next() should not be called')))
+      .then(() => {
+        try {
+          assert.equal(res.statusCode, 400);
+          assert.ok((res.body as any).missing_fields.includes('Xác thực CCCD/eKYC'));
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .catch(reject);
+  });
+
 const run = async (): Promise<void> => {
   process.env.SECRET_KEY = process.env.SECRET_KEY || 'test-secret';
   const tests: Array<[string, () => Promise<void>]> = [
@@ -618,6 +674,7 @@ const run = async (): Promise<void> => {
     ['delete document success', testDeleteDocumentSuccess],
     ['require complete profile missing exam certificate', testRequireCompleteProfileMissingExamCertificate],
     ['require complete profile with exam certificate', testRequireCompleteProfileWithExamCertificate],
+    ['require complete profile missing eKYC', testRequireCompleteProfileMissingEkyc],
     ['auth middleware no token', testAuthMiddlewareNoToken],
     ['authorize wrong role', testAuthorizeWrongRole],
   ];

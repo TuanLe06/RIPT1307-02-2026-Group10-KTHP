@@ -8,6 +8,7 @@ const migrate = async (): Promise<void> => {
     `DROP TABLE IF EXISTS audit_logs`,
     `DROP TABLE IF EXISTS email_notifications`,
     `DROP TABLE IF EXISTS application_status_logs`,
+    `DROP TABLE IF EXISTS candidate_identity_verifications`,
     `DROP TABLE IF EXISTS candidate_documents`,
     `DROP TABLE IF EXISTS foreign_language_scores`,
     `DROP TABLE IF EXISTS exam_scores`,
@@ -246,6 +247,36 @@ const migrate = async (): Promise<void> => {
       KEY idx_candidate_documents_candidate_id (candidate_id),
       CONSTRAINT fk_candidate_documents_candidate
         FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(citizen_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+    `CREATE TABLE IF NOT EXISTS candidate_identity_verifications (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      user_id BIGINT UNSIGNED NOT NULL,
+      front_document_id BIGINT UNSIGNED NULL,
+      back_document_id BIGINT UNSIGNED NULL,
+      portrait_document_id BIGINT UNSIGNED NULL,
+      front_status ENUM('PENDING','VERIFIED','FAILED') NOT NULL DEFAULT 'PENDING',
+      back_status ENUM('PENDING','VERIFIED','FAILED') NOT NULL DEFAULT 'PENDING',
+      face_status ENUM('PENDING','VERIFIED','FAILED') NOT NULL DEFAULT 'PENDING',
+      overall_status ENUM('UNVERIFIED','PARTIAL','VERIFIED','FAILED') NOT NULL DEFAULT 'UNVERIFIED',
+      similarity DECIMAL(5,2) NULL,
+      failure_reason VARCHAR(255) NULL,
+      verified_at DATETIME NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_civ_user_id (user_id),
+      KEY idx_civ_overall_status (overall_status),
+      KEY idx_civ_front_document_id (front_document_id),
+      KEY idx_civ_back_document_id (back_document_id),
+      KEY idx_civ_portrait_document_id (portrait_document_id),
+      CONSTRAINT fk_civ_user
+        FOREIGN KEY (user_id) REFERENCES users(id),
+      CONSTRAINT fk_civ_front_document
+        FOREIGN KEY (front_document_id) REFERENCES candidate_documents(id),
+      CONSTRAINT fk_civ_back_document
+        FOREIGN KEY (back_document_id) REFERENCES candidate_documents(id),
+      CONSTRAINT fk_civ_portrait_document
+        FOREIGN KEY (portrait_document_id) REFERENCES candidate_documents(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
     `CREATE TABLE IF NOT EXISTS application_status_logs (

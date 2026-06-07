@@ -134,6 +134,21 @@ export interface CandidateDocumentItem {
   uploaded_at: string;
 }
 
+export interface EkycSummary {
+  id: number;
+  user_id: number;
+  front_document_id: number | null;
+  back_document_id: number | null;
+  portrait_document_id: number | null;
+  front_status: 'PENDING' | 'VERIFIED' | 'FAILED';
+  back_status: 'PENDING' | 'VERIFIED' | 'FAILED';
+  face_status: 'PENDING' | 'VERIFIED' | 'FAILED';
+  overall_status: 'UNVERIFIED' | 'PARTIAL' | 'VERIFIED' | 'FAILED';
+  similarity: number | null;
+  failure_reason: string | null;
+  verified_at: string | null;
+}
+
 export interface CombinationDetail {
   id: string;
   code: string;
@@ -148,6 +163,7 @@ export interface ApplicationDetailData extends ApplicationWithDetails {
   academic_record: AcademicRecordFull | null;
   documents: CandidateDocumentItem[];
   combination: CombinationDetail | null;
+  ekyc: EkycSummary | null;
 }
 
 export interface StatusLog {

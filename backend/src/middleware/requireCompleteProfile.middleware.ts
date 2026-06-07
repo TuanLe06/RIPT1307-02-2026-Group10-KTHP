@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { RowDataPacket } from 'mysql2/promise';
 import pool from '../config/database';
+import { CandidateIdentityVerificationModel } from '../models/candidate-identity-verification.model';
 
 interface CompletenessResult {
   isComplete: boolean;
@@ -26,6 +27,11 @@ const checkCompleteness = async (userId: number): Promise<CompletenessResult> =>
   if (!p.gender) missingFields.push('Giới tính');
   if (!p.province) missingFields.push('Tỉnh/Thành phố');
   if (!p.address) missingFields.push('Địa chỉ');
+
+  const isIdentityVerified = await CandidateIdentityVerificationModel.isVerified(userId);
+  if (!isIdentityVerified) {
+    missingFields.push('Xác thực CCCD/eKYC');
+  }
 
   const [recordRows] = await pool.execute<RowDataPacket[]>(
     `SELECT ar.id, ar.graduation_year
