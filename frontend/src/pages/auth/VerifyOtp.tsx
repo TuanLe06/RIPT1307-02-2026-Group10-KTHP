@@ -133,7 +133,7 @@ const VerifyOtp = () => {
     try {
       const res = await authApi.resendOtp({ email });
       if (res.success) {
-        message.success('Mã OTP mới đã được gửi đến email của cậu.');
+        message.success('Mã OTP mới đã được gửi đến email của bạn.');
         startCooldown();
         setOtp(Array(6).fill(''));
         inputRefs.current[0]?.focus();
@@ -204,7 +204,7 @@ const VerifyOtp = () => {
       </div>
 
       <p className="text-center text-[15px] leading-6 text-text-secondary">
-        Cậu không nhận được mã?{' '}
+        Bạn không nhận được mã?{' '}
         {canResend ? (
           <button
             className="border-none bg-transparent text-[15px] font-bold text-primary transition-all hover:underline disabled:opacity-60"
@@ -334,12 +334,12 @@ const VerifyOtp = () => {
         </>
       }
       visualIcon="pin"
-      visualTitle="Kiểm tra email của cậu"
+      visualTitle="Kiểm tra email của bạn"
       visualDescription="Nhập mã OTP để xác minh yêu cầu khôi phục mật khẩu trong AdmisX."
       footer={
         step === 'otp' ? (
           <p>
-            Cậu đã nhớ mật khẩu?{' '}
+            Bạn đã nhớ mật khẩu?{' '}
             <Link className="font-bold text-primary transition-all hover:underline" to="/login">
               Quay lại đăng nhập
             </Link>

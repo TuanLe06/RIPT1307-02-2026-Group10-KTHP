@@ -71,7 +71,7 @@ const Footer = () => {
         <div className="flex flex-col gap-3 border-t border-hairline-soft pt-5 text-[13px] leading-[1.6] text-text-secondary md:flex-row md:items-center md:justify-between">
           <p>&copy; 2026 Cổng tuyển sinh AdmisX. Bảo lưu mọi quyền.</p>
           <p className="text-text-secondary">
-            Đồng hành cùng hành trình xét tuyển đại học của cậu.
+            Đồng hành cùng hành trình xét tuyển đại học của bạn.
           </p>
         </div>
       </div>

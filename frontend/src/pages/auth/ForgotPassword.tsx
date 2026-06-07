@@ -25,7 +25,7 @@ const ForgotPassword = () => {
     try {
       const res = await authApi.forgotPassword({ email: values.email });
       if (res.success) {
-        message.success('Mã OTP đã được gửi đến email của cậu.');
+        message.success('Mã OTP đã được gửi đến email của bạn.');
         navigate(`/verify-otp?email=${encodeURIComponent(values.email)}`);
       }
     } catch (err: unknown) {
@@ -45,10 +45,10 @@ const ForgotPassword = () => {
       description="Nhập email đã đăng ký để nhận mã OTP khôi phục mật khẩu."
       visualIcon="mark_email_unread"
       visualTitle="Lấy lại quyền truy cập"
-      visualDescription="AdmisX sẽ gửi mã xác thực đến email của cậu để đặt lại mật khẩu an toàn."
+      visualDescription="AdmisX sẽ gửi mã xác thực đến email của bạn để đặt lại mật khẩu an toàn."
       footer={
         <p>
-          Cậu đã nhớ mật khẩu?{' '}
+          Bạn đã nhớ mật khẩu?{' '}
           <Link className="font-bold text-primary transition-all hover:underline" to="/login">
             Quay lại đăng nhập
           </Link>
