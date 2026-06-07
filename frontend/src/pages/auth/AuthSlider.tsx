@@ -160,7 +160,7 @@ const AuthSlider = ({ initialMode }: AuthSliderProps) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      <Header onAuthNavigate={switchMode} />
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
         <section className="w-full max-w-[980px] overflow-hidden rounded-xxxl border border-hairline-soft bg-surface-container-lowest shadow-[0_22px_70px_rgba(15,23,42,0.12)]">
           <div className="lg:hidden border-b border-hairline-soft bg-surface-container-low p-2">
