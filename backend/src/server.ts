@@ -19,6 +19,7 @@ import candidateRoutes from "./routes/candidate.routes";
 import candidateProfileRoutes from "./routes/candidate-profile.routes";
 import combinationRoutes from "./routes/combination.routes";
 import combinationAssignmentRoutes from "./routes/combinationAssignment.routes";
+import ekycRoutes from "./routes/ekyc.routes";
 import universityRoutes from "./routes/university.routes";
 import userRoutes from "./routes/user.routes";
 import path from 'path';
@@ -69,6 +70,7 @@ app.use(
 );
 app.use("/api/combinations", combinationRoutes);
 app.use("/api/candidate", candidateProfileRoutes);
+app.use("/api/candidate/ekyc", ekycRoutes);
 app.use("/api/candidate", candidateRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/applications", adminApplicationRoutes);

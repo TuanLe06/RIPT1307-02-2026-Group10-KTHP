@@ -77,6 +77,41 @@ const STATUS_STYLES: Record<
   },
 };
 
+const EKYC_DISPLAY: Record<string, string> = {
+  UNVERIFIED: "Chưa xác thực",
+  PARTIAL: "Đang xác thực",
+  VERIFIED: "Đã xác thực",
+  FAILED: "Thất bại",
+  PENDING: "Chờ xử lý",
+};
+
+const EKYC_STYLES: Record<string, string> = {
+  VERIFIED: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/12 dark:text-emerald-300 dark:border-emerald-400/30",
+  PARTIAL: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/12 dark:text-sky-300 dark:border-sky-400/30",
+  FAILED: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/12 dark:text-rose-300 dark:border-rose-400/30",
+  UNVERIFIED: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/12 dark:text-slate-300 dark:border-slate-400/30",
+  PENDING: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/12 dark:text-slate-300 dark:border-slate-400/30",
+};
+
+const getEkycDisplay = (status?: string | null) =>
+  EKYC_DISPLAY[status || "UNVERIFIED"] || status || "--";
+
+const getEkycStyle = (status?: string | null) =>
+  EKYC_STYLES[status || "UNVERIFIED"] || EKYC_STYLES.UNVERIFIED;
+
+const StatusBadge = ({ status, className = "" }: { status: string; className?: string }) => {
+  const st = STATUS_STYLES[status] || STATUS_STYLES.DRAFT;
+
+  return (
+    <span
+      className={`inline-flex h-7 min-w-[104px] items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-[11px] font-bold leading-none shadow-sm ${st.bg} ${st.text} ${st.border} ${className}`}
+    >
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${st.dot}`} />
+      <span>{STATUS_DISPLAY[status] || status}</span>
+    </span>
+  );
+};
+
 const COLUMN_CONFIG_STORAGE_KEY = "admin_applications_visible_columns";
 const DEFAULT_COLUMN_KEYS = [
   "code",
@@ -431,7 +466,7 @@ const Applications = () => {
       dataIndex: "submitted_at",
       key: "date",
       render: (v: string | null) => (
-        <span className="text-xs text-text-secondary">
+        <span className="text-[10px] text-text-secondary">
           {v ? new Date(v).toLocaleDateString("vi-VN") : "--"}
         </span>
       ),
@@ -461,7 +496,7 @@ const Applications = () => {
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:bg-surface-container hover:text-primary transition-all"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-outline transition-all hover:bg-surface-container hover:text-primary"
             title="Xem chi tiết"
             onClick={() => openDetail(record)}
           >
@@ -473,7 +508,7 @@ const Applications = () => {
             record.status === "PENDING_REVIEW") && (
             <>
               <button
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:bg-success/10 hover:text-success transition-all"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-outline transition-all hover:bg-success/10 hover:text-success"
                 title="Duyệt"
                 onClick={() => openUpdate(record, "APPROVED")}
               >
@@ -482,7 +517,7 @@ const Applications = () => {
                 </span>
               </button>
               <button
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-outline hover:bg-error-container hover:text-error transition-all"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-outline transition-all hover:bg-error-container hover:text-error"
                 title="Từ chối"
                 onClick={() => openUpdate(record, "REJECTED")}
               >
@@ -815,7 +850,7 @@ const Applications = () => {
               }
             },
           }}
-          className="[&_.ant-table-thead_.ant-table-cell]:!bg-surface-container-low [&_.ant-table-thead_.ant-table-cell]:!text-xs [&_.ant-table-thead_.ant-table-cell]:!font-bold [&_.ant-table-thead_.ant-table-cell]:!text-text-secondary [&_.ant-table-thead_.ant-table-cell]:!uppercase [&_.ant-table-tbody_.ant-table-row]:!cursor-pointer"
+          className="[&_.ant-table-cell]:!px-3 [&_.ant-table-cell]:!py-2 [&_.ant-table-tbody_.ant-table-cell]:!align-middle [&_.ant-table-thead_.ant-table-cell]:!bg-surface-container-low [&_.ant-table-thead_.ant-table-cell]:!text-[10px] [&_.ant-table-thead_.ant-table-cell]:!font-bold [&_.ant-table-thead_.ant-table-cell]:!leading-4 [&_.ant-table-thead_.ant-table-cell]:!text-text-secondary [&_.ant-table-thead_.ant-table-cell]:!uppercase [&_.ant-table-tbody_.ant-table-row]:!cursor-pointer"
           onRow={(record) => ({
             onClick: () => openDetail(record),
           })}
@@ -1074,7 +1109,82 @@ const Applications = () => {
               </div>
             )}
 
-            {/* Section 3: Điểm thi */}
+            {/* Section 3: eKYC CCCD */}
+            <div>
+              <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-lg">
+                  verified_user
+                </span>
+                eKYC CCCD
+              </h4>
+              <div className="bg-surface-container-low rounded-lg p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Trạng thái tổng thể
+                    </p>
+                    <span
+                      className={`mt-1 inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold ${getEkycStyle(selectedApp.ekyc?.overall_status)}`}
+                    >
+                      {getEkycDisplay(selectedApp.ekyc?.overall_status)}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Thời gian xác thực
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.ekyc?.verified_at
+                        ? new Date(
+                            selectedApp.ekyc.verified_at,
+                          ).toLocaleString("vi-VN")
+                        : "--"}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[
+                    ["Mặt trước", selectedApp.ekyc?.front_status || "PENDING"],
+                    ["Mặt sau", selectedApp.ekyc?.back_status || "PENDING"],
+                    ["Chân dung", selectedApp.ekyc?.face_status || "PENDING"],
+                  ].map(([label, status]) => (
+                    <div
+                      key={label}
+                      className="rounded-md border border-border bg-surface p-3"
+                    >
+                      <p className="text-xs font-bold text-text-secondary uppercase">
+                        {label}
+                      </p>
+                      <p className="text-sm font-semibold text-on-surface mt-1">
+                        {getEkycDisplay(status)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Similarity
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5">
+                      {selectedApp.ekyc?.similarity != null
+                        ? `${selectedApp.ekyc.similarity}%`
+                        : "--"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-text-secondary uppercase">
+                      Lý do thất bại
+                    </p>
+                    <p className="text-sm text-on-surface mt-0.5 break-words">
+                      {selectedApp.ekyc?.failure_reason || "--"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Điểm thi */}
             {selectedApp.academic_record?.academic_record?.exam_scores &&
               selectedApp.academic_record.academic_record.exam_scores.length >
                 0 && (
@@ -1124,7 +1234,7 @@ const Applications = () => {
                 </div>
               )}
 
-            {/* Section 4: Học vấn */}
+            {/* Section 5: Học vấn */}
             {selectedApp.academic_record?.academic_record && (
               <div>
                 <h4 className="text-sm font-bold text-text-primary mb-3 flex items-center gap-2">
@@ -1286,11 +1396,7 @@ const Applications = () => {
                         <div className="absolute left-[-13.5px] top-3.5 bottom-[-16px] w-px bg-hairline" />
                       )}
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`inline-flex items-center gap-xs px-sm py-[2px] rounded-full text-xs font-bold ${getStatusStyle(log.new_status).bg} ${getStatusStyle(log.new_status).text} border ${getStatusStyle(log.new_status).border}`}
-                        >
-                          {STATUS_DISPLAY[log.new_status] || log.new_status}
-                        </span>
+                        <StatusBadge status={log.new_status} />
                         <span className="text-xs text-text-secondary">
                           {new Date(log.created_at).toLocaleString("vi-VN")}
                         </span>

@@ -18,6 +18,10 @@ const swaggerSpec = {
       name: "Candidate Profile",
       description: "Thông tin hồ sơ cá nhân thí sinh",
     },
+    {
+      name: "Candidate eKYC",
+      description: "Verify candidate citizen ID documents and portrait face match",
+    },
     { name: "Admin", description: "Các API quản trị hệ thống" },
     { name: "Majors", description: "Quản lý thông tin ngành học theo trường" },
     { name: "Users", description: "Quản lý người dùng hệ thống" },
@@ -53,6 +57,72 @@ const swaggerSpec = {
         type: "http",
         scheme: "bearer",
         bearerFormat: "JWT",
+      },
+    },
+    schemas: {
+      EkycStatusSummary: {
+        type: "object",
+        properties: {
+          id: { type: "integer", example: 1 },
+          user_id: { type: "integer", example: 2 },
+          front_document_id: { type: "integer", nullable: true, example: 123 },
+          back_document_id: { type: "integer", nullable: true, example: 124 },
+          portrait_document_id: { type: "integer", nullable: true, example: 125 },
+          front_status: {
+            type: "string",
+            enum: ["PENDING", "VERIFIED", "FAILED"],
+            example: "VERIFIED",
+          },
+          back_status: {
+            type: "string",
+            enum: ["PENDING", "VERIFIED", "FAILED"],
+            example: "VERIFIED",
+          },
+          face_status: {
+            type: "string",
+            enum: ["PENDING", "VERIFIED", "FAILED"],
+            example: "VERIFIED",
+          },
+          overall_status: {
+            type: "string",
+            enum: ["UNVERIFIED", "PARTIAL", "VERIFIED", "FAILED"],
+            example: "VERIFIED",
+          },
+          similarity: {
+            type: "number",
+            nullable: true,
+            example: 92.5,
+            description: "Face matching score. Final success still depends on overall_status = VERIFIED.",
+          },
+          failure_reason: {
+            type: "string",
+            nullable: true,
+            example: "Portrait does not match citizen ID",
+          },
+          verified_at: {
+            type: "string",
+            format: "date-time",
+            nullable: true,
+            example: "2026-06-07T08:30:00.000Z",
+          },
+        },
+      },
+      EkycStatusResponse: {
+        type: "object",
+        properties: {
+          success: { type: "boolean", example: true },
+          message: { type: "string", example: "Portrait verified" },
+          data: { $ref: "#/components/schemas/EkycStatusSummary" },
+        },
+      },
+      EkycErrorResponse: {
+        type: "object",
+        properties: {
+          success: { type: "boolean", example: false },
+          message: { type: "string", example: "Portrait verification failed" },
+          code: { type: "string", example: "EKYC_FACE_MISMATCH" },
+          data: { $ref: "#/components/schemas/EkycStatusSummary" },
+        },
       },
     },
   },
@@ -814,6 +884,272 @@ const swaggerSpec = {
           401: { description: "Chưa xác thực" },
           403: { description: "Không đúng vai trò THÍ SINH" },
           404: { description: "Không tìm thấy hồ sơ thí sinh" },
+        },
+      },
+    },
+    "/api/candidate/ekyc/status": {
+      get: {
+        tags: ["Candidate eKYC"],
+        summary: "Get current candidate eKYC status",
+        description:
+          "Use this endpoint to check whether overall_status is VERIFIED. Uploading documents alone does not mark eKYC as successful.",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Current eKYC status",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/EkycStatusResponse" },
+                examples: {
+                  unverified: {
+                    value: {
+                      success: true,
+                      data: {
+                        id: 0,
+                        user_id: 2,
+                        front_document_id: null,
+                        back_document_id: null,
+                        portrait_document_id: null,
+                        front_status: "PENDING",
+                        back_status: "PENDING",
+                        face_status: "PENDING",
+                        overall_status: "UNVERIFIED",
+                        similarity: null,
+                        failure_reason: null,
+                        verified_at: null,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+        },
+      },
+    },
+    "/api/candidate/ekyc/front": {
+      post: {
+        tags: ["Candidate eKYC"],
+        summary: "Verify citizen ID front side",
+        description:
+          "Requires an uploaded document with document_type = CITIZEN_ID_Front. Success requires FPT OCR errorCode = 0, type_new = cccd_12_front, and the OCR citizen ID matching the candidate profile.",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["document_id"],
+                properties: {
+                  document_id: {
+                    type: "integer",
+                    minimum: 1,
+                    example: 123,
+                    description: "ID returned from POST /api/candidate/profile/documents",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Citizen ID front verified",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/EkycStatusResponse" },
+              },
+            },
+          },
+          400: { description: "Invalid document_id or wrong document type" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Document not found, not owned by candidate, or soft deleted" },
+          422: {
+            description: "OCR failed, wrong citizen ID side, or citizen ID mismatch",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/EkycErrorResponse" },
+                examples: {
+                  wrongSide: {
+                    value: {
+                      success: false,
+                      message: "Citizen ID front verification failed",
+                      data: {
+                        front_status: "FAILED",
+                        overall_status: "FAILED",
+                        failure_reason: "CCCD front side is invalid",
+                      },
+                    },
+                  },
+                  citizenIdMismatch: {
+                    value: {
+                      success: false,
+                      message: "Citizen ID front verification failed",
+                      data: {
+                        front_status: "FAILED",
+                        overall_status: "FAILED",
+                        failure_reason: "Citizen ID does not match profile",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          502: { description: "Provider error or cannot read uploaded document" },
+          503: { description: "Provider timeout or provider is not configured" },
+        },
+      },
+    },
+    "/api/candidate/ekyc/back": {
+      post: {
+        tags: ["Candidate eKYC"],
+        summary: "Verify citizen ID back side",
+        description:
+          "Requires an uploaded document with document_type = CITIZEN_ID_Back. Success requires FPT OCR errorCode = 0 and type_new = new_back.",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["document_id"],
+                properties: {
+                  document_id: {
+                    type: "integer",
+                    minimum: 1,
+                    example: 124,
+                    description: "ID returned from POST /api/candidate/profile/documents",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Citizen ID back verified",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/EkycStatusResponse" },
+              },
+            },
+          },
+          400: { description: "Invalid document_id or wrong document type" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Document not found, not owned by candidate, or soft deleted" },
+          422: {
+            description: "OCR failed or wrong citizen ID side",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/EkycErrorResponse" },
+                example: {
+                  success: false,
+                  message: "Citizen ID back verification failed",
+                  data: {
+                    back_status: "FAILED",
+                    overall_status: "FAILED",
+                    failure_reason: "CCCD back side is invalid",
+                  },
+                },
+              },
+            },
+          },
+          502: { description: "Provider error or cannot read uploaded document" },
+          503: { description: "Provider timeout or provider is not configured" },
+        },
+      },
+    },
+    "/api/candidate/ekyc/verify": {
+      post: {
+        tags: ["Candidate eKYC"],
+        summary: "Verify portrait against verified citizen ID front",
+        description:
+          "Requires the front document to be already verified. Success requires FPT face matching isMatch = true and similarity >= EKYC_FACE_SIMILARITY_THRESHOLD, default 80.",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["front_document_id", "portrait_document_id"],
+                properties: {
+                  front_document_id: {
+                    type: "integer",
+                    minimum: 1,
+                    example: 123,
+                    description: "Verified CITIZEN_ID_Front document id",
+                  },
+                  portrait_document_id: {
+                    type: "integer",
+                    minimum: 1,
+                    example: 125,
+                    description: "Uploaded PORTRAIT document id",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: "Portrait verified. overall_status becomes VERIFIED only when front, back, and face are all VERIFIED.",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/EkycStatusResponse" },
+                example: {
+                  success: true,
+                  message: "Portrait verified",
+                  data: {
+                    id: 1,
+                    user_id: 2,
+                    front_document_id: 123,
+                    back_document_id: 124,
+                    portrait_document_id: 125,
+                    front_status: "VERIFIED",
+                    back_status: "VERIFIED",
+                    face_status: "VERIFIED",
+                    overall_status: "VERIFIED",
+                    similarity: 92.5,
+                    failure_reason: null,
+                    verified_at: "2026-06-07T08:30:00.000Z",
+                  },
+                },
+              },
+            },
+          },
+          400: { description: "Invalid ids or wrong document type" },
+          401: { description: "Chưa xác thực" },
+          403: { description: "Không đúng vai trò THÍ SINH" },
+          404: { description: "Document not found, not owned by candidate, or soft deleted" },
+          409: { description: "Citizen ID front document is not verified" },
+          422: {
+            description: "Face matching failed or similarity is below threshold",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/EkycErrorResponse" },
+                example: {
+                  success: false,
+                  message: "Portrait verification failed",
+                  data: {
+                    face_status: "FAILED",
+                    similarity: 60,
+                    overall_status: "FAILED",
+                    failure_reason: "Portrait does not match citizen ID",
+                  },
+                },
+              },
+            },
+          },
+          502: { description: "Provider error or cannot read uploaded document" },
+          503: { description: "Provider timeout or provider is not configured" },
         },
       },
     },

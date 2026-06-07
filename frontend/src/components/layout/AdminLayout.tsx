@@ -13,6 +13,7 @@ import { authApi } from '../../api/auth';
 import { notificationApi, type AdminNotification } from '../../api/notifications';
 import { useTheme } from '../../hooks/useTheme';
 import { useSocket } from '../../hooks/useSocket';
+import Footer from './Footer';
 
 const navItems = [
   {
@@ -388,16 +389,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        <footer className="bg-surface-container-low border-t border-outline-variant px-4 lg:px-6 py-3 font-metadata text-metadata text-text-secondary">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-2">
-            <span>&copy; 2024 AdmisX Admin Dashboard. All rights reserved.</span>
-            <div className="flex gap-4">
-              <a className="hover:text-primary transition-colors" href="#">Chính sách</a>
-              <a className="hover:text-primary transition-colors" href="#">Điều khoản</a>
-              <a className="hover:text-primary transition-colors" href="#">Trợ giúp</a>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </main>
 
       <Modal

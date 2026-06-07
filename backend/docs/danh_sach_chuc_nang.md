@@ -183,3 +183,18 @@
 | 4 | Tải lên minh chứng | Thí sinh |
 | 5 | Kiểm tra & Xác nhận | Thí sinh |
 | 6 | Duyệt Hồ sơ | Quản trị viên |
+
+---
+
+## Phu luc: Flow xac thuc eKYC CCCD
+
+| Buoc | Mo ta | Tac nhan |
+|------|-------|----------|
+| 1 | Upload CCCD mat truoc, CCCD mat sau va anh chan dung bang API tai lieu | Thi sinh |
+| 2 | Goi API eKYC mat truoc voi `document_id` cua `CITIZEN_ID_Front` | Thi sinh / He thong |
+| 3 | Goi API eKYC mat sau voi `document_id` cua `CITIZEN_ID_Back` | Thi sinh / He thong |
+| 4 | Goi API doi chieu chan dung voi `front_document_id` va `portrait_document_id` | Thi sinh / He thong |
+| 5 | Chi cho tao/nop ho so khi `overall_status = VERIFIED` | He thong |
+| 6 | Admin xem eKYC summary trong chi tiet ho so, khong xem raw OCR response | Quan tri vien |
+
+Luu y: API upload tai lieu chi luu file minh chung, khong tu goi OCR/face matching va khong tu danh dau eKYC thanh cong.

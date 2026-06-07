@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import { ApplicationModel } from '../models/application.model';
 import { ApplicationStatusLogModel, EmailNotificationModel } from '../models/notification.model';
 import { CandidateProfileModel } from '../models/candidate-profile.model';
+import { CandidateIdentityVerificationModel } from '../models/candidate-identity-verification.model';
 import { AdmissionCombinationModel } from '../models/admissionCombination.model';
 
 // ===================== ADMIN APPLICATION MANAGEMENT =====================
@@ -109,13 +110,14 @@ export const getApplicationDetailAdmin = async (req: Request, res: Response): Pr
     const statusLogs = await ApplicationStatusLogModel.findByApplicationId(parseInt(id as string));
 
     const candidateId = application.candidate_id;
-    const [candidateProfile, academicRecord, documents, combination] = await Promise.all([
+    const [candidateProfile, academicRecord, documents, combination, ekycStatus] = await Promise.all([
       CandidateProfileModel.getFullByUserId(candidateId),
       CandidateProfileModel.getAcademicByUserId(candidateId),
       CandidateProfileModel.listDocumentsByUserId(candidateId),
       application.combination_id
         ? AdmissionCombinationModel.findById(application.combination_id)
         : Promise.resolve(null),
+      CandidateIdentityVerificationModel.getOrDefaultByUserId(candidateId),
     ]);
 
     res.json({
@@ -127,6 +129,7 @@ export const getApplicationDetailAdmin = async (req: Request, res: Response): Pr
         academic_record: academicRecord,
         documents: documents || [],
         combination,
+        ekyc: ekycStatus,
       },
     });
   } catch (error) {

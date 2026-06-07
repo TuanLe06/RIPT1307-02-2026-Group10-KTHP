@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { CandidateExamScoresPayload, CandidateProfileModel } from '../models/candidate-profile.model';
+import { CandidateIdentityVerificationModel } from '../models/candidate-identity-verification.model';
 import { deleteAssetByPublicId, uploadDocumentBuffer } from '../services/cloudinary.service';
 
 export const candidateDocumentDeps = {
@@ -313,6 +314,8 @@ export const deleteCandidateDocument = async (req: Request, res: Response): Prom
     res.status(500).json({ success: false, message: 'Failed to soft delete document after cloud delete' });
     return;
   }
+
+  await CandidateIdentityVerificationModel.resetForDeletedDocument(req.user!.id, documentId);
 
   res.json({ success: true, message: 'Document deleted' });
 };
