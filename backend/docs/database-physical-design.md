@@ -109,7 +109,7 @@ CREATE TABLE major_combinations (
 ## 7) Bảng `candidate_profiles`
 ```sql
 CREATE TABLE candidate_profiles (
-  citizen_id BIGINT UNSIGNED PRIMARY KEY,
+  citizen_id VARCHAR(20) PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
   full_name VARCHAR(255) NOT NULL,
   phone VARCHAR(20) NULL,
@@ -135,7 +135,7 @@ CREATE TABLE candidate_profiles (
 ```sql
 CREATE TABLE applications (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  candidate_id BIGINT UNSIGNED NOT NULL,
+  candidate_id VARCHAR(20) NOT NULL,
   application_code VARCHAR(50) NOT NULL,
   university_id BIGINT UNSIGNED NOT NULL,
   major_id BIGINT UNSIGNED NOT NULL,
@@ -158,7 +158,7 @@ CREATE TABLE applications (
   KEY idx_app_combination_id (combination_id),
   KEY idx_app_reviewed_by (reviewed_by),
   CONSTRAINT fk_app_candidate
-    FOREIGN KEY (candidate_id) REFERENCES users(id),
+    FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(citizen_id),
   CONSTRAINT fk_app_university
     FOREIGN KEY (university_id) REFERENCES universities(id),
   CONSTRAINT fk_app_major
