@@ -1,4 +1,4 @@
-import http from 'http';
+import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { type Express } from "express";
@@ -20,9 +20,11 @@ import candidateProfileRoutes from "./routes/candidate-profile.routes";
 import combinationRoutes from "./routes/combination.routes";
 import combinationAssignmentRoutes from "./routes/combinationAssignment.routes";
 import ekycRoutes from "./routes/ekyc.routes";
+import nationalityRoutes from "./routes/nationality.routes";
 import universityRoutes from "./routes/university.routes";
 import userRoutes from "./routes/user.routes";
-import path from 'path';
+import vietnamLocationRoutes from "./routes/vietnam-location.routes";
+import path from "path";
 import { initSocket } from "./socket";
 
 dotenv.config();
@@ -30,13 +32,15 @@ dotenv.config();
 const app: Express = express();
 const server = http.createServer(app);
 const io = initSocket(server);
-app.set('io', io);
+app.set("io", io);
 
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(helmet());
-const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(",").map((s) => s.trim());
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((s) => s.trim());
 app.use(
   cors({
     origin: corsOrigins,
@@ -48,7 +52,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files locally
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -69,6 +73,8 @@ app.use(
   combinationAssignmentRoutes,
 );
 app.use("/api/combinations", combinationRoutes);
+app.use("/api/nationalities", nationalityRoutes);
+app.use("/api/vietnam-locations", vietnamLocationRoutes);
 app.use("/api/candidate", candidateProfileRoutes);
 app.use("/api/candidate/ekyc", ekycRoutes);
 app.use("/api/candidate", candidateRoutes);

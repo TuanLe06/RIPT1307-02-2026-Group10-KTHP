@@ -8,6 +8,46 @@ import { EmailNotificationModel, ApplicationStatusLogModel } from '../models/not
 import { UserModel } from '../models/user.model';
 import { isWithinDeadline, getDeadlineStatus } from '../utils/deadline.util';
 
+const SUBJECT_MISMATCH_MESSAGE = 'Môn thi đã khai báo không khớp với tổ hợp xét tuyển đã chọn';
+
+const normalizeSubjectName = (subject: string): string =>
+  subject
+    .normalize('NFD')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+
+const SUBJECT_CODE_BY_NORMALIZED_NAME: Record<string, string> = {
+  toan: 'TOAN',
+  van: 'VAN',
+  nguvan: 'VAN',
+  ly: 'LY',
+  la: 'LY',
+  vatly: 'LY',
+  hoa: 'HOA',
+  haa: 'HOA',
+  hoahoc: 'HOA',
+  sinh: 'SINH',
+  su: 'SU',
+  sa: 'SU',
+  lichsu: 'SU',
+  dia: 'DIA',
+  aaa: 'DIA',
+  dialy: 'DIA',
+  gdktpl: 'GDKTPL',
+  tinhoc: 'TINHOC',
+  tinhac: 'TINHOC',
+  congnghe: 'CONGNGHE',
+  cangngha: 'CONGNGHE',
+  anh: 'NGOAINGU',
+  ngoaingu: 'NGOAINGU',
+  ngoainga: 'NGOAINGU',
+};
+
+const toSubjectCode = (subject: string): string =>
+  SUBJECT_CODE_BY_NORMALIZED_NAME[normalizeSubjectName(subject)] ?? subject.trim().toUpperCase();
+
 export const getDeadlineInfo = async (_req: Request, res: Response): Promise<void> => {
   res.json({ success: true, data: getDeadlineStatus() });
 };
@@ -109,6 +149,26 @@ export const submitApplication = async (req: Request, res: Response): Promise<vo
     const alreadySubmitted = await ApplicationModel.hasSubmittedInCurrentPeriod(req.user!.id);
     if (alreadySubmitted) {
       res.status(409).json({ success: false, message: 'Bạn đã đăng ký xét tuyển trong kỳ tuyển sinh này và không thể nộp thêm.' });
+      return;
+    }
+
+    const combination = await AdmissionCombinationModel.findById(application.combination_id);
+    const academic = await CandidateProfileModel.getAcademicByUserId(req.user!.id);
+    const requiredSubjects = combination
+      ? [combination.subject_1, combination.subject_2, combination.subject_3].map(toSubjectCode)
+      : [];
+    const declaredSubjects = new Set(
+      academic?.academic_record?.exam_scores.map((score) => score.subject_code.toUpperCase()) ?? []
+    );
+    const missingSubjects = requiredSubjects.filter((subject) => !declaredSubjects.has(subject));
+
+    if (!combination || requiredSubjects.length !== 3 || missingSubjects.length > 0) {
+      res.status(400).json({
+        success: false,
+        message: SUBJECT_MISMATCH_MESSAGE,
+        missing_subjects: missingSubjects.length ? missingSubjects : requiredSubjects,
+        required_subjects: requiredSubjects,
+      });
       return;
     }
 

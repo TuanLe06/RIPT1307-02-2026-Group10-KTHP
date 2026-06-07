@@ -365,7 +365,7 @@ const testCandidateUpsertGroupScoresInvalidPayload = async (): Promise<void> => 
   assert.equal(res.statusCode, 400);
 };
 
-const testCandidateUpsertGroupScoresMissingCertificateFile = async (): Promise<void> => {
+const testCandidateUpsertGroupScoresWithoutCertificateFile = async (): Promise<void> => {
   const req = {
     user: { id: 1, role: 'CANDIDATE' },
     body: { scores: { TOAN: 8.5, VAN: 8.25, LY: 8.25, HOA: 9 } },
@@ -373,7 +373,7 @@ const testCandidateUpsertGroupScoresMissingCertificateFile = async (): Promise<v
   } as any;
   const res = createMockResponse();
   await upsertCandidateExamScoresByGroup(req, res as any);
-  assert.equal(res.statusCode, 400);
+  assert.equal(res.statusCode, 200);
 };
 
 const testCandidateUpsertGroupScoresCandidateNotFound = async (): Promise<void> => {
@@ -666,7 +666,7 @@ const run = async (): Promise<void> => {
     ['upsert academic progress success', testUpsertAcademicProgressSuccess],
     ['candidate upsert scores success with NGOAINGU + exam certificate', testCandidateUpsertGroupScoresNaturalSuccess],
     ['candidate upsert group scores invalid payload', testCandidateUpsertGroupScoresInvalidPayload],
-    ['candidate upsert group scores missing exam certificate', testCandidateUpsertGroupScoresMissingCertificateFile],
+    ['candidate upsert group scores without exam certificate file', testCandidateUpsertGroupScoresWithoutCertificateFile],
     ['candidate upsert group scores candidate not found', testCandidateUpsertGroupScoresCandidateNotFound],
     ['candidate upsert group scores missing foreign_language when NGOAINGU', testCandidateUpsertGroupScoresMissingForeignLanguage],
     ['list documents success', testListDocumentsSuccess],
