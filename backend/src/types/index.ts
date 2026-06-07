@@ -13,7 +13,7 @@ export interface User {
 }
 
 export interface CandidateProfile {
-  citizen_id: number;
+  citizen_id: string;
   user_id: number;
   full_name: string;
   phone: string | null;

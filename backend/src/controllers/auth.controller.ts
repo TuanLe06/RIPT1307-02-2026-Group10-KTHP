@@ -34,12 +34,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { citizen_id, full_name, email, password } = req.body as {
-    citizen_id: number;
-    full_name: string;
-    email: string;
-    password: string;
-  };
+const { citizen_id, full_name, email, password } = req.body as {
+     citizen_id: string;
+     full_name: string;
+     email: string;
+     password: string;
+   };
 
   if (await UserModel.existsByEmail(email)) {
     res.status(409).json({
@@ -50,23 +50,23 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  if (await UserModel.existsCandidateByCitizenId(Number(citizen_id))) {
-    res.status(409).json({
-      success: false,
-      message: 'Số CCCD đã tồn tại',
-      code: AUTH_ERRORS.CITIZEN_ID_EXISTS,
-    });
-    return;
-  }
+if (await UserModel.existsCandidateByCitizenId(citizen_id)) {
+     res.status(409).json({
+       success: false,
+       message: 'Số CCCD đã tồn tại',
+       code: AUTH_ERRORS.CITIZEN_ID_EXISTS,
+     });
+     return;
+   }
 
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = await UserModel.createCandidateWithProfile({
-      citizen_id: Number(citizen_id),
-      full_name: full_name.trim(),
-      email: email.toLowerCase().trim(),
-      password_hash: passwordHash,
-    });
+const user = await UserModel.createCandidateWithProfile({
+       citizen_id: citizen_id,
+       full_name: full_name.trim(),
+       email: email.toLowerCase().trim(),
+       password_hash: passwordHash,
+     });
 
     res.status(201).json({
       success: true,
@@ -101,10 +101,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body as { email: string; password: string };
   const identifier = email.trim();
 
-  let user = await UserModel.findAuthByEmail(identifier.toLowerCase());
-  if (!user && /^\d+$/.test(identifier)) {
-    user = await UserModel.findAuthByCitizenId(Number(identifier));
-  }
+let user = await UserModel.findAuthByEmail(identifier.toLowerCase());
+   if (!user && /^\d+$/.test(identifier)) {
+     user = await UserModel.findAuthByCitizenId(identifier);
+   }
   if (!user) {
     res.status(401).json({
       success: false,
