@@ -154,7 +154,7 @@ const migrate = async (): Promise<void> => {
       KEY idx_app_combination_id (combination_id),
       KEY idx_app_reviewed_by (reviewed_by),
       CONSTRAINT fk_app_candidate
-        FOREIGN KEY (candidate_id) REFERENCES users(id),
+        FOREIGN KEY (candidate_id) REFERENCES candidate_profiles(citizen_id),
       CONSTRAINT fk_app_university
         FOREIGN KEY (university_id) REFERENCES universities(id),
       CONSTRAINT fk_app_major
@@ -167,7 +167,7 @@ const migrate = async (): Promise<void> => {
 
     `CREATE TABLE IF NOT EXISTS academic_records (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      candidate_id VARCHAR(20) NOT NULL
+      candidate_id VARCHAR(20) NOT NULL,
       graduation_year INT NULL,
       total_score DECIMAL(5,2) NULL,
       priority_score DECIMAL(4,2) NOT NULL DEFAULT 0,
@@ -235,7 +235,7 @@ const migrate = async (): Promise<void> => {
 
     `CREATE TABLE IF NOT EXISTS candidate_documents (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      candidate_id VARCHAR(20) NOT NULL
+      candidate_id VARCHAR(20) NOT NULL,
       document_type ENUM('TRANSCRIPT','CITIZEN_ID_Front','CITIZEN_ID_Back','PORTRAIT','CERTIFICATE','EXAM_CERTIFICATE','OTHER') NOT NULL,
       file_name VARCHAR(255) NOT NULL,
       display_name VARCHAR(255) NULL,
