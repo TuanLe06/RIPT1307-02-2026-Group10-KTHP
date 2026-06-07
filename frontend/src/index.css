@@ -397,6 +397,12 @@ body {
   caret-color: var(--color-text-primary) !important;
 }
 
+.auth-login-input input.ant-input::selection,
+.auth-login-input .ant-input::selection {
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
+}
+
 .auth-login-input input.ant-input::placeholder,
 .auth-login-input .ant-input::placeholder {
   color: var(--color-slate) !important;
@@ -404,6 +410,19 @@ body {
 
 .auth-login-input .material-symbols-outlined {
   color: var(--color-outline) !important;
+}
+
+.auth-login-input input.ant-input:-webkit-autofill,
+.auth-login-input input.ant-input:-webkit-autofill:hover,
+.auth-login-input input.ant-input:-webkit-autofill:focus,
+.auth-login-input .ant-input:-webkit-autofill,
+.auth-login-input .ant-input:-webkit-autofill:hover,
+.auth-login-input .ant-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface-container-lowest) inset !important;
+  box-shadow: 0 0 0 1000px var(--color-surface-container-lowest) inset !important;
+  caret-color: var(--color-text-primary) !important;
+  transition: background-color 999999s ease-out, color 999999s ease-out;
 }
 
 html.dark .auth-login-input input.ant-input:-webkit-autofill,

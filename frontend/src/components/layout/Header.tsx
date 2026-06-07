@@ -4,14 +4,13 @@ import { useTheme } from "../../hooks/useTheme";
 
 const CANDIDATE_URL =
   import.meta.env.VITE_CANDIDATE_URL || "http://localhost:3000";
-const LOGO_URL =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDsZ8PgnmBWF7MzIsdKEp8EgUJYxYGTS6L0o70U_gJssmzKeeFRfri8zsvA6_71Rs09BLDMOzfSeizXC2eVpx13w5vzEiIHv6cX_4HpU7wjFVXioOxIvmNTbNN_7v9NR29Ps0aFrFp2VwfNVi8HUWDD5MrTkVMaLAEy2cWHJ8TKxRSXig1ci3Vcw1ziQw41-Gu09wYVHHpKuZpFG7pFJt8dDzOxVle9zRfVGUKbJtMwSbmwuhAU0FMI2rm_dPJiPtE7shKiyopZvEo";
+const LOGO_URL = "/logo_3.png";
 
 const PUBLIC_NAV_LINKS = [
-  { href: `${CANDIDATE_URL}/`, label: "Home", icon: "home" },
-  { href: `${CANDIDATE_URL}/#admissions-process`, label: "Process", icon: "route" },
-  { href: `${CANDIDATE_URL}/#featured-programs`, label: "Programs", icon: "school" },
-  { href: `${CANDIDATE_URL}/contact`, label: "Contact", icon: "support_agent" },
+  { href: `${CANDIDATE_URL}/`, label: "Trang chủ", icon: "home" },
+  { href: `${CANDIDATE_URL}/#admissions-process`, label: "Quy trình", icon: "route" },
+  { href: `${CANDIDATE_URL}/#featured-programs`, label: "Chương trình", icon: "school" },
+  { href: `${CANDIDATE_URL}/contact`, label: "Liên hệ", icon: "support_agent" },
 ];
 
 const Header = () => {
@@ -55,7 +54,7 @@ const Header = () => {
           >
             <img
               alt="AdmiSX Logo"
-              className="h-9 w-9 object-contain rounded-xl border border-[#E4E7EC] bg-white shadow-sm transition-transform group-hover:scale-105"
+              className="h-9 w-9 object-contain transition-transform group-hover:scale-105"
               src={LOGO_URL}
             />
             <div className="leading-tight">
@@ -63,7 +62,7 @@ const Header = () => {
                 AdmiSX
               </span>
               <span className="hidden text-[11px] font-semibold uppercase tracking-wide text-[#667085] sm:block">
-                Admissions
+                Tuyển sinh
               </span>
             </div>
           </a>
@@ -84,13 +83,13 @@ const Header = () => {
             to="/login"
             className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#667085] transition-all duration-200 after:absolute after:bottom-0 after:left-0 after:h-[3px] after:rounded-full after:bg-[#032D60] after:transition-all after:duration-200 hover:font-bold hover:text-[#101828] hover:after:w-full hover:after:bg-[#84CFFF] md:inline-flex"
           >
-            Login
+            Đăng nhập
           </Link>
           <Link
             to="/register"
             className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#032D60] transition-all duration-200 after:absolute after:bottom-0 after:left-0 after:h-[3px] after:rounded-full after:bg-[#032D60] after:transition-all after:duration-200 hover:font-bold hover:text-[#021A40] hover:after:w-full hover:after:bg-[#84CFFF] md:inline-flex"
           >
-            Register
+            Đăng ký
           </Link>
           <button
             onClick={() => setMobileOpen((open) => !open)}
@@ -133,7 +132,7 @@ const Header = () => {
             onClick={toggle}
             className="mt-3 flex w-full items-center justify-between rounded-xl border border-[#E4E7EC] px-3 py-3 text-[15px] font-semibold text-[#667085] transition-all duration-200 hover:bg-[#F4F6F9] hover:text-[#101828]"
           >
-            <span>Theme</span>
+            <span>Giao diện</span>
             <span className="material-symbols-outlined text-[20px]">
               {theme === "light" ? "dark_mode" : "light_mode"}
             </span>
@@ -144,14 +143,14 @@ const Header = () => {
               onClick={() => setMobileOpen(false)}
               className="rounded-full border border-[#D0D5DD] px-4 py-2.5 text-center text-sm font-bold text-[#344054] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#032D60]/30 hover:bg-[#F4F6F9] active:scale-[0.98]"
             >
-              Login
+              Đăng nhập
             </Link>
             <Link
               to="/register"
               onClick={() => setMobileOpen(false)}
               className="rounded-full bg-[#2563EB] px-4 py-2.5 text-center text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1D4ED8] hover:shadow-md active:scale-[0.98]"
             >
-              Register
+              Đăng ký
             </Link>
           </div>
         </div>

@@ -166,7 +166,7 @@ const AdminLayout = () => {
           </div>
         ) : (
           <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8FMk_2YUwidtrwhRpI_5EggfXfw-tW7sKIBjhIt-mcuZ9qOrqQhL2OfwXenQwTGngfsQEVDlcn7O2Id2As_MWHFj9PGm8rtKvYKOIEWkxRspjvdHh9pyyYpGIw71DuAArN1TBmFC4lXjcD3ScWFYrv5w7LVzbL2QTnBFPjuVAv1KpSNO6s0ZET0NV9FDj9YNYQNesFcbb1jKOt6tnCx5b2T51n_A1ncaXy8xAReWb24bPvQMkGLAPN92PpDW1wEi-nD8GRSRJSnQ"
+            src="/logo_3.png"
             alt="AdmisX Logo"
             className="w-9 h-9 rounded-lg shrink-0 object-contain"
             onError={() => setLogoError(true)}

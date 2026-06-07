@@ -18,8 +18,8 @@ const Footer = () => {
             <div className="mb-3 flex items-center gap-3">
               <img
                 alt="AdmisX Logo"
-                className="h-9 w-9 rounded-lg bg-white object-contain p-1 shadow-sm"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsZ8PgnmBWF7MzIsdKEp8EgUJYxYGTS6L0o70U_gJssmzKeeFRfri8zsvA6_71Rs09BLDMOzfSeizXC2eVpx13w5vzEiIHv6cX_4HpU7wjFVXioOxIvmNTbNN_7v9NR29Ps0aFrFp2VwfNVi8HUWDD5MrTkVMaLAEy2cWHJ8TKxRSXig1ci3Vcw1ziQw41-Gu09wYVHHpKuZpFG7pFJt8dDzOxVle9zRfVGUKbJtMwSbmwuhAU0FMI2rm_dPJiPtE7shKiyopZvEo"
+                className="h-9 w-9 object-contain"
+                src="/logo_3.png"
               />
               <span className="text-[20px] font-black leading-none text-text-primary">
                 AdmisX
