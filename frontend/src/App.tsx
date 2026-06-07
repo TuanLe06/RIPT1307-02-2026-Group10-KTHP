@@ -36,7 +36,6 @@ const App = () => {
         <Route path="applications" element={<Applications />} />
         <Route path="profile" element={<Profile />} />
       </Route>
-      {/* Keep old route for backward compatibility */}
       <Route
         path="/admin/old"
         element={

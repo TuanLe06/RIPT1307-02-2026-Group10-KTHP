@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+type AuthMode = 'login' | 'register';
+
 const CANDIDATE_URL =
   import.meta.env.VITE_CANDIDATE_URL || "http://localhost:3000";
 const LOGO_URL = "/logo_3.png";
@@ -12,7 +14,11 @@ const PUBLIC_NAV_LINKS = [
   { href: `${CANDIDATE_URL}/contact`, label: "Liên hệ", icon: "support_agent" },
 ];
 
-const Header = () => {
+interface HeaderProps {
+  onAuthNavigate?: (mode: AuthMode) => void;
+}
+
+const Header = ({ onAuthNavigate }: HeaderProps) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileOpenRef = useRef(mobileOpen);
@@ -65,18 +71,36 @@ const Header = () => {
 
         <div className="flex items-center justify-end gap-4">
 
-          <Link
-            to="/login"
-            className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#6c757d] transition-all duration-200 hover:text-[#343A40] md:inline-flex"
-          >
-            Đăng nhập
-          </Link>
-          <Link
-            to="/register"
-            className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#007BFF] transition-all duration-200 hover:text-[#0069d9] md:inline-flex"
-          >
-            Đăng ký
-          </Link>
+          {onAuthNavigate ? (
+            <button
+              onClick={() => onAuthNavigate('login')}
+              className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#6c757d] transition-all duration-200 hover:text-[#343A40] active:scale-[0.98] md:inline-flex"
+            >
+              Đăng nhập
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#6c757d] transition-all duration-200 hover:text-[#343A40] active:scale-[0.98] md:inline-flex"
+            >
+              Đăng nhập
+            </Link>
+          )}
+          {onAuthNavigate ? (
+            <button
+              onClick={() => onAuthNavigate('register')}
+              className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#007BFF] transition-all duration-200 hover:text-[#0069d9] active:scale-[0.98] md:inline-flex"
+            >
+              Đăng ký
+            </button>
+          ) : (
+            <Link
+              to="/register"
+              className="relative hidden h-[72px] items-center px-1 text-sm font-semibold text-[#007BFF] transition-all duration-200 hover:text-[#0069d9] active:scale-[0.98] md:inline-flex"
+            >
+              Đăng ký
+            </Link>
+          )}
           <button
             onClick={() => setMobileOpen((open) => !open)}
             className="md:hidden text-[#6c757d] hover:text-[#343A40] p-2.5 rounded hover:bg-[#F8F9FA] transition-all"
@@ -116,20 +140,38 @@ const Header = () => {
           </nav>
 
           <div className="mt-3 grid grid-cols-2 gap-3 border-t border-[#dee2e6] pt-3">
-            <Link
-              to="/login"
-              onClick={() => setMobileOpen(false)}
-              className="rounded border border-[#dee2e6] px-4 py-2.5 text-center text-sm font-bold text-[#495057] transition-all duration-200 hover:border-[#007BFF]/30 hover:bg-[#F8F9FA] active:scale-[0.98]"
-            >
-              Đăng nhập
-            </Link>
-            <Link
-              to="/register"
-              onClick={() => setMobileOpen(false)}
-              className="rounded bg-[#007BFF] px-4 py-2.5 text-center text-sm font-bold text-white transition-all duration-200 hover:bg-[#0069d9] shadow-[0_2px_4px_rgba(0,123,255,0.3)] active:scale-[0.98]"
-            >
-              Đăng ký
-            </Link>
+            {onAuthNavigate ? (
+              <button
+                onClick={() => { setMobileOpen(false); onAuthNavigate('login'); }}
+                className="rounded border border-[#dee2e6] px-4 py-2.5 text-center text-sm font-bold text-[#495057] transition-all duration-200 hover:border-[#007BFF]/30 hover:bg-[#F8F9FA] active:scale-[0.98]"
+              >
+                Đăng nhập
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="rounded border border-[#dee2e6] px-4 py-2.5 text-center text-sm font-bold text-[#495057] transition-all duration-200 hover:border-[#007BFF]/30 hover:bg-[#F8F9FA] active:scale-[0.98]"
+              >
+                Đăng nhập
+              </Link>
+            )}
+            {onAuthNavigate ? (
+              <button
+                onClick={() => { setMobileOpen(false); onAuthNavigate('register'); }}
+                className="rounded bg-[#007BFF] px-4 py-2.5 text-center text-sm font-bold text-white transition-all duration-200 hover:bg-[#0069d9] shadow-[0_2px_4px_rgba(0,123,255,0.3)] active:scale-[0.98]"
+              >
+                Đăng ký
+              </button>
+            ) : (
+              <Link
+                to="/register"
+                onClick={() => setMobileOpen(false)}
+                className="rounded bg-[#007BFF] px-4 py-2.5 text-center text-sm font-bold text-white transition-all duration-200 hover:bg-[#0069d9] shadow-[0_2px_4px_rgba(0,123,255,0.3)] active:scale-[0.98]"
+              >
+                Đăng ký
+              </Link>
+            )}
           </div>
         </div>
       </div>
