@@ -107,8 +107,8 @@ const migrate = async (): Promise<void> => {
         FOREIGN KEY (combination_id) REFERENCES admission_combinations(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    `CREATE TABLE IF NOT EXISTS candidate_profiles (
-      citizen_id BIGINT UNSIGNED PRIMARY KEY,
+`CREATE TABLE IF NOT EXISTS candidate_profiles (
+       citizen_id VARCHAR(20) PRIMARY KEY,
       user_id BIGINT UNSIGNED NOT NULL,
       full_name VARCHAR(255) NOT NULL,
       phone VARCHAR(20) NULL,
@@ -129,9 +129,9 @@ const migrate = async (): Promise<void> => {
         FOREIGN KEY (user_id) REFERENCES users(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
 
-    `CREATE TABLE IF NOT EXISTS applications (
-      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      candidate_id BIGINT UNSIGNED NOT NULL,
+`CREATE TABLE IF NOT EXISTS applications (
+       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+       candidate_id VARCHAR(20) NOT NULL,
       application_code VARCHAR(50) NOT NULL,
       university_id VARCHAR(20) NOT NULL,
       major_id VARCHAR(20) NOT NULL,
@@ -167,7 +167,7 @@ const migrate = async (): Promise<void> => {
 
     `CREATE TABLE IF NOT EXISTS academic_records (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      candidate_id BIGINT UNSIGNED NOT NULL,
+      candidate_id VARCHAR(20) NOT NULL
       graduation_year INT NULL,
       total_score DECIMAL(5,2) NULL,
       priority_score DECIMAL(4,2) NOT NULL DEFAULT 0,
@@ -235,7 +235,7 @@ const migrate = async (): Promise<void> => {
 
     `CREATE TABLE IF NOT EXISTS candidate_documents (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-      candidate_id BIGINT UNSIGNED NOT NULL,
+      candidate_id VARCHAR(20) NOT NULL
       document_type ENUM('TRANSCRIPT','CITIZEN_ID_Front','CITIZEN_ID_Back','PORTRAIT','CERTIFICATE','EXAM_CERTIFICATE','OTHER') NOT NULL,
       file_name VARCHAR(255) NOT NULL,
       display_name VARCHAR(255) NULL,
