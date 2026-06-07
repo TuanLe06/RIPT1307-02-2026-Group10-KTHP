@@ -758,7 +758,7 @@ const Applications = () => {
           </div>
           <div className="flex items-center gap-sm">
             <button
-              className="bg-success text-on-primary px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
+              className="bg-success text-on-primary px-lg py-sm text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
               onClick={() => openBatchUpdate("APPROVED")}
             >
               <span className="material-symbols-outlined text-[18px]">
@@ -767,7 +767,7 @@ const Applications = () => {
               Duyệt tất cả
             </button>
             <button
-              className="bg-critical text-on-critical px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
+              className="bg-critical text-on-critical px-lg py-sm text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
               onClick={() => openBatchUpdate("REJECTED")}
             >
               <span className="material-symbols-outlined text-[18px]">
@@ -776,7 +776,7 @@ const Applications = () => {
               Từ chối tất cả
             </button>
             <button
-              className="bg-surface-container-low text-on-surface-variant px-lg py-sm rounded-full text-sm font-bold hover:bg-surface-container-high transition-all flex items-center gap-sm border border-hairline"
+              className="bg-surface-container-low text-on-surface-variant px-lg py-sm text-sm font-bold hover:bg-surface-container-high transition-all flex items-center gap-sm border border-hairline"
               onClick={() => setSelectedIds(new Set())}
             >
               <span className="material-symbols-outlined text-[18px]">
@@ -1414,7 +1414,7 @@ const Applications = () => {
               selectedApp.status !== "FAILED" && (
                 <div className="flex justify-end gap-sm pt-2 border-t border-border sticky bottom-0 bg-white py-3">
                   <button
-                    className="bg-primary hover:bg-primary-hover text-on-primary px-lg py-sm rounded-full text-sm font-bold transition-all"
+                    className="bg-primary hover:bg-primary-hover text-on-primary px-lg py-sm text-sm font-bold transition-all"
                     onClick={() => openUpdate(selectedApp)}
                   >
                     <span className="material-symbols-outlined text-[18px] mr-1">
@@ -1568,7 +1568,7 @@ const Applications = () => {
             Hãy kiểm tra các hồ sơ này để đảm bảo đúng tiến độ tuyển sinh.
           </p>
           <button
-            className="mt-md bg-on-primary text-on-primary-container px-lg py-sm rounded-full text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
+            className="mt-md bg-on-primary text-on-primary-container px-lg py-sm text-sm font-bold hover:brightness-110 transition-all flex items-center gap-sm"
             onClick={() => {
               setStatusFilter("PENDING_REVIEW");
               setPage(1);
