@@ -79,7 +79,7 @@ export interface CandidateProfileFull {
     last_login_at: string | null;
   };
   candidate_profile: {
-    citizen_id: number;
+    citizen_id: string;
     full_name: string;
     phone: string | null;
     date_of_birth: string | null;
