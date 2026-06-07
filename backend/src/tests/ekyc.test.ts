@@ -95,26 +95,26 @@ const restore = (): void => {
 };
 
 const mockCommonModel = (): void => {
-  CandidateProfileModel.getByUserId = async () => ({
-    user_id: 1,
-    email: 'candidate@example.com',
-    role: 'CANDIDATE',
-    status: 'ACTIVE',
-    last_login_at: null,
-    citizen_id: 123456789012,
-    full_name: 'Candidate',
-    phone: '0901',
-    date_of_birth: null,
-    gender: null,
-    citizen_issue_date: null,
-    citizen_issue_place: null,
-    religion: null,
-    ethnic: null,
-    nation: null,
-    province: null,
-    ward: null,
-    address: null,
-  });
+   CandidateProfileModel.getByUserId = async () => ({
+     user_id: 1,
+     email: 'candidate@example.com',
+     role: 'CANDIDATE',
+     status: 'ACTIVE',
+     last_login_at: null,
+     citizen_id: '123456789012',
+     full_name: 'Candidate',
+     phone: '0901',
+     date_of_birth: null,
+     gender: null,
+     citizen_issue_date: null,
+     citizen_issue_place: null,
+     religion: null,
+     ethnic: null,
+     nation: null,
+     province: null,
+     ward: null,
+     address: null,
+   });
   CandidateIdentityVerificationModel.getOrDefaultByUserId = async () => ({ ...baseStatus });
   CandidateIdentityVerificationModel.getByUserId = async () => ({ ...baseStatus });
   CandidateIdentityVerificationModel.upsertByUserId = async (userId, data) => ({
@@ -164,24 +164,24 @@ const testFrontSuccess = async (): Promise<void> => {
 };
 
 const testFrontSuccessWithFptCcFrontAndPaddedCitizenId = async (): Promise<void> => {
-  mockCommonModel();
-  CandidateProfileModel.getByUserId = async () => ({
-    user_id: 1,
-    email: 'candidate@example.com',
-    role: 'CANDIDATE',
-    status: 'ACTIVE',
-    last_login_at: null,
-    citizen_id: 1206001154,
-    full_name: 'Candidate',
-    phone: '0901',
-    date_of_birth: null,
-    gender: null,
-    citizen_issue_date: null,
-    citizen_issue_place: null,
-    religion: null,
-    ethnic: null,
-    nation: null,
-    province: null,
+   mockCommonModel();
+   CandidateProfileModel.getByUserId = async () => ({
+     user_id: 1,
+     email: 'candidate@example.com',
+     role: 'CANDIDATE',
+     status: 'ACTIVE',
+     last_login_at: null,
+     citizen_id: '1206001154',
+     full_name: 'Candidate',
+     phone: '0901',
+     date_of_birth: null,
+     gender: null,
+     citizen_issue_date: null,
+     citizen_issue_place: null,
+     religion: null,
+     ethnic: null,
+     nation: null,
+     province: null,
     ward: null,
     address: null,
   });
