@@ -196,7 +196,7 @@ private static async getCandidateIdByCitizenId(citizenId: string): Promise<strin
     return result;
   }
 
-  private static async getAcademicByCandidateId(candidateId: number): Promise<CandidateAcademicRecordFull> {
+  private static async getAcademicByCandidateId(candidateId: string): Promise<CandidateAcademicRecordFull> {
     const [recordRows] = await pool.execute<RowDataPacket[]>(
       `SELECT id, candidate_id, graduation_year, priority_score
        FROM academic_records
@@ -254,7 +254,7 @@ private static async getCandidateIdByCitizenId(citizenId: string): Promise<strin
     };
   }
 
-  private static async ensureAcademicRecordByCandidateId(candidateId: number): Promise<number> {
+  private static async ensureAcademicRecordByCandidateId(candidateId: string): Promise<number> {
     await pool.execute(
       `INSERT INTO academic_records (candidate_id, priority_score)
        VALUES (?, 0)
@@ -454,10 +454,10 @@ static async upsertExamScoresByGroupForCandidateByCitizenId(
     return this.upsertExamScoresByGroupForCandidateId(candidateId, payload);
   }
 
-  private static async upsertExamScoresByGroupForCandidateId(
-    candidateId: number,
-    payload: CandidateExamScoresPayload
-  ): Promise<CandidateAcademicRecordFull> {
+private static async upsertExamScoresByGroupForCandidateId(
+     candidateId: string,
+     payload: CandidateExamScoresPayload
+   ): Promise<CandidateAcademicRecordFull> {
     const recordId = await this.ensureAcademicRecordByCandidateId(candidateId);
     const scoreKeys = Object.keys(payload.scores);
     if (scoreKeys.length !== 4) {
