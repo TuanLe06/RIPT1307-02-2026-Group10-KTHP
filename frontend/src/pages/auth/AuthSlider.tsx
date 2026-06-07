@@ -139,7 +139,7 @@ const AuthSlider = ({ initialMode }: AuthSliderProps) => {
     setRegisterLoading(true);
     try {
       const res = await authApi.register({
-        citizen_id: Number(values.so_cccd),
+        citizen_id: values.so_cccd.trim(),
         full_name: values.ho_ten,
         email: values.email,
         password: values.mat_khau,
