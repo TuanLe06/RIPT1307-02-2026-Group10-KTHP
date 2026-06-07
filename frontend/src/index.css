@@ -1,101 +1,96 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Meta Color Tokens ── */
+  /* ── Flat Design Corporativo Color Tokens ── */
+  --color-corporate-blue: #007BFF;
+  --color-dark-grey: #343A40;
+  --color-white-flat: #FFFFFF;
+  --color-light-grey: #F8F9FA;
+  --color-success: #28A745;
+  --color-warning: #FFC107;
+  --color-danger: #DC3545;
+  --color-info-cyan: #17A2B8;
+
+  /* Legacy / Meta compat aliases */
   --color-canvas: #ffffff;
-  --color-surface-soft: #f0f4f9;
-  --color-hairline: #d8dde6;
-  --color-hairline-soft: #e4e9ee;
-  --color-ink-deep: #171c20;
-  --color-ink: #2c3135;
-  --color-charcoal: #4a4f55;
-  --color-slate: #6e7881;
-  --color-steel: #8b95a0;
-  --color-stone: #a0a8b2;
-  --color-primary: #0143b5;
-  --color-primary-deep: #00318a;
-  --color-primary-soft: rgba(1, 67, 181, 0.12);
+  --color-surface-soft: #F8F9FA;
+  --color-hairline: #dee2e6;
+  --color-hairline-soft: #e9ecef;
+  --color-ink-deep: #212529;
+  --color-ink: #343A40;
+  --color-charcoal: #495057;
+  --color-slate: #6c757d;
+  --color-steel: #adb5bd;
+  --color-stone: #ced4da;
+  --color-primary: #007BFF;
+  --color-primary-deep: #0069d9;
+  --color-primary-soft: rgba(0, 123, 255, 0.12);
   --color-fb-blue: #1877f2;
-  --color-meta-link: #0068e1;
-  --color-oculus-purple: #9147ff;
-  --color-success: #04844b;
-  --color-attention: #d97706;
-  --color-warning: #f59e0b;
-  --color-critical: #c23934;
-  --color-critical-strong: #93000a;
-  --color-ink-button: #1a1c20;
-  --color-on-ink-button: #ffffff;
-  --color-on-primary: #ffffff;
-  --color-on-primary-deep: #ffffff;
-  --color-on-critical: #ffffff;
-  --color-on-success: #ffffff;
-  --color-disabled-text: #c4c9d0;
+  --color-on-primary: #FFFFFF;
+  --color-on-primary-deep: #FFFFFF;
+  --color-on-critical: #FFFFFF;
+  --color-on-success: #FFFFFF;
+  --color-disabled-text: #ced4da;
 
-  /* ── Legacy / Compatibility Tokens (map to Meta equivalents) ── */
-  --color-secondary-fixed: #d7e2ff;
-  --color-on-error-container: #93000a;
-  --color-primary-hover: #003bb2;
-  --color-surface-container: #eaeef4;
+  /* ── Legacy / Compatibility Tokens (mapped to flat palette) ── */
+  --color-primary-hover: #0069d9;
+  --color-surface-container: #F8F9FA;
   --color-on-error: #ffffff;
-  --color-secondary: #3f5e94;
-  --color-inverse-on-surface: #edf1f7;
-  --color-neutral-bg: #f4f6f9;
+  --color-secondary: #6c757d;
+  --color-inverse-on-surface: #F8F9FA;
+  --color-neutral-bg: #F8F9FA;
   --color-on-secondary: #ffffff;
-  --color-on-surface: #171c20;
-  --color-outline-variant: #bdc8d1;
-  --color-on-primary-fixed-variant: #001e3c;
-  --color-inverse-primary: #84cfff;
-  --color-on-tertiary-container: #3e2a00;
-  --color-tertiary-fixed: #ffddbb;
-  --color-secondary-container: #d7e2ff;
-  --color-on-surface-variant: #3e4850;
-  --color-surface: #f4f6f9;
-  --color-text-secondary: #4a4f55;
-  --color-surface-container-high: #e4e9ee;
-  --color-outline: #6e7881;
-  --color-border: #d8dde6;
-  --color-on-background: #171c20;
-  --color-on-tertiary-fixed: #2b1700;
-  --color-primary-fixed-dim: #84cfff;
-  --color-on-secondary-fixed: #001b3f;
-  --color-error-container: #ffdad6;
-  --color-background: #f6faff;
-  --color-primary-container: #d7e2ff;
-  --color-on-secondary-fixed-variant: #26467a;
-  --color-tertiary-container: #d5850b;
-  --color-tertiary-fixed-dim: #ffb867;
-  --color-on-tertiary-fixed-variant: #673d00;
-  --color-surface-container-low: #f0f4f9;
-  --color-primary-fixed: #c7e7ff;
+  --color-on-surface: #343A40;
+  --color-outline-variant: #dee2e6;
+  --color-inverse-primary: #4da3ff;
+  --color-surface: #F8F9FA;
+  --color-text-secondary: #6c757d;
+  --color-surface-container-high: #e9ecef;
+  --color-outline: #adb5bd;
+  --color-border: #dee2e6;
+  --color-on-background: #343A40;
+  --color-error-container: #ffe0e0;
+  --color-background: #F8F9FA;
+  --color-primary-container: #cce5ff;
+  --color-surface-container-low: #f0f4f8;
+  --color-primary-fixed: #cce5ff;
   --color-on-primary: #ffffff;
-  --color-text-primary: #171c20;
-  --color-surface-bright: #f6faff;
-  --color-secondary-fixed-dim: #abc7ff;
-  --color-inverse-surface: #2c3135;
-  --color-surface-dim: #d6dae0;
-  --color-on-secondary-container: #2f4e83;
-  --color-surface-tint: #0143b5;
-  --color-surface-container-highest: #dee3e8;
-  --color-on-primary-container: #001e3c;
-  --color-tertiary: #885200;
-  --color-surface-variant: #dee3e8;
-  --color-error: #c23934;
-  --color-on-primary-fixed: #001e2e;
+  --color-text-primary: #343A40;
+  --color-surface-bright: #ffffff;
+  --color-inverse-surface: #343A40;
+  --color-surface-dim: #e9ecef;
+  --color-surface-tint: #007BFF;
+  --color-surface-container-highest: #dee2e6;
+  --color-on-primary-container: #004085;
+  --color-surface-variant: #e9ecef;
+  --color-error: #DC3545;
   --color-surface-container-lowest: #ffffff;
-  --color-on-tertiary: #ffffff;
 
-  /* ── Typography ── */
-  --font-sans: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-metadata: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-h1-hero: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-h4-card-header: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-h5-subsection: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-table-header: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-h3-section-title: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-body-sm: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-h2-page-title: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-label: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
-  --font-body: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  /* ── Design System: Minimalist Modern ── */
+  --font-display: "Calistoga", Georgia, serif;
+  --font-ui: "Inter", system-ui, sans-serif;
+  --color-ds-bg: #FAFAFA;
+  --color-ds-fg: #0F172A;
+  --color-ds-muted: #F1F5F9;
+  --color-ds-muted-fg: #64748B;
+  --color-ds-accent: #0052FF;
+  --color-ds-accent-secondary: #4D7CFF;
+  --color-ds-border: #E2E8F0;
+  --color-ds-card: #FFFFFF;
+
+  /* ── Typography: Inter / Calistoga (Minimalist Modern) ── */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-metadata: "Inter", system-ui, sans-serif;
+  --font-h1-hero: "Inter", system-ui, sans-serif;
+  --font-h4-card-header: "Inter", system-ui, sans-serif;
+  --font-h5-subsection: "Inter", system-ui, sans-serif;
+  --font-table-header: "Inter", system-ui, sans-serif;
+  --font-h3-section-title: "Inter", system-ui, sans-serif;
+  --font-body-sm: "Inter", system-ui, sans-serif;
+  --font-h2-page-title: "Inter", system-ui, sans-serif;
+  --font-label: "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
 
   /* Meta type hierarchy */
   --text-hero-display: 48px;
@@ -191,19 +186,14 @@
   --text-body--font-weight: 400;
   --text-body--letter-spacing: -0.14px;
 
-  /* ── Border Radius (Meta scale) ── */
+  /* ── Border Radius (Flat Design — sharp corners, max 8px) ── */
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
-  --radius-xl: 16px;
-  --radius-xxl: 24px;
-  --radius-xxxl: 32px;
-  --radius-feature: 40px;
-  --radius-full: 9999px;
-  --radius-circle: 50%;
-  /* Legacy aliases */
-  --radius-default: 2px;
+  --radius-xl: 8px;
+  --radius-xxl: 8px;
+  --radius-default: 4px;
 
   /* ── Spacing (4px base increment) ── */
   --spacing-xxs: 4px;
@@ -224,9 +214,9 @@
   --spacing-gutter: 14px;
 }
 
-/* ── Ant Design override: make all buttons pill-shaped ── */
+/* ── Ant Design override: flat 4px buttons ── */
 :where(.ant-btn) {
-  border-radius: 9999px !important;
+  border-radius: 4px !important;
 }
 
 .admin-filter-select.ant-select {
@@ -297,7 +287,7 @@
 
 /* ── Base body style ── */
 body {
-  font-family: "Montserrat", Helvetica, Arial, Noto Sans, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -307,75 +297,55 @@ body {
   vertical-align: middle;
 }
 
-/* ── Dark Mode ── */
+/* ── Dark Mode (Flat Design Corporativo) ── */
 .dark {
-  --color-surface: #0f1215;
-  --color-surface-container-lowest: #1a1d21;
-  --color-surface-container-low: #1e2125;
-  --color-surface-container: #23272b;
-  --color-surface-container-high: #2d3136;
-  --color-surface-container-highest: #383c42;
-  --color-surface-bright: #2d3136;
-  --color-surface-dim: #0f1215;
-  --color-surface-variant: #2d3136;
-  --color-outline: #8b95a0;
-  --color-outline-variant: #3e4850;
-  --color-text-primary: #e1e6ed;
-  --color-text-secondary: #8b95a0;
-  --color-on-surface: #e1e6ed;
-  --color-on-surface-variant: #bdc8d1;
-  --color-on-background: #e1e6ed;
-  --color-primary: #84cfff;
-  --color-primary-container: #003d8a;
-  --color-primary-deep: #5ab8ff;
-  --color-on-primary: #001e3c;
-  --color-on-primary-container: #c7e7ff;
-  --color-secondary: #abc7ff;
-  --color-secondary-container: #26467a;
-  --color-on-secondary: #001b3f;
-  --color-on-secondary-container: #d7e2ff;
-  --color-tertiary: #ffb867;
-  --color-tertiary-container: #673d00;
-  --color-on-tertiary: #2b1700;
-  --color-on-tertiary-container: #ffddbb;
-  --color-error: #ffb4ab;
-  --color-error-container: #93000a;
-  --color-on-error: #601410;
-  --color-on-error-container: #ffdad6;
-  --color-success: #7ddfa0;
-  --color-warning: #f59e0b;
-  --color-border: #3e4850;
-  --color-neutral-bg: #1a1d21;
-  --color-inverse-surface: #e1e6ed;
-  --color-inverse-on-surface: #1a1d21;
-  --color-inverse-primary: #0143b5;
-  --color-primary-fixed: #c7e7ff;
-  --color-primary-fixed-dim: #84cfff;
-  --color-on-primary-fixed: #001e2e;
-  --color-on-primary-fixed-variant: #003d8a;
-  --color-secondary-fixed: #d7e2ff;
-  --color-secondary-fixed-dim: #abc7ff;
-  --color-on-secondary-fixed: #001b3f;
-  --color-on-secondary-fixed-variant: #26467a;
-  --color-tertiary-fixed: #ffddbb;
-  --color-tertiary-fixed-dim: #ffb867;
-  --color-on-tertiary-fixed: #2b1700;
-  --color-on-tertiary-fixed-variant: #673d00;
-  /* Meta dark tokens */
-  --color-canvas: #1a1d21;
-  --color-surface-soft: #23272b;
-  --color-hairline: #3e4850;
-  --color-hairline-soft: #2d3136;
-  --color-ink-deep: #e1e6ed;
-  --color-ink: #bdc8d1;
-  --color-charcoal: #8b95a0;
-  --color-slate: #6e7881;
-  --color-steel: #5a646d;
-  --color-stone: #4a545d;
-  --color-ink-button: #e1e6ed;
-  --color-on-ink-button: #1a1d21;
-  --color-primary-soft: rgba(132, 207, 255, 0.12);
-  --color-disabled-text: #4a545d;
+  --color-surface: #1a1d21;
+  --color-surface-container-lowest: #212529;
+  --color-surface-container-low: #282c31;
+  --color-surface-container: #2d3136;
+  --color-surface-container-high: #343a40;
+  --color-surface-container-highest: #3b4046;
+  --color-surface-bright: #343a40;
+  --color-surface-dim: #1a1d21;
+  --color-surface-variant: #343a40;
+  --color-outline: #6c757d;
+  --color-outline-variant: #495057;
+  --color-text-primary: #e9ecef;
+  --color-text-secondary: #adb5bd;
+  --color-on-surface: #e9ecef;
+  --color-on-surface-variant: #ced4da;
+  --color-on-background: #e9ecef;
+  --color-primary: #4da3ff;
+  --color-primary-container: #004085;
+  --color-primary-deep: #80bdff;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #cce5ff;
+  --color-error: #ff8a8a;
+  --color-error-container: #7a1a1a;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #ffe0e0;
+  --color-success: #75d787;
+  --color-warning: #ffc107;
+  --color-border: #495057;
+  --color-neutral-bg: #212529;
+  --color-inverse-surface: #e9ecef;
+  --color-inverse-on-surface: #212529;
+  --color-inverse-primary: #007BFF;
+  --color-primary-fixed: #cce5ff;
+  --color-on-primary-fixed-variant: #004085;
+  --color-canvas: #212529;
+  --color-surface-soft: #282c31;
+  --color-hairline: #495057;
+  --color-hairline-soft: #343a40;
+  --color-ink-deep: #e9ecef;
+  --color-ink: #ced4da;
+  --color-charcoal: #adb5bd;
+  --color-slate: #6c757d;
+  --color-steel: #6c757d;
+  --color-stone: #495057;
+  --color-on-ink-button: #212529;
+  --color-primary-soft: rgba(77, 163, 255, 0.12);
+  --color-disabled-text: #495057;
 }
 
 .glass-effect {
@@ -387,6 +357,7 @@ body {
 .auth-login-input,
 .auth-login-input.ant-input-affix-wrapper {
   background-color: var(--color-surface-container-lowest) !important;
+  border-radius: 4px !important;
 }
 
 .auth-login-input input.ant-input,
@@ -423,6 +394,14 @@ body {
   box-shadow: 0 0 0 1000px var(--color-surface-container-lowest) inset !important;
   caret-color: var(--color-text-primary) !important;
   transition: background-color 999999s ease-out, color 999999s ease-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }
 
 html.dark .auth-login-input input.ant-input:-webkit-autofill,

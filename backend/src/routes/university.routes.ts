@@ -88,7 +88,7 @@ router.post(
       .notEmpty()
       .withMessage('Mã ngành (viết tắt) không được để trống'),
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('min_score').optional().isDecimal().withMessage('Min score must be a decimal number'),
+    body('min_score').optional({ values: 'null' }).isDecimal().withMessage('Min score must be a decimal number'),
     body('status').optional().isIn(['ACTIVE', 'INACTIVE']),
   ],
   createMajor
@@ -107,7 +107,7 @@ router.put(
       .notEmpty()
       .withMessage('Mã ngành (viết tắt) không được để trống'),
     body('name').optional().trim().notEmpty(),
-    body('min_score').optional().isDecimal(),
+    body('min_score').optional({ values: 'null' }).isDecimal(),
     body('status').optional().isIn(['ACTIVE', 'INACTIVE']),
   ],
   updateMajor

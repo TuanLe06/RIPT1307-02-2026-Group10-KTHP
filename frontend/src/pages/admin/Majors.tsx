@@ -97,15 +97,18 @@ const Majors = () => {
     try {
       const values = await form.validateFields();
       setSubmitting(true);
+      const min_score = values.min_score === '' || values.min_score === null || values.min_score === undefined
+        ? undefined
+        : values.min_score;
       if (editing) {
-        await majorApi.update(selectedUniId, editing.id, values);
+        await majorApi.update(selectedUniId, editing.id, { ...values, min_score });
         message.success('Cập nhật ngành thành công');
       } else {
         await majorApi.create(values.university_id, {
           code: values.code,
           name: values.name,
           description: values.description,
-          min_score: values.min_score,
+          min_score,
         });
         message.success('Thêm ngành thành công');
       }

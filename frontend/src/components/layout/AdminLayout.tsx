@@ -11,8 +11,8 @@ import {
 import { useAuthStore } from '../../store/auth';
 import { authApi } from '../../api/auth';
 import { notificationApi, type AdminNotification } from '../../api/notifications';
-import { useTheme } from '../../hooks/useTheme';
 import { useSocket } from '../../hooks/useSocket';
+import { useTheme } from '../../hooks/useTheme';
 import Footer from './Footer';
 
 const navItems = [
@@ -57,7 +57,6 @@ const AdminLayout = () => {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const { theme, toggle: toggleTheme } = useTheme();
-
   const activePath = '/' + location.pathname.split('/').slice(1, 3).join('/');
 
   const fetchNotifications = useCallback(async () => {
@@ -135,10 +134,10 @@ const AdminLayout = () => {
             key={item.path}
             to={item.path}
             onClick={() => setMobileOpen(false)}
-            className={`group flex items-center gap-3 rounded-xl border px-3 py-3 transition-all duration-200 ${
+            className={`group flex items-center gap-3 border px-3 py-3 transition-all duration-200 ${
               isActive
-                ? 'border-primary bg-primary text-on-primary font-extrabold shadow-[0_10px_26px_rgba(1,67,181,0.28)]'
-                : 'border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-primary hover:bg-surface-container-high hover:text-primary hover:shadow-[0_8px_20px_rgba(1,67,181,0.12)]'
+                ? 'border-primary bg-primary text-on-primary font-bold'
+                : 'border-outline-variant bg-surface-container-low text-on-surface-variant hover:border-primary hover:bg-surface-container-high hover:text-primary'
             } ${full ? '' : 'justify-center'}`}
           >
             <span
@@ -193,14 +192,14 @@ const AdminLayout = () => {
             setSupportOpen(true);
             setMobileOpen(false);
           }}
-          className={`group w-full flex items-center gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-3 text-on-surface-variant transition-all duration-200 hover:border-primary hover:bg-surface-container-high hover:text-primary hover:shadow-[0_8px_20px_rgba(1,67,181,0.12)] ${full ? '' : 'justify-center'}`}
+          className={`group w-full flex items-center gap-3 border border-outline-variant bg-surface-container-low px-3 py-3 text-on-surface-variant transition-all duration-200 hover:border-primary hover:bg-surface-container-high hover:text-primary ${full ? '' : 'justify-center'}`}
         >
           <span className="material-symbols-outlined text-xl shrink-0 text-primary group-hover:text-primary">contact_support</span>
           {full && <span className="font-label text-label">Hỗ trợ</span>}
         </button>
         <button
           onClick={handleLogout}
-          className={`group mt-2 w-full flex items-center gap-3 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-3 text-on-surface-variant transition-all duration-200 hover:border-primary hover:bg-surface-container-high hover:text-primary hover:shadow-[0_8px_20px_rgba(1,67,181,0.12)] ${full ? '' : 'justify-center'}`}
+          className={`group mt-2 w-full flex items-center gap-3 border border-outline-variant bg-surface-container-low px-3 py-3 text-on-surface-variant transition-all duration-200 hover:border-primary hover:bg-surface-container-high hover:text-primary ${full ? '' : 'justify-center'}`}
         >
           <span className="material-symbols-outlined text-xl shrink-0 text-primary group-hover:text-primary">logout</span>
           {full && <span className="font-label text-label">Đăng xuất</span>}
@@ -266,7 +265,7 @@ const AdminLayout = () => {
                 </Badge>
               </button>
               {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-outline-variant overflow-hidden z-50">
+                <div className="absolute right-0 mt-2 w-80 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-outline-variant overflow-hidden z-50">
                   <div className="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
                     <h3 className="font-bold text-sm text-text-primary">Thông báo đã gửi</h3>
                     <span className="text-xs text-text-secondary">{notifications.length} gần đây</span>
@@ -305,13 +304,13 @@ const AdminLayout = () => {
                                 <span className="text-[10px] text-success font-bold">Đã xem</span>
                               )}
                               {n.status === 'PENDING' && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-warning/10 text-warning">Chờ gửi</span>
+                                <span className="text-[10px] px-1.5 py-0.5 font-bold bg-warning/10 text-warning">Chờ gửi</span>
                               )}
                               {n.status === 'SENT' && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-success/10 text-success">Đã gửi</span>
+                                <span className="text-[10px] px-1.5 py-0.5 font-bold bg-success/10 text-success">Đã gửi</span>
                               )}
                               {n.status === 'FAILED' && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-error-container text-error">Lỗi</span>
+                                <span className="text-[10px] px-1.5 py-0.5 font-bold bg-error-container text-error">Lỗi</span>
                               )}
                             </div>
                           </button>
@@ -332,7 +331,7 @@ const AdminLayout = () => {
             </div>
             <button
               onClick={toggleTheme}
-              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors text-on-surface-variant"
+              className="w-9 h-9 flex items-center justify-center hover:bg-surface-container transition-colors text-on-surface-variant"
             >
               <span className="material-symbols-outlined text-lg">
                 {theme === 'light' ? 'dark_mode' : 'light_mode'}
@@ -405,14 +404,14 @@ const AdminLayout = () => {
         width={760}
       >
         <div className="space-y-5 text-text-primary">
-          <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
+          <div className="border border-outline-variant bg-surface-container-low p-4">
             <p className="text-sm font-semibold text-text-secondary">
               Kênh hỗ trợ vận hành hệ thống tuyển sinh AdmisX dành cho quản trị viên.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <a
                 href="tel:19001009"
-                className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3 transition-colors hover:border-primary hover:text-primary"
+                className="border border-outline-variant bg-surface-container-lowest p-3 transition-colors hover:border-primary hover:text-primary"
               >
                 <span className="material-symbols-outlined text-[20px] text-primary">call</span>
                 <p className="mt-1 text-xs font-bold uppercase text-text-secondary">Hotline</p>
@@ -420,13 +419,13 @@ const AdminLayout = () => {
               </a>
               <a
                 href="mailto:support@admisx.vn"
-                className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3 transition-colors hover:border-primary hover:text-primary"
+                className="border border-outline-variant bg-surface-container-lowest p-3 transition-colors hover:border-primary hover:text-primary"
               >
                 <span className="material-symbols-outlined text-[20px] text-primary">mail</span>
                 <p className="mt-1 text-xs font-bold uppercase text-text-secondary">Email</p>
                 <p className="text-sm font-extrabold">support@admisx.vn</p>
               </a>
-              <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-3">
+              <div className="border border-outline-variant bg-surface-container-lowest p-3">
                 <span className="material-symbols-outlined text-[20px] text-primary">schedule</span>
                 <p className="mt-1 text-xs font-bold uppercase text-text-secondary">Thời gian</p>
                 <p className="text-sm font-extrabold">08:00 - 17:30</p>
@@ -435,7 +434,7 @@ const AdminLayout = () => {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+            <div className="border border-outline-variant bg-surface-container-lowest p-4">
               <h3 className="flex items-center gap-2 text-sm font-extrabold">
                 <span className="material-symbols-outlined text-primary">checklist</span>
                 Xử lý hồ sơ nhanh
@@ -448,7 +447,7 @@ const AdminLayout = () => {
               </ul>
             </div>
 
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+            <div className="border border-outline-variant bg-surface-container-lowest p-4">
               <h3 className="flex items-center gap-2 text-sm font-extrabold">
                 <span className="material-symbols-outlined text-primary">manage_search</span>
                 Khi gặp sự cố
@@ -462,7 +461,7 @@ const AdminLayout = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-primary/20 bg-primary-fixed p-4 text-on-primary-fixed-variant">
+          <div className="border border-primary/20 bg-primary-fixed p-4 text-on-primary-fixed-variant">
             <div className="flex items-start gap-3">
               <span className="material-symbols-outlined text-primary">tips_and_updates</span>
               <div>
