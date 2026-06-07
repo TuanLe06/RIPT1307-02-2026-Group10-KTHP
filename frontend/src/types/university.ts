@@ -1,13 +1,8 @@
 export interface University {
-  id: string;
+  id: number;
   code: string;
   name: string;
-  address: string | null;
-  phone: string | null;
-  email: string | null;
-  website: string | null;
-  description: string | null;
-  status: 'ACTIVE' | 'INACTIVE';
+  citizen_id: string;
   created_at: string;
   updated_at: string;
 }

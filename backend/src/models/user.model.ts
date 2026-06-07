@@ -5,7 +5,7 @@ import { User } from "../types";
 type CreateCandidateWithProfilePayload = {
   email: string;
   password_hash: string;
-  citizen_id: number;
+  citizen_id: string;
   full_name: string;
   phone?: string | null;
   address?: string | null;
@@ -81,14 +81,14 @@ export class UserModel {
     return queryOne<User>(`SELECT * FROM users WHERE id = ?`, [id]);
   }
 
-  static async findAuthByCitizenId(citizenId: number): Promise<User | null> {
-    return queryOne<User>(
-      `SELECT u.* FROM users u
-       JOIN candidate_profiles cp ON u.id = cp.user_id
-       WHERE cp.citizen_id = ?`,
-      [citizenId],
-    );
-  }
+static async findAuthByCitizenId(citizenId: string): Promise<User | null> {
+     return queryOne<User>(
+       `SELECT u.* FROM users u
+        JOIN candidate_profiles cp ON u.id = cp.user_id
+        WHERE cp.citizen_id = ?`,
+       [citizenId],
+     );
+   }
 
   static async existsByEmail(email: string): Promise<boolean> {
     const user = await queryOne(`SELECT id FROM users WHERE email = ?`, [
@@ -98,16 +98,16 @@ export class UserModel {
     return !!user;
   }
 
-  static async existsCandidateByCitizenId(citizenId: number): Promise<boolean> {
-    const row = await queryOne(
-      `SELECT citizen_id
-       FROM candidate_profiles
-       WHERE citizen_id = ?`,
-      [citizenId],
-    );
+static async existsCandidateByCitizenId(citizenId: string): Promise<boolean> {
+     const row = await queryOne(
+       `SELECT citizen_id
+        FROM candidate_profiles
+        WHERE citizen_id = ?`,
+       [citizenId],
+     );
 
-    return !!row;
-  }
+     return !!row;
+   }
 
   static async findByResetToken(token: string): Promise<User | null> {
     return queryOne<User>(

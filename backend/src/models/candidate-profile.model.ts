@@ -142,23 +142,23 @@ export class CandidateProfileModel {
     NGOAINGU: 'Ngoại ngữ',
   };
 
-  private static async getCandidateIdByUserId(userId: number): Promise<number | null> {
-    const [candidateRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT citizen_id FROM candidate_profiles WHERE user_id = ? LIMIT 1`,
-      [userId]
-    );
-    if (!candidateRows.length) return null;
-    return Number(candidateRows[0].citizen_id);
-  }
+private static async getCandidateIdByUserId(userId: number): Promise<string | null> {
+     const [candidateRows] = await pool.execute<RowDataPacket[]>(
+       `SELECT citizen_id FROM candidate_profiles WHERE user_id = ? LIMIT 1`,
+       [userId]
+     );
+     if (!candidateRows.length) return null;
+     return String(candidateRows[0].citizen_id);
+   }
 
-  private static async getCandidateIdByCitizenId(citizenId: number): Promise<number | null> {
-    const [candidateRows] = await pool.execute<RowDataPacket[]>(
-      `SELECT citizen_id FROM candidate_profiles WHERE citizen_id = ? LIMIT 1`,
-      [citizenId]
-    );
-    if (!candidateRows.length) return null;
-    return Number(candidateRows[0].citizen_id);
-  }
+private static async getCandidateIdByCitizenId(citizenId: string): Promise<string | null> {
+     const [candidateRows] = await pool.execute<RowDataPacket[]>(
+       `SELECT citizen_id FROM candidate_profiles WHERE citizen_id = ? LIMIT 1`,
+       [citizenId]
+     );
+     if (!candidateRows.length) return null;
+     return String(candidateRows[0].citizen_id);
+   }
 
   private static toNullableNumber(value: string | number | null): number | null {
     if (value === null) return null;
@@ -434,15 +434,15 @@ export class CandidateProfileModel {
     return this.getAcademicByCandidateId(candidateId);
   }
 
-  static async upsertExamScoresByGroupForCandidateByCitizenId(
-    citizenId: number,
-    payload: CandidateExamScoresPayload
-  ): Promise<CandidateAcademicRecordFull | null> {
-    const candidateId = await this.getCandidateIdByCitizenId(citizenId);
-    if (!candidateId) return null;
+static async upsertExamScoresByGroupForCandidateByCitizenId(
+     citizenId: string,
+     payload: CandidateExamScoresPayload
+   ): Promise<CandidateAcademicRecordFull | null> {
+     const candidateId = await this.getCandidateIdByCitizenId(citizenId);
+     if (!candidateId) return null;
 
-    return this.upsertExamScoresByGroupForCandidateId(candidateId, payload);
-  }
+     return this.upsertExamScoresByGroupForCandidateId(candidateId, payload);
+   }
 
   static async upsertExamScoresByGroupForCandidateByUserId(
     userId: number,

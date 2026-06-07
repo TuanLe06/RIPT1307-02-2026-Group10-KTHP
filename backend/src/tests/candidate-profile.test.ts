@@ -118,7 +118,7 @@ const testGetProfileSuccess = async (): Promise<void> => {
       last_login_at: null,
     },
     candidate_profile: {
-      citizen_id: 123456789012,
+citizen_id: '123456789012',
       full_name: 'Nguyen Van A',
       phone: '0901234567',
       date_of_birth: new Date('2006-01-01'),
