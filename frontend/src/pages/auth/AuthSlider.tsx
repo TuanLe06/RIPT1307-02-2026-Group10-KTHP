@@ -149,10 +149,11 @@ const AuthSlider = ({ initialMode }: AuthSliderProps) => {
         switchMode('login');
       }
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Đăng ký thất bại, vui lòng thử lại';
-      message.error(msg);
+      const data = (err as {
+        response?: { data?: { message?: string; errors?: Array<{ msg?: string }> } };
+      })?.response?.data;
+      const detail = data?.errors?.map((e) => e.msg).filter(Boolean).join('. ');
+      message.error(detail || data?.message || 'Đăng ký thất bại, vui lòng thử lại');
     } finally {
       setRegisterLoading(false);
     }
