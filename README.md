@@ -199,6 +199,7 @@ QL_DangKyTuyenSinh/
 | ![Cloudinary](https://img.shields.io/badge/Cloudinary-CDN-3448C5?logo=cloudinary&logoColor=white) | Lưu trữ ảnh / PDF chứng chỉ |
 | ![Brevo](https://img.shields.io/badge/Brevo_SMTP-Email-0B996E?logo=maildotru&logoColor=white) | Gửi OTP qua email |
 | ![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?logo=vercel&logoColor=white) | Deploy frontend |
+| ![Railway](https://img.shields.io/badge/Railway-Deploy-0B0D0E?logo=railway&logoColor=white) | Deploy backend |
 
 ---
 
@@ -269,6 +270,18 @@ Mở [http://localhost:5173](http://localhost:5173) và đăng nhập bằng tà
 
 ---
 
+## 🌐 Triển khai
+
+| Ứng dụng | URL |
+|----------|-----|
+| **Candidate Portal** | [https://admisx.vercel.app](https://admisx.vercel.app) |
+| **Backend API** | [https://qldangkytuyensinh.up.railway.app](https://qldangkytuyensinh.up.railway.app) |
+| **Swagger Docs** | [https://qldangkytuyensinh.up.railway.app/api-docs](https://qldangkytuyensinh.up.railway.app/api-docs) |
+
+Frontend được deploy trên **Vercel**, backend được deploy trên **Railway**.
+
+---
+
 ## 👤 Tài khoản mặc định
 
 Sau khi `npm run db:seed`, tài khoản admin được tạo theo biến `ADMIN_EMAIL` / `ADMIN_PASSWORD` trong `backend/.env`.
@@ -285,6 +298,7 @@ Sau khi `npm run db:seed`, tài khoản admin được tạo theo biến `ADMIN_
 ## 📡 API Endpoints (tổng quan)
 
 Backend base URL: `http://localhost:5000/api` — Swagger UI: `/api-docs`
+> Production: `https://qldangkytuyensinh.up.railway.app/api`
 
 ### 🔑 Auth (`/api/auth`)
 | Method | Endpoint | Mô tả |
@@ -421,6 +435,7 @@ VITE_CANDIDATE_URL=
 - 🗄️ [`backend/docs/database-schema.md`](./backend/docs/database-schema.md) — ERD + sơ đồ quan hệ
 - 🛠️ [`backend/docs/database-physical-design.md`](./backend/docs/database-physical-design.md) — DDL
 - 🌐 `http://localhost:5000/api-docs` — Swagger UI (khi chạy dev)
+- 🌐 `https://qldangkytuyensinh.up.railway.app/api-docs` — Swagger UI (production)
 - 📂 [`openspec/`](./openspec) — OpenSpec change proposals
 
 ---
