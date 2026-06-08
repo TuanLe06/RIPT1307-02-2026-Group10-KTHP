@@ -280,6 +280,10 @@ Mở [http://localhost:5173](http://localhost:5173) và đăng nhập bằng tà
 
 Frontend được deploy trên **Vercel**, backend được deploy trên **Railway**.
 
+### Repository liên quan
+
+**Candidate Portal** (giao diện thí sinh): [AdmiSX_Frontend](https://github.com/Kmisiz/AdmiSX_Frontend) — React 19 + Vite 8, nộp hồ sơ, eKYC, real-time notifications.
+
 ---
 
 ## 👤 Tài khoản mặc định
