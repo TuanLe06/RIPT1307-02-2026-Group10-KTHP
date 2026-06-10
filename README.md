@@ -448,10 +448,10 @@ VITE_CANDIDATE_URL=
 
 | Thành viên | Vai trò | GitHub |
 |---|---|---|
-| **Tuan Le** | Backend | [@TuanLe06](https://github.com/TuanLe06) |
-| **Khanh Do** | Frontend Lead | — |
-| **Tống Việt** | Backend Lead| — |
-| **Dương Phùng** | Frontend | — |
+| **Lê Anh Tuấn** | Backend | [TuanLe06](https://github.com/TuanLe06) |
+| **Đỗ Quốc Khánh** | Frontend Lead | [Kmisiz](https://github.com/Kmisiz) |
+| **Tống Quang Việt** | Backend Lead| [Tống Việt](https://github.com/tongviet-hub) |
+| **Phùng Đăng Dương** | Frontend | [Dwngphun](https://github.com/Dwngphun) |
 
 ---
 
